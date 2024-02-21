@@ -2,11 +2,11 @@
   "name": "html5-games-workshop",
   "version": "1.0.0",
   "description": "html5 game development workshop",
-  "main": "index.js",
+  "main": "platformer/index.html",
   "watch": {
     "build": {
       "patterns": [
-        "src"
+        "./"
       ],
       "extensions": "md,css,pug",
       "quiet": true
