@@ -1,11 +1,11 @@
-import Phaser from 'phaser';
-import { LoadingScene, ElectronScene } from 'scenes/loadingScene';
-import LevelScene from 'scenes/levelScene';
-import MainMenu from 'scenes/mainMenuScene';
-import LevelSelect from 'scenes/levelSelectScene';
-import Options from 'scenes/optionsScene';
-import Scoreboard from 'scenes/scoreboardScene';
-import Calibration from 'scenes/calibrationScene';
+import { LoadingScene, ElectronScene } from "../scenes/loadingScene";
+import LevelScene from "../scenes/levelScene";
+import MainMenu from "../scenes/mainMenuScene";
+import LevelSelect from "../scenes/levelSelectScene";
+import Options from "../scenes/optionsScene";
+import Scoreboard from "../scenes/scoreboardScene";
+import Calibration from "../scenes/calibrationScene";
+import Phaser from "phaser";
 
 /*
 To add a new scene:
@@ -21,7 +21,7 @@ const config = {
   scale: { mode: Phaser.Scale.RESIZE },
   transparent: true,
   physics: {
-    default: 'matter',
+    default: "matter",
     matter: {
       debug: false,
       gravity: { x: 0, y: 0 },
