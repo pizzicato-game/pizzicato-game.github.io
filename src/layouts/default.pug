@@ -1,0 +1,37 @@
+doctype html
+head
+    title HTML5 Games Workshop - #{title}
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    link(rel='stylesheet', href=relative('/css/styles.css'))
+    link(rel='stylesheet', href=relative('/vendor/prism/prism.css'))
+    script(src=relative('/vendor/prism/prism.js'))
+body
+    header.main-header
+        - var url = relative(locale === defaultLocale ? '/' : `/${locale}/`);
+        h1: a(href=url) HTML5 Games Workshop
+
+    main: article
+        - let availableLocales = locales.filter(x => x !== locale && !!lang(x))
+        if availableLocales.length > 0
+            p Also available in#{' '}
+                each lc, index in availableLocales
+                    a(href=relative(`/${lang(lc).path}/`))= lc
+                    if index < availableLocales.length - 1
+                        |,#{' '}
+                |.
+        block content
+            h1= title
+            != contents
+            block extra
+        if next || previous
+            nav.paginated-nav: ul
+                if previous
+                    li.previous « Previous:&nbsp;
+                        a(href=relative(`/${previous.path}/`)) #{previous.title}
+                if next
+                    li.next Next:&nbsp;
+                        a(href=relative(`/${next.path}/`)) #{next.title}
+                        |&nbsp;»
+    footer.main-footer
+        p With love,<br>the game dev fairies at <a href="https://mozilla.org">Mozilla</a>.

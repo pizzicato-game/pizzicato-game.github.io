@@ -1,0 +1,17 @@
+extends default.pug
+
+block content
+    h1= title
+
+    aside.author
+        p Guide written by&nbsp;
+            | #{author_name} (
+            a(href=`https://twitter.com/${author_twitter}`) @#{author_twitter}
+            |).
+
+    != contents
+
+    h1 Contents of this guide
+    ol.toc(start=0)
+        each step in collections[`${collection_base}_${locale}`]
+            li: a(href=relative(`/${step.path}/`))= step.title
