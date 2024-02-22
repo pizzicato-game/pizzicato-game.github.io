@@ -16,5 +16,5 @@
   "cameraOpacity": 0.2,
   "fancyEffectsDisabled": false,
   "disableVisualMetronome": false,
-  "autoSaveCSV": true
+  "autoSaveCSV": false
 }
