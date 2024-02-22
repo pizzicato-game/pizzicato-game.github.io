@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "types": ["node"],
+    "typeRoots": ["node_modules/@types", "@types"],
     "target": "ES2015",
     "module": "ES2015",
 
@@ -17,6 +19,6 @@
     "moduleResolution": "node",
     "lib": ["dom", "esnext"]
   },
-  "include": ["src/**/*"],
+  "include": ["src", "src/ts", "src/electron", "src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

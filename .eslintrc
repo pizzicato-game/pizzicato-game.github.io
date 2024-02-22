@@ -1,0 +1,78 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+  ],
+  "plugins": ["@typescript-eslint", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "project": true,
+    "tsconfigRootDir": ".",
+  },
+  "root": true,
+  "overrides": [
+    {
+      "env": {
+        "node": true,
+      },
+      "files": [".eslintrc.{js,cjs}"],
+      "parserOptions": {
+        "sourceType": "script",
+      },
+    },
+  ],
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es2021": true,
+  },
+  "ignorePatterns": [
+    "vite.config.ts",
+    "webpack/*",
+    "pwa/*",
+    "@types/*",
+    "tsconfig.json",
+  ],
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto",
+      },
+    ],
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "default",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "allow",
+      },
+      {
+        "selector": "import",
+        "format": ["camelCase", "PascalCase"],
+      },
+      {
+        "selector": "variable",
+        "format": ["camelCase", "UPPER_CASE", "PascalCase"],
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "allow",
+      },
+      {
+        "selector": "typeLike", // class, enum, interface, typeAlias, typeParameter
+        "format": ["PascalCase"],
+      },
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+      },
+    ],
+    "no-console": ["error", { "allow": ["info", "warn", "error"] }],
+  },
+}
