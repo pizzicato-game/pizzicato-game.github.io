@@ -1,56 +1,59 @@
-import HandScene from '../scenes/handScene'
-import Level from '../level/level'
+import HandScene from '../scenes/handScene';
+import Level from '../level/level';
 import {
   defaultLevelBackgroundKey,
   defaultLevelBackgroundPath,
   escapeKey,
   levelScene,
   mainMenuScene,
-  scoreboardScene
-} from '../core/config'
-import { absPath } from '../core/common'
+  scoreboardScene,
+} from '../core/config';
+import { absPath } from '../core/common';
 
 export default class LevelScene extends HandScene {
-  private level: Level
+  private level: Level;
 
   constructor() {
-    super(levelScene)
+    super(levelScene);
   }
 
   preload() {
-    this.level = this.scene.settings.data as Level
-    this.level.init(this)
-    this.load.image(defaultLevelBackgroundKey, absPath(defaultLevelBackgroundPath))
+    this.level = this.scene.settings.data as Level;
+    this.level.init(this);
+    this.load.image(
+      defaultLevelBackgroundKey,
+      absPath(defaultLevelBackgroundPath),
+    );
   }
 
   create() {
-    super.create()
+    super.create();
 
     if (this.level.hasCustomBackground()) {
-      this.setBackgroundTexture(this.level.getBackgroundTextureKey())
+      this.setBackgroundTexture(this.level.getBackgroundTextureKey());
     } else {
-      this.setBackgroundTexture(defaultLevelBackgroundKey)
+      this.setBackgroundTexture(defaultLevelBackgroundKey);
     }
 
     this.input.keyboard!.on(escapeKey, () => {
-      this.level.abort()
-    })
+      this.level.abort();
+    });
 
     this.level.start(
       () => {
         // Finished level callback.
-        this.scene.start(scoreboardScene, this.level)
+        this.scene.start(scoreboardScene, this.level);
       },
       () => {
         // Aborted level callback.
-        this.scene.start(mainMenuScene)
-      }
-    )
+        this.scene.start(mainMenuScene);
+      },
+    );
   }
 
   update(time: number, delta: number) {
-    super.update(time, delta)
+    super.update(time, delta);
 
-    this.level.update(time)
+    this.level.update(time);
   }
 }

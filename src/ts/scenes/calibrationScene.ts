@@ -1,4 +1,4 @@
-import { absPath } from '../core/common'
+import { absPath } from '../core/common';
 import {
   appendHandDistanceToText,
   backButtonTextureKey,
@@ -27,111 +27,123 @@ import {
   undefinedText,
   escapeKey,
   calibrationScene,
-  mainMenuScene
-} from '../core/config'
-import { PhaserText, Vector2 } from '../core/phaserTypes'
-import HandScene from '../scenes/handScene'
-import { Button } from '../ui/button'
+  mainMenuScene,
+} from '../core/config';
+import { PhaserText, Vector2 } from '../core/phaserTypes';
+import HandScene from '../scenes/handScene';
+import { Button } from '../ui/button';
 
 export default class Calibration extends HandScene {
-  private backToMenu: Button
-  private distanceText: PhaserText
+  private backToMenu: Button;
+  private distanceText: PhaserText;
 
   constructor() {
-    super(calibrationScene)
+    super(calibrationScene);
   }
 
   private exit() {
-    this.scene.start(mainMenuScene)
+    this.scene.start(mainMenuScene);
   }
 
   preload() {
-    this.load.image(backButtonTextureKey, absPath(backButtonTexturePath))
-    this.load.audio(buttonPinchSoundKey, absPath(buttonPinchSoundPath))
-    this.load.image(calibrationBackgroundTextureKey, absPath(calibrationBackgroundTexturePath))
+    this.load.image(backButtonTextureKey, absPath(backButtonTexturePath));
+    this.load.audio(buttonPinchSoundKey, absPath(buttonPinchSoundPath));
+    this.load.image(
+      calibrationBackgroundTextureKey,
+      absPath(calibrationBackgroundTexturePath),
+    );
   }
 
   create() {
-    super.create(true, calibrationMenuWebcamOpacity)
+    super.create(true, calibrationMenuWebcamOpacity);
 
     // Not moving these to config was they depend on window size which can change.
 
-    const windowWidth = window.innerWidth
-    const windowHeight = window.innerHeight
-    const horizontalCenter = 0.5 * windowWidth
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const horizontalCenter = 0.5 * windowWidth;
 
     this.backToMenu = new Button(
       this,
-      new Vector2(horizontalCenter, windowHeight * calibrationButtonBottomLevel),
+      new Vector2(
+        horizontalCenter,
+        windowHeight * calibrationButtonBottomLevel,
+      ),
       standardButtonScale,
       backButtonTextureKey,
       buttonPinchSoundKey,
-      true
-    )
+      true,
+    );
 
-    this.setBackgroundTexture(calibrationBackgroundTextureKey)
+    this.setBackgroundTexture(calibrationBackgroundTextureKey);
 
     this.input.keyboard!.on(escapeKey, () => {
-      this.exit()
-    })
+      this.exit();
+    });
 
     this.distanceText = this.add
-      .text(horizontalCenter, windowHeight * calibrationTextTopLevel, undefinedText, {
-        color: handDistanceTextOptions.color,
-        font: handDistanceTextOptions.font
-      })
+      .text(
+        horizontalCenter,
+        windowHeight * calibrationTextTopLevel,
+        undefinedText,
+        {
+          color: handDistanceTextOptions.color,
+          font: handDistanceTextOptions.font,
+        },
+      )
       .setShadow(
         handDistanceTextShadowOptions.x,
         handDistanceTextShadowOptions.y,
         handDistanceTextShadowOptions.color,
-        handDistanceTextShadowOptions.blur
+        handDistanceTextShadowOptions.blur,
       )
-      .setOrigin(0.5, 0.5)
+      .setOrigin(0.5, 0.5);
 
     this.backToMenu.addPinchCallbacks({
       startPinch: () => {
-        this.exit()
+        this.exit();
       },
       startHover: () => {
-        this.backToMenu.setTintFill(uiHoverColor)
+        this.backToMenu.setTintFill(uiHoverColor);
       },
       endHover: () => {
-        this.backToMenu.clearTint()
-      }
-    })
+        this.backToMenu.clearTint();
+      },
+    });
   }
 
   update(time: number, delta: number): void {
-    super.update(time, delta)
+    super.update(time, delta);
 
-    const handDistance: number = this.hand.calculateHandDistance()
+    const handDistance: number = this.hand.calculateHandDistance();
 
-    let handDistanceText: string = handNotFoundText
+    let handDistanceText: string = handNotFoundText;
 
     if (handDistance > 0) {
-      let handDistanceColor: number = handJustRightColor
+      let handDistanceColor: number = handJustRightColor;
 
       if (handDistance > handTooFarThreshold) {
-        handDistanceText = handTooFarText
-        handDistanceColor = handTooFarColor
+        handDistanceText = handTooFarText;
+        handDistanceColor = handTooFarColor;
       } else if (handDistance < handTooCloseThreshold) {
-        handDistanceText = handTooCloseText
-        handDistanceColor = handTooCloseColor
+        handDistanceText = handTooCloseText;
+        handDistanceColor = handTooCloseColor;
       } else {
-        handDistanceText = handJustRightText
+        handDistanceText = handJustRightText;
       }
 
-      this.setBackgroundTint(handDistanceColor)
+      this.setBackgroundTint(handDistanceColor);
 
       if (appendHandDistanceToText) {
-        handDistanceText += handDistance.toFixed(0) + ' ' + handDistanceUnitText
+        handDistanceText +=
+          handDistance.toFixed(0) + ' ' + handDistanceUnitText;
       }
     } else {
-      this.clearBackgroundTint()
+      this.clearBackgroundTint();
     }
 
     if (this.distanceText != undefined && this.distanceText.active) {
-      this.distanceText.setText(handDistanceText)
+      this.distanceText.setText(handDistanceText);
     }
   }
 }
