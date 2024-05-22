@@ -267,7 +267,7 @@ export default class Options extends HandScene {
       if (slider.label != undefined && slider.label.active)
         slider.label.setText('Camera Opacity: ' + slider.getStringValue());
       this.configData[slider.key] = slider.getValue();
-      this.setOpacity(this.configData[slider.key]);
+      this.setOpacity(this.configData[slider.key] as number);
     };
 
     const cameraOpacitySlider = new Slider(
