@@ -16,6 +16,5 @@ out
 package-lock.json
 Library/
 src/assets/ui/reset_button.xcf
-src/data/config.json
 src/data/*.csv
 csv/*.csv
