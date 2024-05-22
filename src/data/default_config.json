@@ -5,6 +5,7 @@
   "skipLoopThreshold": 1,
   "enableAutoSkip": false,
   "autoSkipThreshold": 1,
+  "singlePinchRequirement": true,
   "disableSonification": false,
   "disableLayerProgression": false,
   "indexFingerOnly": false,

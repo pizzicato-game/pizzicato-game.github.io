@@ -68,9 +68,9 @@ export default class Options extends HandScene {
   constructor() {
     super(optionsScene);
 
-    loadData(configFilePath).then(async (result: any) => {
+    loadData(configFilePath).then(async (result: ConfigData) => {
       this.configData = result;
-      await loadData(defaultConfigFilePath).then((result: any) => {
+      await loadData(defaultConfigFilePath).then((result: ConfigData) => {
         this.defaultData = result;
       });
     });
@@ -561,6 +561,26 @@ export default class Options extends HandScene {
     );
     this.options.push(backgroundVolumeSlider);
     this.add.existing(backgroundVolumeSlider);
+
+    // --------------------------------------------------------
+
+    const requireSinglePinch = new Checkbox(
+      this,
+      new Vector2(
+        rightAlignment,
+        verticalAlignment2 + verticalAlignment2Offset * 2,
+      ),
+      25,
+      new Vector2(-optionsCheckboxOffset.x, 0),
+      'Require Single Pinches',
+      this.configData,
+      'singlePinchRequirement',
+      (checkbox: Checkbox) => {
+        this.configData[checkbox.key] = checkbox.isChecked;
+      },
+    );
+    this.options.push(requireSinglePinch);
+    this.add.existing(requireSinglePinch);
 
     // --------------------------------------------------------
 

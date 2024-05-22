@@ -6,6 +6,7 @@
   "enableAutoSkip": false,
   "autoSkipThreshold": 1,
   "disableSonification": false,
+  "singlePinchRequirement": true,
   "disableLayerProgression": false,
   "indexFingerOnly": false,
   "sonificationLevel": 1.0,
