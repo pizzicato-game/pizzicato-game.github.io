@@ -33,6 +33,7 @@
     "webpack/*",
     "pwa/*",
     "@types/*",
+    "typings/*",
     "tsconfig.json",
   ],
   "rules": {

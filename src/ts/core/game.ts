@@ -1,11 +1,11 @@
-import Phaser from 'phaser'
-import { LoadingScene, ElectronScene } from '../scenes/loadingScene'
-import LevelScene from '../scenes/levelScene'
-import MainMenu from '../scenes/mainMenuScene'
-import LevelSelect from '../scenes/levelSelectScene'
-import Options from '../scenes/optionsScene'
-import Scoreboard from '../scenes/scoreboardScene'
-import Calibration from '../scenes/calibrationScene'
+import Phaser from 'phaser';
+import { LoadingScene, ElectronScene } from '../scenes/loadingScene';
+import LevelScene from '../scenes/levelScene';
+import MainMenu from '../scenes/mainMenuScene';
+import LevelSelect from '../scenes/levelSelectScene';
+import Options from '../scenes/optionsScene';
+import Scoreboard from '../scenes/scoreboardScene';
+import Calibration from '../scenes/calibrationScene';
 
 /*
 To add a new scene:
@@ -24,10 +24,19 @@ const config = {
     default: 'matter',
     matter: {
       debug: false,
-      gravity: { x: 0, y: 0 }
-    }
+      gravity: { x: 0, y: 0 },
+    },
   },
-  scene: [ElectronScene, LoadingScene, MainMenu, Options, LevelSelect, LevelScene, Scoreboard, Calibration]
-}
+  scene: [
+    ElectronScene,
+    LoadingScene,
+    MainMenu,
+    Options,
+    LevelSelect,
+    LevelScene,
+    Scoreboard,
+    Calibration,
+  ],
+};
 
-const _game = new Phaser.Game(config)
+const _game = new Phaser.Game(config);

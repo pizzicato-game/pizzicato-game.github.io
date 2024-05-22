@@ -1,19 +1,19 @@
-import { difficultyButtonChosenTint, undefinedText } from '../core/config'
-import { PhaserText, Vector2 } from '../core/phaserTypes'
-import HandScene from '../scenes/handScene'
-import { ToggleButton } from '../ui/toggleButton'
+import { difficultyButtonChosenTint, undefinedText } from '../core/config';
+import { PhaserText, Vector2 } from '../core/phaserTypes';
+import HandScene from '../scenes/handScene';
+import { ToggleButton } from '../ui/toggleButton';
 
-const bpmTextOffset: number = 0.023
+const bpmTextOffset: number = 0.023;
 
 export class DifficultyButton extends ToggleButton {
-  private readonly bpmIndex_: number
-  private readonly bpm: number
-  private readonly bpmText: PhaserText
+  private readonly bpmIndex_: number;
+  private readonly bpm: number;
+  private readonly bpmText: PhaserText;
 
   private readonly bpmTextOptions = {
     font: '20px Courier New',
-    color: 0xffffff
-  }
+    color: 0xffffff,
+  };
 
   constructor(
     scene: HandScene,
@@ -25,40 +25,51 @@ export class DifficultyButton extends ToggleButton {
     interactable: boolean,
     bpmIndex: number,
     bpm: number,
-    initialState: boolean = true
+    initialState: boolean = true,
   ) {
-    super(scene, position, scale, onSpriteKey, offSpriteKey, soundKey, interactable, initialState)
-    this.bpmIndex_ = bpmIndex
-    this.bpm = bpm
+    super(
+      scene,
+      position,
+      scale,
+      onSpriteKey,
+      offSpriteKey,
+      soundKey,
+      interactable,
+      initialState,
+    );
+    this.bpmIndex_ = bpmIndex;
+    this.bpm = bpm;
     this.bpmText = this.scene.add.text(0, 0, undefinedText, {
-      font: this.bpmTextOptions.font
-    })
-    this.bpmText.setText('BPM: ' + this.bpm.toString())
+      font: this.bpmTextOptions.font,
+    });
+    this.bpmText.setText('BPM: ' + this.bpm.toString());
 
     // Ensure position is set after text because text varies the displaySize.
     this.bpmText.setPosition(
       position.x - this.bpmText.displayWidth / 2,
-      position.y - this.bpmText.displayHeight / 2 + window.innerHeight * bpmTextOffset
-    )
+      position.y -
+        this.bpmText.displayHeight / 2 +
+        window.innerHeight * bpmTextOffset,
+    );
 
-    this.updateTint()
+    this.updateTint();
 
     this.on('destroy', () => {
-      this.bpmText.destroy()
-    })
+      this.bpmText.destroy();
+    });
   }
 
   public updateTint() {
     if (this.toggleState) {
-      this.bpmText.setTintFill(difficultyButtonChosenTint)
-      this.setTintFill(difficultyButtonChosenTint)
+      this.bpmText.setTintFill(difficultyButtonChosenTint);
+      this.setTintFill(difficultyButtonChosenTint);
     } else {
-      this.bpmText.setTintFill(this.bpmTextOptions.color)
-      this.clearTint()
+      this.bpmText.setTintFill(this.bpmTextOptions.color);
+      this.clearTint();
     }
   }
 
   get bpmIndex() {
-    return this.bpmIndex_
+    return this.bpmIndex_;
   }
 }

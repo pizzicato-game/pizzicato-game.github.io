@@ -1,20 +1,20 @@
-import { WebcamOptions } from '../core/interfaces'
-import { webcamSourceOptions } from '../core/config'
-import { assert } from '../core/common'
+import { WebcamOptions } from '../core/interfaces';
+import { webcamSourceOptions } from '../core/config';
+import { assert } from '../core/common';
 
 class Webcam {
   // Useful to hold onto the outer wrapper for methods like setDisplaySize().
-  private video_: HTMLVideoElement | undefined
+  private video_: HTMLVideoElement | undefined;
 
   public async init(
     options: WebcamOptions,
-    progressCallback: (text: string) => void
+    progressCallback: (text: string) => void,
   ): Promise<boolean | string | string[]> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise<boolean | string | string[]>(async (resolve, reject) => {
-      progressCallback('Loading webcam...')
+      progressCallback('Loading webcam...');
 
-      this.setupVideoElement(options)
+      this.setupVideoElement(options);
 
       // From: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
       // To select a webmca use mediaDevices.enumerateDevices() and add set
@@ -24,74 +24,74 @@ class Webcam {
         .then(mediaStream => {
           // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject#supporting_fallback_to_the_src_property
           if (!('srcObject' in this.video)) {
-            reject('srcObject does not exist on older browsers')
-            return
+            reject('srcObject does not exist on older browsers');
+            return;
           }
 
-          this.video.srcObject = mediaStream
+          this.video.srcObject = mediaStream;
 
           this.video.addEventListener('loadeddata', () => {
-            resolve(true)
-          })
+            resolve(true);
+          });
         })
         .catch(err => {
-          reject(err)
-        })
-    })
+          reject(err);
+        });
+    });
   }
 
   public found(): boolean {
-    return this.video.srcObject != undefined
+    return this.video.srcObject != undefined;
   }
 
   public setVisibility(visible: boolean) {
     // For some reason excluding this line causes visibility change to fail.
-    this.video.style.visibility = ''
-    this.video.style.visibility = visible ? 'shown' : 'hidden'
+    this.video.style.visibility = '';
+    this.video.style.visibility = visible ? 'shown' : 'hidden';
   }
 
   private setWidth(width: number) {
-    this.video.width = width
+    this.video.width = width;
   }
 
   private setHeight(height: number) {
-    this.video.height = height
+    this.video.height = height;
   }
 
   private setupVideoElement(options: WebcamOptions) {
-    this.video = document.body.appendChild(document.createElement('video'))
+    this.video = document.body.appendChild(document.createElement('video'));
     // 'Mandatory'
-    this.video.autoplay = true
-    this.video.muted = true
-    this.video.playsInline = true
-    this.video.style.position = 'absolute'
-    this.video.style.top = '0'
-    this.video.style.left = '0'
-    this.video.style.bottom = '0'
-    this.video.style.zIndex = '-1'
-    this.video.style.pointerEvents = 'none'
-    this.video.style.objectFit = options.objectFit // DISCUSS: Slight but tolerable stretch of video?
-    this.setWidth(options.width)
-    this.setHeight(options.height)
+    this.video.autoplay = true;
+    this.video.muted = true;
+    this.video.playsInline = true;
+    this.video.style.position = 'absolute';
+    this.video.style.top = '0';
+    this.video.style.left = '0';
+    this.video.style.bottom = '0';
+    this.video.style.zIndex = '-1';
+    this.video.style.pointerEvents = 'none';
+    this.video.style.objectFit = options.objectFit; // DISCUSS: Slight but tolerable stretch of video?
+    this.setWidth(options.width);
+    this.setHeight(options.height);
     if (options.flip) {
       this.video.style.cssText +=
         '-moz-transform: scale(-1, 1); \
          -webkit-transform: scale(-1, 1); -o-transform: scale(-1, 1); \
-         transform: scale(-1, 1); filter: FlipH;'
+         transform: scale(-1, 1); filter: FlipH;';
     }
-    this.setVisibility(false) // Only show webcam after landmarks are pre-cached.
+    this.setVisibility(false); // Only show webcam after landmarks are pre-cached.
   }
 
   public get video(): HTMLVideoElement {
-    assert(this.video_ != undefined)
-    return this.video_!
+    assert(this.video_ != undefined);
+    return this.video_!;
   }
 
   public set video(video: HTMLVideoElement) {
-    this.video_ = video
+    this.video_ = video;
   }
 }
 
-const webcam: Webcam = new Webcam()
+const webcam: Webcam = new Webcam();
 
-export default webcam
+export default webcam;

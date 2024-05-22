@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-async-promise-executor */
 import { Vector2 } from '../core/phaserTypes';
 import { debugMode } from './config';
 
 export function initVariables(): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>((resolve, _reject) => {
     resolve();
   });
 }
@@ -16,8 +18,8 @@ export function isDebugMode(): boolean {
 }
 
 export function storeData(
-  filePath: string,
-  data: string | NodeJS.ArrayBufferView,
+  _filePath: string,
+  _data: string | NodeJS.ArrayBufferView,
 ): void {
   // fs.mkdirSync(path.dirname(filePath), { recursive: true })
   // fs.writeFileSync(filePath, data)
@@ -25,7 +27,7 @@ export function storeData(
 
 function makeRequest(method, url) {
   return new Promise(function (resolve, reject) {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.open(method, url);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
@@ -76,7 +78,7 @@ export function listLevelDirectories(
   //return fs.readdirSync(parentDir, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
 }
 
-export function fileExists(absoluteFilePath: string): boolean {
+export function fileExists(_absoluteFilePath: string): boolean {
   return true;
   //return fs.existsSync(absoluteFilePath)
 }

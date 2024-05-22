@@ -1,10 +1,10 @@
-import { TextOptions } from '../core/interfaces'
-import { absPath, assert } from '../core/common'
-import Level from '../level/level'
-import { config } from '../managers/storageManager'
-import HandScene from '../scenes/handScene'
-import { Button } from '../ui/button'
-import { GameObject, PhaserText, Sprite } from '../core/phaserTypes'
+import { TextOptions } from '../core/interfaces';
+import { absPath, assert } from '../core/common';
+import Level from '../level/level';
+import { config } from '../managers/storageManager';
+import HandScene from '../scenes/handScene';
+import { Button } from '../ui/button';
+import { GameObject, PhaserText, Sprite } from '../core/phaserTypes';
 import {
   bpmInfoText,
   bpmTextOptions,
@@ -23,32 +23,32 @@ import {
   trackInfoText,
   trackTextOptions,
   uiHoverColor,
-  undefinedText
-} from '../core/config'
-import setInteraction from '../util/interaction'
+  undefinedText,
+} from '../core/config';
+import setInteraction from '../util/interaction';
 
 export default class InfoHUD extends GameObject {
-  public readonly scene: HandScene
-  private readonly level: Level
+  public readonly scene: HandScene;
+  private readonly level: Level;
 
-  private trackText: PhaserText
-  private difficultyText: PhaserText
-  private bpmText: PhaserText
-  private layerText: PhaserText
-  private loopText: PhaserText
-  private infoBackground: Sprite
-  private skipButton: Button
+  private trackText: PhaserText;
+  private difficultyText: PhaserText;
+  private bpmText: PhaserText;
+  private layerText: PhaserText;
+  private loopText: PhaserText;
+  private infoBackground: Sprite;
+  private skipButton: Button;
 
   constructor(scene: HandScene, level: Level) {
-    super(scene, 'infoHUD')
-    this.scene = scene
-    this.level = level
+    super(scene, 'infoHUD');
+    this.scene = scene;
+    this.level = level;
   }
 
   public setup() {
-    this.addTexts()
-    this.addSkipButton()
-    this.setVisible(false)
+    this.addTexts();
+    this.addSkipButton();
+    this.setVisible(false);
   }
 
   private addSkipButton() {
@@ -58,111 +58,135 @@ export default class InfoHUD extends GameObject {
       skipButtonOptions.scale,
       skipButtonOptions.textureKey,
       skipButtonOptions.soundKey,
-      false
-    )
+      false,
+    );
     this.skipButton.addPinchCallbacks({
       startPinch: () => {
-        setInteraction(this.skipButton, false)
-        this.level.transitionLayers()
+        setInteraction(this.skipButton, false);
+        this.level.transitionLayers();
       },
       startHover: () => {
-        this.skipButton.setTintFill(uiHoverColor)
+        this.skipButton.setTintFill(uiHoverColor);
       },
       endHover: () => {
-        this.skipButton.clearTint()
-      }
-    })
-    this.updateSkipButtonAvailability(false)
+        this.skipButton.clearTint();
+      },
+    });
+    this.updateSkipButtonAvailability(false);
   }
 
   public preload() {
-    this.scene.load.image(skipButtonOptions.textureKey, absPath(skipButtonOptions.path))
-    this.scene.load.image(infoBackgroundOptions.textureKey, absPath(infoBackgroundOptions.path))
+    this.scene.load.image(
+      skipButtonOptions.textureKey,
+      absPath(skipButtonOptions.path),
+    );
+    this.scene.load.image(
+      infoBackgroundOptions.textureKey,
+      absPath(infoBackgroundOptions.path),
+    );
   }
 
   public setVisible(visible: boolean) {
-    if (this.trackText != undefined) this.trackText.setVisible(visible)
-    if (this.difficultyText != undefined) this.difficultyText.setVisible(visible)
-    if (this.bpmText != undefined) this.bpmText.setVisible(visible)
-    if (this.layerText != undefined) this.layerText.setVisible(visible)
-    if (this.loopText != undefined) this.loopText.setVisible(visible)
-    if (this.infoBackground != undefined) this.infoBackground.setVisible(visible)
+    if (this.trackText != undefined) this.trackText.setVisible(visible);
+    if (this.difficultyText != undefined)
+      this.difficultyText.setVisible(visible);
+    if (this.bpmText != undefined) this.bpmText.setVisible(visible);
+    if (this.layerText != undefined) this.layerText.setVisible(visible);
+    if (this.loopText != undefined) this.loopText.setVisible(visible);
+    if (this.infoBackground != undefined)
+      this.infoBackground.setVisible(visible);
 
-    this.updateSkipButtonAvailability(visible)
+    this.updateSkipButtonAvailability(visible);
   }
 
   private addText(textOptions: TextOptions, text: string): PhaserText {
     return this.scene.add
       .text(textOptions.position.x, textOptions.position.y, text, {
         font: textOptions.font,
-        color: textOptions.color
+        color: textOptions.color,
       })
       .setScale(textOptions.scale)
-      .setDepth(textOptions.depth)
+      .setDepth(textOptions.depth);
   }
 
   private getLoopText(): string {
-    const loopCount: number = this.level.score.getLoopCount()
-    const loopName: string = loopInfoText + loopCount.toString()
-    return loopName
+    const loopCount: number = this.level.score.getLoopCount();
+    const loopName: string = loopInfoText + loopCount.toString();
+    return loopName;
   }
 
   private addTexts() {
-    this.loopText = this.addText(loopTextOptions, this.getLoopText())
-    const trackName: string = trackInfoText + this.level.track.data.displayName
-    this.trackText = this.addText(trackTextOptions, trackName)
+    this.loopText = this.addText(loopTextOptions, this.getLoopText());
+    const trackName: string = trackInfoText + this.level.track.data.displayName;
+    this.trackText = this.addText(trackTextOptions, trackName);
 
     const layerName: string =
       layerInfoText +
       (this.level.activeLayerIndex + 1).toString() +
       layerDividerSymbol +
-      this.level.playableLayers.length.toString()
+      this.level.playableLayers.length.toString();
 
-    let difficultyText: string = undefinedText
+    let difficultyText: string = undefinedText;
     switch (this.level.bpmIndex) {
       case 0: {
-        difficultyText = difficultyTextEasy
-        break
+        difficultyText = difficultyTextEasy;
+        break;
       }
       case 1: {
-        difficultyText = difficultyTextMedium
-        break
+        difficultyText = difficultyTextMedium;
+        break;
       }
       case 2: {
-        difficultyText = difficultyTextHard
-        break
+        difficultyText = difficultyTextHard;
+        break;
       }
       default: {
-        break
+        break;
       }
     }
 
     assert(
       difficultyText != undefinedText,
-      'Extend the switch statement to have a difficulty text for the given track bpmIndex'
-    )
+      'Extend the switch statement to have a difficulty text for the given track bpmIndex',
+    );
 
-    this.difficultyText = this.addText(difficultyTextOptions, difficultyInfoText + difficultyText)
+    this.difficultyText = this.addText(
+      difficultyTextOptions,
+      difficultyInfoText + difficultyText,
+    );
 
-    this.bpmText = this.addText(bpmTextOptions, bpmInfoText + this.level.track.getBPM())
+    this.bpmText = this.addText(
+      bpmTextOptions,
+      bpmInfoText + this.level.track.getBPM(),
+    );
 
-    this.layerText = this.addText(layerTextOptions, layerName)
+    this.layerText = this.addText(layerTextOptions, layerName);
 
     this.infoBackground = this.scene.add
-      .sprite(infoBackgroundOptions.position.x, infoBackgroundOptions.position.y, infoBackgroundOptions.textureKey)
+      .sprite(
+        infoBackgroundOptions.position.x,
+        infoBackgroundOptions.position.y,
+        infoBackgroundOptions.textureKey,
+      )
       .setAlpha(infoBackgroundOptions.opacity)
       .setOrigin(0, 0)
-      .setDisplaySize(infoBackgroundOptions.size.x, infoBackgroundOptions.size.y)
+      .setDisplaySize(
+        infoBackgroundOptions.size.x,
+        infoBackgroundOptions.size.y,
+      );
   }
 
   public updateLoopText() {
-    this.loopText.setText(this.getLoopText())
-    this.updateSkipButtonAvailability(true)
+    this.loopText.setText(this.getLoopText());
+    this.updateSkipButtonAvailability(true);
   }
 
   private updateSkipButtonAvailability(visible: boolean) {
     const available: boolean =
-      config.enableSkipButton && this.level.score.getLoopCount() >= config.skipLoopThreshold && visible
-    if (this.skipButton != undefined) setInteraction(this.skipButton, available)
+      config.enableSkipButton &&
+      this.level.score.getLoopCount() >= config.skipLoopThreshold &&
+      visible;
+    if (this.skipButton != undefined)
+      setInteraction(this.skipButton, available);
   }
 }

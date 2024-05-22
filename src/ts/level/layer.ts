@@ -1,13 +1,18 @@
-import { PlayableTrackLayerData, TrackLayerData, TrackNode, TrackPinchNode } from '../level/trackTypes'
-import Level from '../level/level'
-import Metronome from '../level/metronome'
-import Progress from '../level/progress'
-import HandScene from '../scenes/handScene'
-import InfoHUD from '../level/infoHud'
-import { config, autoSaveToCSV } from '../managers/storageManager'
-import { assert, normalizedToWindow } from '../core/common'
-import { TargetManager } from '../managers/targetManager'
-import Target from '../objects/target'
+import {
+  PlayableTrackLayerData,
+  TrackLayerData,
+  TrackNode,
+  TrackPinchNode,
+} from '../level/trackTypes';
+import Level from '../level/level';
+import Metronome from '../level/metronome';
+import Progress from '../level/progress';
+import HandScene from '../scenes/handScene';
+import InfoHUD from '../level/infoHud';
+import { config, autoSaveToCSV } from '../managers/storageManager';
+import { assert, normalizedToWindow } from '../core/common';
+import { TargetManager } from '../managers/targetManager';
+import Target from '../objects/target';
 import {
   fingerColors,
   indexFingerId,
@@ -16,180 +21,203 @@ import {
   targetHitOnTimeProgressImpact,
   targetHitOnTimeStreakImpact,
   targetMissProgressImpact,
-  targetSkipProgressImpact
-} from '../core/config'
+  targetSkipProgressImpact,
+} from '../core/config';
 
 export class Layer {
-  public readonly level: Level
-  public readonly data: TrackLayerData
+  public readonly level: Level;
+  public readonly data: TrackLayerData;
 
   constructor(level: Level, data: TrackLayerData) {
-    this.level = level
-    this.data = data
+    this.level = level;
+    this.data = data;
   }
 
   public getDuration(): number {
     return this.level.track.songTimePositionToTime({
       bar: this.data.lengthInBars + 1,
       step: 1,
-      tick: 0
-    })
+      tick: 0,
+    });
   }
 }
 
 export class PlayableLayer extends Layer {
-  public readonly data: PlayableTrackLayerData
-  public progress: Progress
-  public infoHud: InfoHUD
+  public readonly data: PlayableTrackLayerData;
+  public progress: Progress;
+  public infoHud: InfoHUD;
 
-  private targetManager: TargetManager
+  private targetManager: TargetManager;
 
-  private readonly scene: HandScene
-  private readonly metronome: Metronome
+  private readonly scene: HandScene;
+  private readonly metronome: Metronome;
 
-  private nextNodeIndex: number = 0
-  private songTime_: number = 0
-  private oldTimePosition: number = 0
-  private startTime: number = 0
-  private time: number = 0
-  private ready: boolean = false
+  private nextNodeIndex: number = 0;
+  private songTime_: number = 0;
+  private oldTimePosition: number = 0;
+  private startTime: number = 0;
+  private time: number = 0;
+  private ready: boolean = false;
 
   constructor(scene: HandScene, level: Level, data: PlayableTrackLayerData) {
-    super(level, data)
-    this.scene = scene
-    this.data = data
+    super(level, data);
+    this.scene = scene;
+    this.data = data;
 
-    this.metronome = new Metronome(this.scene)
-    this.progress = new Progress(this.scene)
-    this.infoHud = new InfoHUD(this.scene, this.level)
-    this.targetManager = new TargetManager()
+    this.metronome = new Metronome(this.scene);
+    this.progress = new Progress(this.scene);
+    this.infoHud = new InfoHUD(this.scene, this.level);
+    this.targetManager = new TargetManager();
   }
 
   get songTime() {
-    return this.songTime_
+    return this.songTime_;
   }
 
   public preload() {
-    this.infoHud.preload()
-    this.metronome.preload()
-    this.progress.preload()
+    this.infoHud.preload();
+    this.metronome.preload();
+    this.progress.preload();
   }
 
   public unload() {
-    this.metronome.unload()
-    this.infoHud.destroy()
+    this.metronome.unload();
+    this.infoHud.destroy();
   }
 
   public start(delay: number) {
-    this.targetManager.start()
-    this.level.score.delay = delay
+    this.targetManager.start();
+    this.level.score.delay = delay;
 
-    this.ready = true
-    this.startTime = this.time + delay
-    this.nextNodeIndex = 0
-    this.oldTimePosition = 0
+    this.ready = true;
+    this.startTime = this.time + delay;
+    this.nextNodeIndex = 0;
+    this.oldTimePosition = 0;
 
-    const barCount = Math.max(this.data.previewTime.bar, 1)
+    const barCount = Math.max(this.data.previewTime.bar, 1);
 
-    const tints: number[] = []
+    const tints: number[] = [];
     this.data.nodes.forEach((node: TrackNode, _index: number) => {
-      const finger = config.indexFingerOnly ? indexFingerId : (node as TrackPinchNode).finger
-      tints.push(fingerColors[finger])
-    })
+      const finger = config.indexFingerOnly
+        ? indexFingerId
+        : (node as TrackPinchNode).finger;
+      tints.push(fingerColors[finger]);
+    });
 
-    this.progress.setup(0, this.data.nodes.length, this.data.progressCount, tints)
-    this.metronome.setup()
-    this.infoHud.setup()
+    this.progress.setup(
+      0,
+      this.data.nodes.length,
+      this.data.progressCount,
+      tints,
+    );
+    this.metronome.setup();
+    this.infoHud.setup();
 
-    this.progress.setVisible(true)
-    this.infoHud.setVisible(true)
-    this.metronome.play(this.level.track.data.timeSignatureNumerator, this.level.track.beatLength, barCount)
+    this.progress.setVisible(true);
+    this.infoHud.setVisible(true);
+    this.metronome.play(
+      this.level.track.data.timeSignatureNumerator,
+      this.level.track.beatLength,
+      barCount,
+    );
   }
 
-  public createTarget(node: TrackPinchNode, layerIndex: number, nodeIndex: number) {
-    const finger: string = config.indexFingerOnly ? indexFingerId : node.finger
+  public createTarget(
+    node: TrackPinchNode,
+    layerIndex: number,
+    nodeIndex: number,
+  ) {
+    const finger: string = config.indexFingerOnly ? indexFingerId : node.finger;
 
     const target = new Target(
       this.scene,
       this.songTime_,
       normalizedToWindow(node.normalizedPosition) /* screenPosition */,
       this.getPreviewTime() /* lifetime */,
-      this.level.track.getSoundKey(this.data, node.soundKey) /* targetSoundKey */,
+      this.level.track.getSoundKey(
+        this.data,
+        node.soundKey,
+      ) /* targetSoundKey */,
       this,
       finger,
-      nodeIndex
-    )
+      nodeIndex,
+    );
 
     target.setOnTargetMiss(() => {
       // Target miss.
-      this.level.score.missedPinch(target)
+      this.level.score.missedPinch(target);
 
-      this.progress.changeBy(targetMissProgressImpact)
-      this.progress.redraw()
+      this.progress.changeBy(targetMissProgressImpact);
+      this.progress.redraw();
 
-      this.level.streak.stop()
+      this.level.streak.stop();
 
-      this.targetManager.destroyTarget(target)
+      this.targetManager.destroyTarget(target);
 
       // If the missed target is the last node, increment loop counter.
-      this.checkForTransition(layerIndex, nodeIndex)
-    })
+      this.checkForTransition(layerIndex, nodeIndex);
+    });
 
     target.setOnTargetHit(() => {
-      const previousTargets: Target[] = this.targetManager.getPreviousTargets(target)
+      const previousTargets: Target[] =
+        this.targetManager.getPreviousTargets(target);
       // Count each previous undestroyed target as a skip.
       for (const previousTarget of previousTargets) {
-        assert(previousTarget != target)
+        assert(previousTarget != target);
         // Only skip targets that appeared before the current target.
-        this.progress.changeBy(targetSkipProgressImpact)
+        this.progress.changeBy(targetSkipProgressImpact);
 
-        this.level.score.skippedPinch(previousTarget)
+        this.level.score.skippedPinch(previousTarget);
 
-        this.targetManager.destroyTarget(previousTarget)
+        this.targetManager.destroyTarget(previousTarget);
       }
       if (previousTargets.length > 0) {
-        this.level.streak.stop()
+        this.level.streak.stop();
       }
 
       // Hit called after previous targets are skipped.
       // This ensures that a streak always start on the first hit target.
 
-      const hitTime = this.songTime - target.songTime
-      const onTimeMargin = target.onTimeDuration / 2
+      const hitTime = this.songTime - target.songTime;
+      const onTimeMargin = target.onTimeDuration / 2;
 
-      const early: boolean = hitTime < -onTimeMargin
-      const late: boolean = hitTime > onTimeMargin
+      const early: boolean = hitTime < -onTimeMargin;
+      const late: boolean = hitTime > onTimeMargin;
 
       if (early) {
-        this.level.streak.stop()
-        this.progress.changeBy(targetHitEarlyProgressImpact)
-        this.level.score.earlyPinch(target, this.songTime)
+        this.level.streak.stop();
+        this.progress.changeBy(targetHitEarlyProgressImpact);
+        this.level.score.earlyPinch(target, this.songTime);
       } else if (late) {
-        this.level.streak.stop()
-        this.progress.changeBy(targetHitLateProgressImpact)
-        this.level.score.latePinch(target, this.songTime)
+        this.level.streak.stop();
+        this.progress.changeBy(targetHitLateProgressImpact);
+        this.level.score.latePinch(target, this.songTime);
       } else {
         // on time.
-        this.level.streak.changeBy(targetHitOnTimeStreakImpact)
-        this.progress.changeBy(targetHitOnTimeProgressImpact)
-        this.level.score.onTimePinch(target, this.songTime, this.level.streak.current)
+        this.level.streak.changeBy(targetHitOnTimeStreakImpact);
+        this.progress.changeBy(targetHitOnTimeProgressImpact);
+        this.level.score.onTimePinch(
+          target,
+          this.songTime,
+          this.level.streak.current,
+        );
       }
 
-      this.progress.redraw()
+      this.progress.redraw();
 
-      this.level.streak.check()
+      this.level.streak.check();
 
       if (!config.disableSonification)
         target.sound.play({
-          volume: config.sonificationLevel
-        })
+          volume: config.sonificationLevel,
+        });
 
-      this.targetManager.destroyTarget(target)
+      this.targetManager.destroyTarget(target);
 
-      this.checkForTransition(layerIndex, nodeIndex)
-    })
+      this.checkForTransition(layerIndex, nodeIndex);
+    });
 
-    this.targetManager.addTarget(target)
+    this.targetManager.addTarget(target);
   }
 
   private checkForTransition(layerIndex: number, nodeIndex: number) {
@@ -203,19 +231,20 @@ export class PlayableLayer extends Layer {
       // Transition if auto skip is enabled, and the desired loop-count has been reached,
       // or if the player's progress is sufficient
       if (
-        (config.enableAutoSkip && this.level.score.getLoopCount() >= config.autoSkipThreshold) ||
+        (config.enableAutoSkip &&
+          this.level.score.getLoopCount() >= config.autoSkipThreshold) ||
         (this.progress.canProgress() && !config.disableLayerProgression)
       ) {
         // Enough progress, transition to next layer / end scene.
-        this.level.transitionLayers()
+        this.level.transitionLayers();
       } else {
         // Not enough progress, increment loop counter.
-        this.level.score.incrementLoopCount()
-        this.progress.setToStarting()
-        this.infoHud.updateLoopText()
+        this.level.score.incrementLoopCount();
+        this.progress.setToStarting();
+        this.infoHud.updateLoopText();
 
         if (config.autoSaveCSV) {
-          autoSaveToCSV(this.level.score.levelStats)
+          autoSaveToCSV(this.level.score.levelStats);
         }
       }
     }
@@ -225,64 +254,70 @@ export class PlayableLayer extends Layer {
    * Handles spawning nodes, it will spawn those that would happen soon according to the previewtime set in the layer.
    */
   private handleTargetCreation() {
-    if (!this.ready) return
+    if (!this.ready) return;
 
-    const layerTime = this.getDuration()
+    const layerTime = this.getDuration();
 
-    let previewTime = this.songTime_ + this.getPreviewTime()
+    let previewTime = this.songTime_ + this.getPreviewTime();
     if (this.songTime_ > 0) {
-      previewTime %= layerTime
+      previewTime %= layerTime;
     }
 
     if (this.data.nodes.length <= this.nextNodeIndex) {
       if (previewTime < this.oldTimePosition) {
-        this.nextNodeIndex = 0
+        this.nextNodeIndex = 0;
       } else {
-        return
+        return;
       }
     }
 
-    const nextNode = this.data.nodes[this.nextNodeIndex]
+    const nextNode = this.data.nodes[this.nextNodeIndex];
 
     // Calculate the time position of the next node in terms of the looped layer time
-    const nextNodeLoopTime = this.level.track.songTimePositionToTime(nextNode.timePosition) % layerTime
+    const nextNodeLoopTime =
+      this.level.track.songTimePositionToTime(nextNode.timePosition) %
+      layerTime;
 
     if (nextNodeLoopTime <= previewTime) {
       if ((nextNode as TrackPinchNode).finger !== undefined) {
-        this.createTarget(nextNode as TrackPinchNode, this.level.activeLayerIndex, this.nextNodeIndex)
+        this.createTarget(
+          nextNode as TrackPinchNode,
+          this.level.activeLayerIndex,
+          this.nextNodeIndex,
+        );
       }
-      this.nextNodeIndex++
+      this.nextNodeIndex++;
     }
-    this.oldTimePosition = previewTime
+    this.oldTimePosition = previewTime;
   }
 
   public preDelayStop() {
-    this.ready = false
-    this.metronome.stop()
-    this.targetManager.destroyTargets()
+    this.ready = false;
+    this.metronome.stop();
+    this.targetManager.destroyTargets();
   }
 
   public postDelayStop() {
-    this.infoHud.setVisible(false)
-    this.progress.setVisible(false)
+    this.infoHud.setVisible(false);
+    this.progress.setVisible(false);
   }
 
   public stop() {
-    this.preDelayStop()
-    this.postDelayStop()
+    this.preDelayStop();
+    this.postDelayStop();
   }
 
   public update(time: number) {
-    this.time = time
-    this.songTime_ = this.ready ? this.time - this.startTime : 0
-    this.handleTargetCreation()
+    this.time = time;
+    this.songTime_ = this.ready ? this.time - this.startTime : 0;
+    this.handleTargetCreation();
   }
 
   public getPreviewTime(): number {
     return this.level.track.songTimePositionToTime({
       bar: this.data.previewTime.bar + 1,
       step: this.data.previewTime.step + 1,
-      tick: this.data.previewTime.tick
-    })
+      tick: this.data.previewTime.tick,
+    });
   }
 }

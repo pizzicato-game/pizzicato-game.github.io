@@ -1,7 +1,13 @@
-import HandScene from '../scenes/handScene'
-import { absPath, assert } from '../core/common'
-import { config } from '../managers/storageManager'
-import { ColorObject, GameObject, ParticleEmitter, PhaserText, Tween } from '../core/phaserTypes'
+import HandScene from '../scenes/handScene';
+import { absPath, assert } from '../core/common';
+import { config } from '../managers/storageManager';
+import {
+  ColorObject,
+  GameObject,
+  ParticleEmitter,
+  PhaserText,
+  Tween,
+} from '../core/phaserTypes';
 import {
   streakFireOptions,
   streakInfoText,
@@ -11,30 +17,35 @@ import {
   streakParticleOptions,
   streakStartRequirement,
   streakTextOptions,
-  undefinedText
-} from '../core/config'
+  undefinedText,
+} from '../core/config';
 
 export class Streak extends GameObject {
-  private readonly hsv: ColorObject[]
+  private readonly hsv: ColorObject[];
 
-  private current_: number = 0
+  private current_: number = 0;
 
-  private onFire: boolean = false
+  private onFire: boolean = false;
 
-  private onFireTween: Tween | undefined
-  private streakText: PhaserText
-  private flame: ParticleEmitter
+  private onFireTween: Tween | undefined;
+  private streakText: PhaserText;
+  private flame: ParticleEmitter;
 
   constructor(scene: HandScene) {
-    super(scene, 'streak')
+    super(scene, 'streak');
 
-    this.hsv = Phaser.Display.Color.HSVColorWheel()
+    this.hsv = Phaser.Display.Color.HSVColorWheel();
 
     this.streakText = this.scene.add
-      .text(streakTextOptions.position.x, streakTextOptions.position.y, undefinedText, {
-        font: streakTextOptions.font,
-        color: streakTextOptions.color
-      })
+      .text(
+        streakTextOptions.position.x,
+        streakTextOptions.position.y,
+        undefinedText,
+        {
+          font: streakTextOptions.font,
+          color: streakTextOptions.color,
+        },
+      )
       .setVisible(false)
       .setOrigin(0.5, 0.5)
       .setScale(streakTextOptions.scale)
@@ -46,67 +57,71 @@ export class Streak extends GameObject {
         streakTextOptions.shadowColor,
         streakTextOptions.shadowBlurRadius,
         true,
-        true
-      )
+        true,
+      );
   }
 
   public preload() {
-    this.scene.load.image(streakParticleOptions.key, absPath(streakParticleOptions.path))
+    this.scene.load.image(
+      streakParticleOptions.key,
+      absPath(streakParticleOptions.path),
+    );
   }
 
   public unload() {
-    this.scene.textures.remove(streakParticleOptions.key)
+    this.scene.textures.remove(streakParticleOptions.key);
   }
 
   get current() {
-    return this.current_
+    return this.current_;
   }
 
   public changeBy(value: number) {
-    this.current_ = Math.max(0, this.current + value)
+    this.current_ = Math.max(0, this.current + value);
   }
 
   public check() {
     if (this.current_ === streakStartRequirement) {
-      this.start()
+      this.start();
     } else if (this.current_ > streakStartRequirement) {
-      this.continue()
+      this.continue();
     } else {
-      this.stop()
+      this.stop();
     }
   }
 
   private updateStreakText() {
-    this.streakText.setText(streakInfoText + this.current_.toString())
+    this.streakText.setText(streakInfoText + this.current_.toString());
   }
 
   private start() {
     // TODO: Possibly play sound.
-    this.updateStreakText()
-    this.streakText.setVisible(true)
+    this.updateStreakText();
+    this.streakText.setVisible(true);
   }
 
   public stop() {
     // TODO: Potentially play sound.
-    this.current_ = 0
-    this.onFire = false
-    if (this.onFireTween != undefined) this.scene.tweens.remove(this.onFireTween)
-    if (this.streakText != undefined) this.streakText.clearTint()
-    if (this.streakText != undefined) this.streakText.setVisible(false)
+    this.current_ = 0;
+    this.onFire = false;
+    if (this.onFireTween != undefined)
+      this.scene.tweens.remove(this.onFireTween);
+    if (this.streakText != undefined) this.streakText.clearTint();
+    if (this.streakText != undefined) this.streakText.setVisible(false);
     if (this.flame != undefined) {
-      this.flame.destroy()
+      this.flame.destroy();
     }
   }
 
   private continue() {
-    this.updateStreakText()
-    const wasOnFire: boolean = this.onFire
-    this.onFire = this.current_ >= streakOnFireRequirement
+    this.updateStreakText();
+    const wasOnFire: boolean = this.onFire;
+    this.onFire = this.current_ >= streakOnFireRequirement;
     if (!wasOnFire && this.onFire) {
       assert(
         streakOnFireColorWheelExtent > 0 && streakOnFireColorWheelExtent <= 255,
-        'Streak color wheel extent must be from 1 to 255'
-      )
+        'Streak color wheel extent must be from 1 to 255',
+      );
       this.onFireTween = this.scene.tweens.addCounter({
         from: 0,
         to: streakOnFireColorWheelExtent,
@@ -114,19 +129,21 @@ export class Streak extends GameObject {
         yoyo: true,
         onUpdate: tween => {
           if (this != undefined && this.hsv != undefined) {
-            const value = Math.floor(tween.getValue())
-            const top = this.hsv[value].color
-            const bottom = this.hsv[streakOnFireColorWheelExtent - value].color
-            if (this.streakText != undefined) this.streakText.setTint(top, top, bottom, bottom)
+            const value = Math.floor(tween.getValue());
+            const top = this.hsv[value].color;
+            const bottom = this.hsv[streakOnFireColorWheelExtent - value].color;
+            if (this.streakText != undefined)
+              this.streakText.setTint(top, top, bottom, bottom);
           }
         },
         onStop: () => {
-          if (this.onFireTween != undefined) this.scene.tweens.remove(this.onFireTween)
-        }
-      })
+          if (this.onFireTween != undefined)
+            this.scene.tweens.remove(this.onFireTween);
+        },
+      });
       if (!config.fancyEffectsDisabled) {
         if (this.flame != undefined) {
-          this.flame.destroy()
+          this.flame.destroy();
         }
         if (this.streakText != undefined) {
           // Create particles for flame
@@ -134,10 +151,10 @@ export class Streak extends GameObject {
             this.streakText.x,
             this.streakText.y,
             streakParticleOptions.key,
-            streakFireOptions
-          )
-          assert(streakTextOptions.depth != 0)
-          this.flame.setDepth(streakTextOptions.depth - 1)
+            streakFireOptions,
+          );
+          assert(streakTextOptions.depth != 0);
+          this.flame.setDepth(streakTextOptions.depth - 1);
         }
       }
     }
