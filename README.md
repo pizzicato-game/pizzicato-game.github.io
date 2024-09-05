@@ -1,6 +1,6 @@
 # Serious Game
 
-This is a serious game developed for the Master's course "Building Serious Games" IN4302 at TU Delft.
+This is a serious game developed for the Master's course "Building Serious Games" IN4302 at TU Delft. The publication accompanying it can be found [here](https://ieeexplore.ieee.org/document/10645594).
 
 ## Contributors
 
