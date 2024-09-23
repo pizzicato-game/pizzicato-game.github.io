@@ -1,3 +1,5 @@
+![5](https://github.com/user-attachments/assets/5177212a-fcff-4dc7-b25c-bbecc177b53b)
+
 # Serious Game
 
 This is a serious game developed for the Master's course "Building Serious Games" IN4302 at TU Delft. The publication accompanying it can be found [here](https://ieeexplore.ieee.org/document/10645594).
