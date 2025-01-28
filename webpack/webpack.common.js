@@ -44,6 +44,7 @@ module.exports = {
         { from: 'src/data', to: 'data' },
         { from: 'src/levels', to: 'levels' },
         { from: 'src/models', to: 'models' },
+        { from: 'src/css', to: 'css' },
         { from: 'pwa', to: '' },
         {
           from: './node_modules/@mediapipe/tasks-vision/wasm/',
