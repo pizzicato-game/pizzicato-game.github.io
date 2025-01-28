@@ -49,6 +49,11 @@ const config = {
   ],
 };
 
+function startGame() {
+  document.body.innerHTML = '';
+  const _game = new Phaser.Game(config);
+}
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: 'AIzaSyAHkhSVhXo1qrE3lYqXEh2ozwOgZJhk960',
@@ -99,6 +104,7 @@ function getValidNameEmailPassword() {
 }
 
 // Register function
+/*
 async function register(): Promise<void> {
   const [name, email, password] = getValidNameEmailPassword();
 
@@ -128,6 +134,7 @@ async function register(): Promise<void> {
       // ..
     });
 }
+*/
 
 // Login function
 async function login(): Promise<void> {
@@ -146,9 +153,7 @@ async function login(): Promise<void> {
 
       //alert('User logged in successfully!');
 
-      document.body.innerHTML = '';
-
-      const _game = new Phaser.Game(config);
+      startGame();
       // ...
     })
     .catch(error => {
@@ -182,7 +187,7 @@ function validatePassword(password: string): boolean {
 // }
 
 const form =
-  '<div id="content_container"><div id="form_container"><div id="form_header_container"><h2 id="form_header"> Pizzicato Login </h2></div><div id="form_content_container"><div id="form_content_inner_container"><input type="text" id="name" placeholder="Name"><input type="password" id="password" placeholder="Password"><div id="button_container"><button id="login_button">Login</button><button id="register_button">Register</button></div></div></div></div></div>';
+  '<div id="content_container"><div id="form_container"><div id="form_header_container"><h2 id="form_header"> Pizzicato Login </h2></div><div id="form_content_container"><div id="form_content_inner_container"><input type="text" id="name" placeholder="Name"><input type="password" id="password" placeholder="Password"><div id="button_container"><button id="login_button">Login</button><button id="guest_button">Play as Guest</button></div></div></div></div></div>';
 
 // Append the form to the document
 document.body.innerHTML += form;
@@ -192,7 +197,7 @@ document.body.innerHTML += form;
   'click',
   login,
 );
-(<HTMLInputElement>document.getElementById('register_button')).addEventListener(
+(<HTMLInputElement>document.getElementById('guest_button')).addEventListener(
   'click',
-  register,
+  startGame,
 );
