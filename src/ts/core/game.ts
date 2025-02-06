@@ -9,12 +9,9 @@ import Calibration from '../scenes/calibrationScene';
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { child, getDatabase, ref, set, update } from 'firebase/database';
+import { getAuth, signInWithEmailAndPassword, User } from 'firebase/auth';
+import { child, get, getDatabase, ref, set, update } from 'firebase/database';
+import { ConfigData } from './interfaces';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 /*
@@ -25,6 +22,10 @@ To add a new scene:
    Otherwise you will get the following error: "Scene not found for key: MySceneClassName"
 4. (Optional) To start in your scene, set initialScene = "MySceneClassName" in config.ts.
 */
+
+const loginScreenEnabled: boolean = true;
+
+export let currentUser: User | null = null;
 
 const config = {
   type: Phaser.WEBGL, // PHASER.CANVAS, PHASER.AUTO
@@ -50,7 +51,11 @@ const config = {
 };
 
 function startGame() {
-  document.body.innerHTML = '';
+  if (loginScreenEnabled) {
+    document.body.removeChild(
+      <HTMLElement>document.getElementById('login_screen'),
+    );
+  }
   const _game = new Phaser.Game(config);
 }
 
@@ -74,9 +79,32 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 
 // Type definition for user data
-interface UserData {
+export interface UserData {
   name?: string;
+  config?: string;
   lastLogin: string;
+}
+
+const newUserData: UserData = {
+  config: 'sonification_config',
+  lastLogin: 'Has not logged in yet',
+};
+
+const emailSuffix = '@pizzicato.com';
+
+function addEmailSuffix(name: string): string {
+  return name + emailSuffix;
+}
+
+export function removeEmailSuffix(email: string): string {
+  return email.replace(emailSuffix, '');
+}
+
+export function getCurrentUserName(): string {
+  if (currentUser) {
+    return removeEmailSuffix(currentUser.email!);
+  }
+  return 'guest';
 }
 
 function getValidNameEmailPassword() {
@@ -84,7 +112,7 @@ function getValidNameEmailPassword() {
   const name = (<HTMLInputElement>document.getElementById('name')).value;
   const password = (<HTMLInputElement>document.getElementById('password'))
     .value;
-  const email = name + '@pizzicato.com';
+  const email = addEmailSuffix(name);
 
   // Validate input fields
   if (!validateName(name)) {
@@ -138,18 +166,33 @@ async function register(): Promise<void> {
 
 // Login function
 async function login(): Promise<void> {
-  const [_, email, password] = getValidNameEmailPassword();
+  const [name, email, password] = getValidNameEmailPassword();
 
   signInWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
       // Signed up
-      const user = userCredential.user;
+      currentUser = userCredential.user;
 
       // Update user last login in Firebase Database
       const db = ref(database);
-      const updates = { lastLogin: new Date().toUTCString() };
+      const time = new Date().toUTCString();
+      const updates: UserData = { lastLogin: time };
 
-      update(child(db, `users/${user.uid}`), updates);
+      const user = `users/${currentUser.uid}`;
+      newUserData.name = name;
+      newUserData.lastLogin = time;
+
+      get(child(db, user))
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            update(child(db, user), updates);
+          } else {
+            update(child(db, user), newUserData);
+          }
+        })
+        .catch(err => {
+          console.info('LOGIN ERROR: ' + err);
+        });
 
       //alert('User logged in successfully!');
 
@@ -164,9 +207,86 @@ async function login(): Promise<void> {
     });
 }
 
+export async function getConfig(
+  configName: string | undefined,
+): Promise<ConfigData> {
+  return new Promise((resolve, reject) => {
+    if (!configName) {
+      reject('Undefined config name: resorting to default config');
+      return;
+    } else {
+      const db = ref(database);
+      get(child(db, `configs/${configName}`))
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            resolve(snapshot.val() as ConfigData);
+          } else {
+            reject(
+              'Config name snapshot does not exist: resorting to default config',
+            );
+          }
+        })
+        .catch(err => {
+          reject('Firebase get configs failed: ' + err);
+        });
+    }
+  });
+}
+
+export async function writeDataToCurrentUser(
+  dataId: string,
+  jsonData: unknown,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // Update user last login in Firebase Database
+    const userRef = ref(database, `users/${currentUser!.uid}/data/${dataId}`);
+
+    set(userRef, jsonData)
+      .then(() => {
+        resolve(
+          'Data written successfully for user "' + getCurrentUserName() + '"',
+        );
+      })
+      .catch(err => {
+        reject('Data not found for user "' + getCurrentUserName() + '":' + err);
+      });
+  });
+}
+
+// returns config data of the current user and the name of the config.
+export async function getCurrentUserConfig(): Promise<[ConfigData, string]> {
+  return new Promise((resolve, reject) => {
+    const db = ref(database);
+    get(child(db, `users/${currentUser!.uid}`))
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const userData: UserData = snapshot.val();
+          getConfig(userData.config)
+            .then((config: ConfigData) => {
+              if (userData.config) {
+                resolve([config, userData.config]);
+              } else {
+                reject('Undefined config name');
+              }
+            })
+            .catch(err => {
+              reject('Failed to retrieve config: ' + err);
+            });
+        } else {
+          reject(
+            'User id snapshot does not exist: resorting to default config',
+          );
+        }
+      })
+      .catch(err => {
+        reject('Firebase get users failed: ' + err);
+      });
+  });
+}
+
 // Email validation function
 function validateName(name: string): boolean {
-  const expression = /^[A-Za-z][A-Za-z0-9_]{7,29}$/;
+  const expression = /^[A-Za-z][A-Za-z0-9_]{3,29}$/;
   return expression.test(name);
 }
 
@@ -178,26 +298,40 @@ function validateEmail(email: string): boolean {
 
 // Password validation function
 function validatePassword(password: string): boolean {
-  return password.length >= 6; // Minimum password length of 6
+  return password.length >= 6; // Minimum password length
 }
 
-// Field validation function
-// function validateField(field: string | boolean): boolean {
-//   return field != null && field.toString().length > 0;
-// }
+if (loginScreenEnabled) {
+  const form = `
+    <div id="login_screen">
+      <div class="login-container">
+        <h2>Pizzicato Login</h2>
+        <div class="input-group">
+          <input type="text" id="name" name="name" placeholder="Name" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" name="password" placeholder="Password" required>
+        </div>
+        <div class="button-group">
+          <button id="login_button" class="login-button">Login</button>
+          <button id="guest_button" class="guest-button">Play as Guest</button>
+        </div>
+      </div>
+    </div>
+    <div id="background_image"></div>
+  `;
 
-const form =
-  '<div id="content_container"><div id="form_container"><div id="form_header_container"><h2 id="form_header"> Pizzicato Login </h2></div><div id="form_content_container"><div id="form_content_inner_container"><input type="text" id="name" placeholder="Name"><input type="password" id="password" placeholder="Password"><div id="button_container"><button id="login_button">Login</button><button id="guest_button">Play as Guest</button></div></div></div></div></div>';
+  // Append the form to the document
+  document.body.innerHTML += form;
 
-// Append the form to the document
-document.body.innerHTML += form;
-
-// Add event listeners
-(<HTMLInputElement>document.getElementById('login_button')).addEventListener(
-  'click',
-  login,
-);
-(<HTMLInputElement>document.getElementById('guest_button')).addEventListener(
-  'click',
-  startGame,
-);
+  (<HTMLButtonElement>document.getElementById('login_button')).addEventListener(
+    'click',
+    login,
+  );
+  (<HTMLButtonElement>document.getElementById('guest_button')).addEventListener(
+    'click',
+    startGame,
+  );
+} else {
+  startGame();
+}

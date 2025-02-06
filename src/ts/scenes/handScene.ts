@@ -8,7 +8,6 @@ import { assert } from '../core/common';
 import { config } from '../managers/storageManager';
 import { Graphics, Scene } from '../core/phaserTypes';
 import {
-  backgroundTextureKey,
   handLandmarkConnectionOptions,
   handLandmarkOptions,
   landmarkDepth,
@@ -18,9 +17,11 @@ import { background } from '../scenes/loadingScene';
 export default class HandScene extends Scene {
   public graphics: Graphics;
   public hand: Hand;
+  public bg: HTMLElement;
 
   constructor(sceneKey: string) {
     super(sceneKey);
+    this.bg = document.getElementById('background_image')!;
   }
 
   public preload() {}
@@ -32,9 +33,11 @@ export default class HandScene extends Scene {
     webcam.setVisibility(cameraVisibility);
 
     // These calls are required because calibration scene hides, tints, and re-textures the background.
-    background.setVisible(true);
+    background.setVisible(false);
+    document.getElementById('background_image')!;
+    this.bg.style.backgroundSize = 'cover';
+    this.bg.style.opacity = '1';
     this.clearBackgroundTint();
-    this.setBackgroundTexture(backgroundTextureKey);
     this.setOpacity(cameraOpacity);
 
     this.sound.pauseOnBlur = false;
@@ -71,12 +74,17 @@ export default class HandScene extends Scene {
   public setOpacity(cameraOpacity: number) {
     if (cameraOpacity == undefined) return;
     assert(cameraOpacity >= 0 && cameraOpacity <= 1);
-    background.setAlpha(1 - cameraOpacity);
+    const backgroundOpacity: number = 1 - cameraOpacity;
+    background.setAlpha(backgroundOpacity);
+    //this.bg.style.backgroundColor = 'rgba(0, 0, 0,' + backgroundOpacity.toString() + ')';
+    this.bg.style.opacity = backgroundOpacity.toString();
   }
 
   public setBackgroundTexture(textureKey: string) {
     // TODO: Add assert that textureKey is loaded.
     background.setTexture(textureKey);
+    this.bg.style.backgroundSize = '0 0';
+    background.setVisible(true);
   }
 
   public setBackgroundTint(color: number) {

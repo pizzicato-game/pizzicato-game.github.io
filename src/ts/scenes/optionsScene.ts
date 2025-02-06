@@ -3,7 +3,7 @@ import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { Checkbox } from '../ui/checkbox';
-import { loadData, saveConfigData } from '../managers/storageManager';
+import { config, loadData, saveConfigData } from '../managers/storageManager';
 import webcam from '../objects/webcam';
 import { ConfigData } from '../core/interfaces';
 import { EventEmitter, Sprite, Tween, Vector2 } from '../core/phaserTypes';
@@ -12,7 +12,6 @@ import {
   backButtonTexturePath,
   buttonPinchSoundKey,
   buttonPinchSoundPath,
-  configFilePath,
   defaultConfigFilePath,
   escapeKey,
   fingerColors,
@@ -68,17 +67,19 @@ export default class Options extends HandScene {
   constructor() {
     super(optionsScene);
 
-    loadData(configFilePath).then(async (result: ConfigData) => {
-      this.configData = result;
-      await loadData(defaultConfigFilePath).then((result: ConfigData) => {
-        this.defaultData = result;
-      });
+    loadData(defaultConfigFilePath).then((result: ConfigData) => {
+      this.defaultData = structuredClone(result);
+      this.configData = config;
     });
   }
 
-  private saveAndExit() {
+  private setConfig() {
     saveConfigData(this.configData);
     webcam.setVisibility(this.configData.enableCameraVisibility);
+  }
+
+  private saveAndExit() {
+    this.setConfig();
     //this.setOpacity(this.configData.cameraOpacity);
     if (this.rotateTween != undefined) {
       this.rotateTween.destroy();
@@ -302,7 +303,7 @@ export default class Options extends HandScene {
         if (checkbox.isChecked) {
           cameraOpacitySlider.draw();
         } else {
-          cameraOpacitySlider.setValue(this.defaultData['cameraOpacity']);
+          cameraOpacitySlider.setValue(this.configData['cameraOpacity']);
           opacityCallback(cameraOpacitySlider);
           this.setOpacity(0);
           cameraOpacitySlider.hide('Show Camera');
@@ -656,10 +657,11 @@ export default class Options extends HandScene {
 
     this.resetConfig.addPinchCallbacks({
       startPinch: async () => {
-        this.configData = await loadData(defaultConfigFilePath);
+        this.configData = structuredClone(this.defaultData);
         for (const option of this.options) {
           option.reset(this.configData);
         }
+        this.setConfig();
       },
       startHover: () => {
         this.resetConfig.setTintFill(uiHoverColor);
