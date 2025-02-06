@@ -241,7 +241,7 @@ export async function writeDataToCurrentUser(
     // Update user last login in Firebase Database
     const userRef = ref(database, `users/${currentUser!.uid}/data/${dataId}`);
 
-    update(userRef, jsonData)
+    set(userRef, jsonData)
       .then(() => {
         resolve(
           'Data written successfully for user "' + getCurrentUserName() + '"',
