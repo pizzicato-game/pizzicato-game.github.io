@@ -14,7 +14,7 @@
   "onTimeDuration": 500,
   "lateTimeDuration": 500,
   "enableCameraVisibility": false,
-  "cameraOpacity": 0.2,
+  "cameraOpacity": 0.0,
   "fancyEffectsDisabled": false,
   "disableVisualMetronome": false,
   "autoSaveCSV": false
