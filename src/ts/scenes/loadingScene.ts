@@ -47,8 +47,10 @@ export class LoadingScene extends Scene {
     background = this.add
       .sprite(0, 0, backgroundTextureKey)
       .setOrigin(0, 0)
-      .setAlpha(backgroundTextureOpacity)
-      .setDisplaySize(window.innerWidth, window.innerHeight);
+      .setVisible(false);
+    background.displayWidth = window.innerWidth;
+    background.displayHeight =
+      (window.innerWidth * background.height) / background.width;
 
     const loadingText: PhaserText = this.add
       .text(

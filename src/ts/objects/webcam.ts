@@ -60,16 +60,11 @@ class Webcam {
 
   private setupVideoElement(options: WebcamOptions) {
     this.video = document.body.appendChild(document.createElement('video'));
-    // 'Mandatory'
+    // Mandatory settings
     this.video.autoplay = true;
     this.video.muted = true;
     this.video.playsInline = true;
-    this.video.style.position = 'absolute';
-    this.video.style.top = '0';
-    this.video.style.left = '0';
-    this.video.style.bottom = '0';
-    this.video.style.zIndex = '-1';
-    this.video.style.pointerEvents = 'none';
+    // Configurable settings
     this.video.style.objectFit = options.objectFit; // DISCUSS: Slight but tolerable stretch of video?
     this.setWidth(options.width);
     this.setHeight(options.height);

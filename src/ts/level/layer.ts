@@ -169,6 +169,8 @@ export class PlayableLayer extends Layer {
 
         this.level.score.skippedPinch(previousTarget);
 
+        this.checkForTransition(layerIndex, previousTarget.nodeIndex);
+
         this.targetManager.destroyTarget(previousTarget);
       }
       if (previousTargets.length > 0) {
