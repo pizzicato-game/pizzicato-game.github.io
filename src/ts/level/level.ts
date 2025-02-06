@@ -285,6 +285,10 @@ export default class Level {
   }
 
   public abort() {
+    if (config.autoSaveCSV) {
+      this.score.saveLayerScores();
+      autoSaveToCSV(this.score.levelStats);
+    }
     this.stop();
     this.abortCallback();
   }

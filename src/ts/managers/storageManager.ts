@@ -80,7 +80,7 @@ export function autoSaveToCSV(data: LevelStats) {
   //saveCSV(data.id, levelStatsToCSV(data));
   if (currentUser) {
     const jsonData = JSON.parse(JSON.stringify(data));
-    writeDataToCurrentUser(data.id, jsonData)
+    writeDataToCurrentUser(data.id, structuredClone(jsonData))
       .then(result => {
         console.info('INFO: ' + result);
       })
