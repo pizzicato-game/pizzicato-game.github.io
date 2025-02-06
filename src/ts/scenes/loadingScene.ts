@@ -1,11 +1,11 @@
-import { loadData } from '../managers/storageManager';
+import { loadData, updateDefaultConfig } from '../managers/storageManager';
 import { absPath, initVariables } from '../core/common';
 import { PhaserText, Scene, Sprite } from '../core/phaserTypes';
 import {
   backgroundTextureKey,
-  backgroundTextureOpacity,
   backgroundTexturePath,
   configFilePath,
+  defaultConfigFilePath,
   electronScene,
   fingerSpriteKey,
   fingerSpritePath,
@@ -16,6 +16,7 @@ import {
 } from '../core/config';
 import webcam from '../objects/webcam';
 import handTracker from '../objects/handTracker';
+import { ConfigData } from '../core/interfaces';
 
 export let background: Sprite;
 
@@ -72,7 +73,15 @@ export class LoadingScene extends Scene {
     if (!webcam.found()) return;
 
     this.updateText(loadingText, 'Loading config data...');
-    await loadData(configFilePath);
+    await loadData(configFilePath).catch(err =>
+      this.updateText(loadingText, err),
+    );
+
+    await loadData(defaultConfigFilePath)
+      .then((result: ConfigData) => {
+        updateDefaultConfig(result);
+      })
+      .catch(err => this.updateText(loadingText, err));
 
     await handTracker
       .init(this.updateText.bind(this, loadingText))

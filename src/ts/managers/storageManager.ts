@@ -12,9 +12,14 @@ import {
 } from '../core/game';
 
 export let config: ConfigData;
+export let defaultConfig: ConfigData;
 
 function updateConfig(data: ConfigData) {
   config = data;
+}
+
+export function updateDefaultConfig(data: ConfigData) {
+  defaultConfig = data;
 }
 
 export function saveConfigData(data: ConfigData): void {
@@ -80,7 +85,7 @@ export function autoSaveToCSV(data: LevelStats) {
   //saveCSV(data.id, levelStatsToCSV(data));
   if (currentUser) {
     const jsonData = JSON.parse(JSON.stringify(data));
-    writeDataToCurrentUser(data.id, structuredClone(jsonData))
+    writeDataToCurrentUser(data.id, jsonData)
       .then(result => {
         console.info('INFO: ' + result);
       })

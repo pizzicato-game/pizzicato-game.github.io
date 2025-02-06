@@ -235,13 +235,13 @@ export async function getConfig(
 
 export async function writeDataToCurrentUser(
   dataId: string,
-  jsonData: unknown,
+  jsonData: object,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     // Update user last login in Firebase Database
     const userRef = ref(database, `users/${currentUser!.uid}/data/${dataId}`);
 
-    set(userRef, jsonData)
+    update(userRef, jsonData)
       .then(() => {
         resolve(
           'Data written successfully for user "' + getCurrentUserName() + '"',

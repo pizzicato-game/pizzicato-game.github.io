@@ -3,7 +3,12 @@ import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { Checkbox } from '../ui/checkbox';
-import { config, loadData, saveConfigData } from '../managers/storageManager';
+import {
+  config,
+  defaultConfig,
+  loadData,
+  saveConfigData,
+} from '../managers/storageManager';
 import webcam from '../objects/webcam';
 import { ConfigData } from '../core/interfaces';
 import { EventEmitter, Sprite, Tween, Vector2 } from '../core/phaserTypes';
@@ -12,7 +17,6 @@ import {
   backButtonTexturePath,
   buttonPinchSoundKey,
   buttonPinchSoundPath,
-  defaultConfigFilePath,
   escapeKey,
   fingerColors,
   mainMenuScene,
@@ -66,11 +70,6 @@ export default class Options extends HandScene {
 
   constructor() {
     super(optionsScene);
-
-    loadData(defaultConfigFilePath).then((result: ConfigData) => {
-      this.defaultData = structuredClone(result);
-      this.configData = config;
-    });
   }
 
   private setConfig() {
@@ -100,6 +99,9 @@ export default class Options extends HandScene {
 
   public async create() {
     super.create();
+
+    this.defaultData = defaultConfig;
+    this.configData = config;
 
     this.createOptions();
   }
