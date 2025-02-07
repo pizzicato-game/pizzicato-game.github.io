@@ -34,6 +34,7 @@
     "pwa/*",
     "@types/*",
     "typings/*",
+    "database/*",
     "tsconfig.json",
   ],
   "rules": {
