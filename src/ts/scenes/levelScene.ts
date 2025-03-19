@@ -11,11 +11,11 @@ export default class LevelScene extends HandScene {
 
   preload() {
     this.level = this.scene.settings.data as Level;
-    this.level.init(this);
   }
 
   create() {
     super.create();
+    this.level.init(this);
 
     if (this.level.hasCustomBackground()) {
       this.setBackgroundTexture(this.level.getBackgroundTextureKey());

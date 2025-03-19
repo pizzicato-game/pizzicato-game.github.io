@@ -11,6 +11,7 @@ export class ToggleButton extends Button {
 
   constructor(
     scene: HandScene,
+    textContent: string,
     x: number,
     y: number,
     onPinch: () => void = () => {},
@@ -19,7 +20,7 @@ export class ToggleButton extends Button {
     toggled: boolean = false,
     soundKey: string = 'pinch',
   ) {
-    super(scene, x, y, onPinch, spriteKey, soundKey);
+    super(scene, textContent, x, y, onPinch, spriteKey, soundKey);
     this.spriteKey = spriteKey;
     this.toggledSpriteKey = toggledSpriteKey;
     this.toggleState = toggled;

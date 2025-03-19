@@ -10,7 +10,7 @@ import Progress from '../level/progress';
 import HandScene from '../scenes/handScene';
 import InfoHUD from '../level/infoHud';
 import { config, autoSaveToCSV } from '../managers/storageManager';
-import { assert, normalizedToWindow } from '../core/common';
+import { assert, Vector2 } from '../core/common';
 import { TargetManager } from '../managers/targetManager';
 import Target from '../objects/target';
 import {
@@ -49,8 +49,8 @@ export class PlayableLayer extends Layer {
 
   private targetManager: TargetManager;
 
-  private readonly scene: HandScene;
-  private readonly metronome: Metronome;
+  private scene: HandScene;
+  private metronome: Metronome;
 
   private nextNodeIndex: number = 0;
   private songTime_: number = 0;
@@ -63,11 +63,14 @@ export class PlayableLayer extends Layer {
     super(level, data);
     this.scene = scene;
     this.data = data;
+    this.targetManager = new TargetManager();
+  }
 
+  public init(scene: HandScene) {
+    this.scene = scene;
     this.metronome = new Metronome(this.scene);
     this.progress = new Progress(this.scene);
     this.infoHud = new InfoHUD(this.scene, this.level);
-    this.targetManager = new TargetManager();
   }
 
   get songTime() {
@@ -125,7 +128,10 @@ export class PlayableLayer extends Layer {
     const target = new Target(
       this.scene,
       this.songTime_,
-      normalizedToWindow(node.normalizedPosition) /* screenPosition */,
+      new Vector2(
+        node.normalizedPosition[0] * this.scene.width,
+        node.normalizedPosition[1] * this.scene.height,
+      ) /* screenPosition */,
       this.getPreviewTime() /* lifetime */,
       this.level.track.getSoundKey(
         this.data,

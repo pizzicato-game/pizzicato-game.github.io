@@ -15,7 +15,7 @@ import {
 import { background } from '../scenes/loadingScene';
 
 export default class HandScene extends Scene {
-  public graphics: Graphics;
+  public graphicsObject: Graphics;
   public hand: Hand;
   public bg: HTMLElement;
   public width: number;
@@ -42,39 +42,32 @@ export default class HandScene extends Scene {
     // These calls are required because calibration scene hides, tints, and re-textures the background.
     background.setVisible(false);
     document.getElementById('background_image')!;
-    this.bg.style.backgroundSize = 'cover';
     this.bg.style.opacity = '1';
+    this.setBackgroundTexture('background');
     background.clearTint();
     this.setOpacity(cameraOpacity);
 
     this.sound.pauseOnBlur = false;
 
-    this.graphics = this.add.graphics();
-    this.graphics.setDepth(landmarkDepth);
+    this.graphicsObject = this.add.graphics();
+    this.graphicsObject.setDepth(landmarkDepth);
 
     this.hand = new Hand(this);
   }
 
   public update(_time: number, _delta: number) {
-    this.graphics.clear();
+    webcam.video.width = this.game.canvas.clientWidth;
+    webcam.video.height = this.game.canvas.clientHeight;
+
+    this.graphicsObject.clear();
 
     this.hand.update();
 
-    drawHandLandmarks(this.graphics, handLandmarkOptions, 0);
+    drawHandLandmarks(this.graphicsObject, handLandmarkOptions, 0);
     drawHandLandmarkConnections(
-      this.graphics,
+      this.graphicsObject,
       handLandmarkConnectionOptions,
       0,
-    );
-
-    // TODO: When the hand goes off screen, phaser graphics has nothing to render and does
-    // some sort of strange coordinate system offseting which causes a noticeable
-    // shift of the game sprites. Might be fixed by resizing canvas continuously here.
-
-    // This fixes a thin line on the bottom of the screen due to webcam being in the background.
-    background.setDisplaySize(
-      document.body.clientWidth,
-      document.body.clientHeight + 1,
     );
   }
 
@@ -90,6 +83,7 @@ export default class HandScene extends Scene {
   public setBackgroundTexture(textureKey: string) {
     // TODO: Add assert that textureKey is loaded.
     background.setTexture(textureKey);
+    background.setDisplaySize(this.width, this.height);
     this.bg.style.backgroundSize = '0 0';
     background.setVisible(true);
   }

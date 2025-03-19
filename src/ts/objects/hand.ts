@@ -397,8 +397,14 @@ export class Hand extends GameObject {
         handTracker.getNormalizedLandmarkPosition(finger.landmarkIndex);
       const foundFinger: boolean = normalizedPosition !== undefined;
       if (foundFinger) {
-        // TODO: Scale to screen.
-        finger.setPosition(position!.x, position!.y);
+        const size: Vector2 = new Vector2(
+          this.scene.scale.width,
+          this.scene.scale.height,
+        );
+        finger.setPosition(
+          normalizedPosition!.x * size.x,
+          normalizedPosition!.y * size.y,
+        );
       }
       setInteraction(finger, foundFinger);
       // When the hand goes off screen, send pinch end and hover end events to all observers.
@@ -426,43 +432,36 @@ export class Hand extends GameObject {
 
   // Returns hand distance from camera in centimeters or 0 if hand was not recognized.
   calculateHandDistance(handIndex: HandIndex = 0): number {
-    // TODO: Fix scaling.
-    const pos1: Vector2 | undefined = handTracker.getLandmarkPosition(
+    const pos1: Vector2 | undefined = handTracker.getNormalizedLandmarkPosition(
       HandLandmarkIndex.INDEX_FINGER_MCP,
       handIndex,
     );
-    const pos2: Vector2 | undefined = handTracker.getLandmarkPosition(
+    const pos2: Vector2 | undefined = handTracker.getNormalizedLandmarkPosition(
       HandLandmarkIndex.PINKY_MCP,
       handIndex,
     );
-    const pos3: Vector2 | undefined = handTracker.getLandmarkPosition(
+    const pos3: Vector2 | undefined = handTracker.getNormalizedLandmarkPosition(
       HandLandmarkIndex.WRIST,
       handIndex,
     );
-    let distanceWidth: number = 0;
-    let distanceHeight: number = 0;
-    const screenSize: number = this.scene.scale.width * this.scene.scale.height;
+    let distanceWidth2: number = 0;
+    let distanceHeight2: number = 0;
     if (pos1 !== undefined && pos2 !== undefined) {
       const pos4 = new Vector2((pos1.x + pos2.x) / 2, (pos1.y + pos2.y) / 2);
-
-      distanceWidth = Math.sqrt(
-        ((pos2.x - pos1.x) / screenSize) ** 2 +
-          ((pos2.y - pos1.y) / screenSize) ** 2,
-      );
+      distanceWidth2 = pos2.distanceSq(pos1);
       if (pos3 !== undefined) {
-        distanceHeight = Math.sqrt(
-          ((pos3.x - pos4.x) / screenSize) ** 2 +
-            ((pos3.y - pos4.y) / screenSize) ** 2,
-        );
+        distanceHeight2 = pos3.distanceSq(pos4);
       }
     }
-    if (distanceWidth == 0 || distanceHeight == 0) {
+    if (distanceWidth2 == 0 || distanceHeight2 == 0) {
       return 0;
     }
-    const distanceOnScreen = Math.max(
-      distanceWidth / palmWidth,
-      distanceHeight / palmHeight,
+    let distanceOnScreen = Math.max(
+      Math.sqrt(distanceWidth2) / palmWidth,
+      Math.sqrt(distanceHeight2) / palmHeight,
     );
-    return ((palmWidth * focalLength) / distanceOnScreen / screenSize) * 100;
+    // Multiplied by 10 to convert to centimeters.
+    distanceOnScreen *= 10;
+    return (palmWidth * focalLength) / distanceOnScreen;
   }
 }

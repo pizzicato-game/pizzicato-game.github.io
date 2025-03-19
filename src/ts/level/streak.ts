@@ -36,15 +36,11 @@ export class Streak extends GameObject {
     this.hsv = Phaser.Display.Color.HSVColorWheel();
 
     this.streakText = this.scene.add
-      .text(
-        streakTextOptions.position.x,
-        streakTextOptions.position.y,
-        undefinedText,
-        {
-          font: streakTextOptions.font,
-          color: streakTextOptions.color,
-        },
-      )
+      .text(scene.width * 0.05, scene.height * 0.05, undefinedText, {
+        font: streakTextOptions.font,
+        color: streakTextOptions.color,
+      })
+      .setOrigin(0.5, 0.5)
       .setVisible(false)
       .setScale(streakTextOptions.scale)
       .setDepth(streakTextOptions.depth)

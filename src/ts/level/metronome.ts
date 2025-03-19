@@ -11,7 +11,6 @@ import {
 import {
   countdownTextureOptions,
   metronomeMinimumBarCount,
-  metronomeOptions,
   undefinedText,
 } from '../core/config';
 
@@ -32,6 +31,7 @@ export default class Metronome extends GameObject {
         font: '240px Arial',
         color: 'white',
       })
+      .setOrigin(0.5, 0.5)
       .setDepth(30);
     this.setVisible(false);
   }
@@ -59,8 +59,8 @@ export default class Metronome extends GameObject {
     this.setVisible(false);
     if (this.scene != undefined) {
       this.scene.time.removeEvent(this.timer);
-      this.scene.sound.stopByKey(metronomeOptions.highKey);
-      this.scene.sound.stopByKey(metronomeOptions.lowKey);
+      this.scene.sound.stopByKey('metronomeHigh');
+      this.scene.sound.stopByKey('metronomeLow');
       if (this.shrinkTween != undefined)
         this.scene.tweens.remove(this.shrinkTween);
     }
@@ -91,9 +91,7 @@ export default class Metronome extends GameObject {
     const totalBeats = beatsPerBar * barCount;
     const beatInBar = this.beat % beatsPerBar;
     const finalBeat = beatInBar == 0;
-    const soundKey = finalBeat
-      ? metronomeOptions.highKey
-      : metronomeOptions.lowKey;
+    const soundKey = finalBeat ? 'metronomeHigh' : 'metronomeLow';
 
     if (this.beat >= totalBeats) {
       this.setVisible(false);

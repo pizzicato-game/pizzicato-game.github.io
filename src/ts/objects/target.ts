@@ -137,7 +137,13 @@ export default class Target extends MatterSprite {
     this.outerRing.setScale(this.spriteScale * outerRingStartScale);
     this.outerRing.setDepth(outerRingDepth);
 
-    this.targetText = new PhaserText(this.scene, 0, 0, undefinedText, {});
+    this.targetText = new PhaserText(
+      this.scene,
+      0,
+      0,
+      undefinedText,
+      {},
+    ).setOrigin(0.5, 0.5);
 
     this.addTargetText();
 
@@ -156,16 +162,18 @@ export default class Target extends MatterSprite {
   }
 
   private addTargetText() {
-    this.targetText = this.scene.add.text(
-      this.x,
-      this.y,
-      // Node count starts from 1 (humans).
-      (this.nodeIndex + 1).toString(),
-      {
-        font: targetTextOptions.font,
-        color: targetTextOptions.color,
-      },
-    );
+    this.targetText = this.scene.add
+      .text(
+        this.x,
+        this.y,
+        // Node count starts from 1 (humans).
+        (this.nodeIndex + 1).toString(),
+        {
+          font: targetTextOptions.font,
+          color: targetTextOptions.color,
+        },
+      )
+      .setOrigin(0.5, 0.5);
     this.targetText.setDepth(targetTextDepth);
   }
 
@@ -189,16 +197,16 @@ export default class Target extends MatterSprite {
   }
 
   private setupTweens() {
-    if (!config.fancyEffectsDisabled) {
-      // Make target spin on repeat.
-      this.rotateTween = this.scene.tweens.add({
-        targets: [this],
-        rotation: 2 * Math.PI,
-        ease: targetRotationEase,
-        duration: targetRotationDuration,
-        repeat: -1,
-      });
-    }
+    //if (!config.fancyEffectsDisabled) {
+    // Make target spin on repeat.
+    this.rotateTween = this.scene.tweens.add({
+      targets: [this],
+      rotation: 2 * Math.PI,
+      ease: targetRotationEase,
+      duration: targetRotationDuration,
+      repeat: -1,
+    });
+    //}
 
     // Shrink target
     this.earlyTween = this.createTween(

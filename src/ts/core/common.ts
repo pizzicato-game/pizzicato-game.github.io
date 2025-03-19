@@ -62,22 +62,6 @@ export function loadJSONData(filePath: string): Promise<string> {
   //return fs.readFileSync(filePath, 'utf8')
 }
 
-export function listLevelDirectories(
-  levelListFilePath: string,
-): Promise<string[]> {
-  return new Promise<string[]>(async (resolve, reject) => {
-    await loadJSONData(absPath(levelListFilePath))
-      .then((result: unknown) => {
-        const list = result as Array<string>;
-        resolve(list);
-      })
-      .catch(() => {
-        reject([]);
-      });
-  });
-  //return fs.readdirSync(parentDir, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
-}
-
 export function fileExists(_absoluteFilePath: string): boolean {
   return true;
   //return fs.existsSync(absoluteFilePath)

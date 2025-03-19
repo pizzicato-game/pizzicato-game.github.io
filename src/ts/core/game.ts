@@ -12,8 +12,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, User } from 'firebase/auth';
 import { child, get, getDatabase, ref, set, update } from 'firebase/database';
 import { ConfigData } from './interfaces';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+
 /*
 To add a new scene:
 1. import MySceneClassName from "scenes/mySceneClassName";
@@ -33,7 +32,7 @@ const config = {
   height: 1080,
   scale: {
     // Fit to window
-    mode: Phaser.Scale.ScaleModes.FIT,
+    mode: Phaser.Scale.ScaleModes.HEIGHT_CONTROLS_WIDTH,
     // Center vertically and horizontally
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },

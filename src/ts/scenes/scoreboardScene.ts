@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { config, saveToCSV, autoSaveToCSV } from '../managers/storageManager';
 import { LevelStats } from '../core/interfaces';
 import Level from '../level/level';
-import { Sprite } from '../core/phaserTypes';
+import { Sprite, Vector2 } from '../core/phaserTypes';
 import { escapeKey, scoreboardBackgroundAudioFeintness } from '../core/config';
 
 import { ToggleButton } from '../ui/toggleButton';
@@ -26,7 +26,7 @@ export default class Scoreboard extends HandScene {
   }
 
   private exit() {
-    this.level.removeBackgroundAudio(this);
+    this.level.removeBackgroundAudio();
     this.scene.start('mainMenu');
   }
 
@@ -41,19 +41,28 @@ export default class Scoreboard extends HandScene {
   create() {
     super.create();
 
-    this.back = new Button(this, this.center.x, this.height * 0.9, () => {
-      this.exit();
-    });
+    this.back = new Button(
+      this,
+      'BACK',
+      this.center.x,
+      this.height - 100,
+      () => {
+        this.exit();
+      },
+    );
 
+    const muteOffset: Vector2 = new Vector2(150 / 2);
     this.mute = new ToggleButton(
       this,
-      this.center.x + this.width * 0.45,
-      this.height * 0.9,
+      '',
+      this.width - muteOffset.x,
+      this.height - muteOffset.y,
       () => {
         this.mute.toggle();
       },
-      'unmute',
       'mute',
+      'unmute',
+      true,
     );
 
     this.level.addBackgroundAudio(this, {
@@ -71,16 +80,11 @@ export default class Scoreboard extends HandScene {
     });
 
     if (!config.autoSaveCSV) {
-      this.save = new Button(
-        this,
-        this.center.x - this.width * leftButtonOffset,
-        this.height * buttonBottomLevel,
-        () => {
-          saveToCSV(this.levelStats);
-          // Optionally hide the save CSV button after file is saved.
-          //setInteraction(this.saveButton, false)
-        },
-      );
+      this.save = new Button(this, 'SAVE CSV', 200, this.height - 100, () => {
+        saveToCSV(this.levelStats);
+        // Optionally hide the save CSV button after file is saved.
+        //setInteraction(this.saveButton, false)
+      });
     }
 
     //--------------------------------------------------------

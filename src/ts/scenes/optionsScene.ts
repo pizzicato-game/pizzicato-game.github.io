@@ -15,6 +15,7 @@ import {
   fingerColors,
   optionsCheckboxOffset,
   optionsSliderLabelOffset,
+  targetGlowOptions,
   thumbFingerId,
   undefinedText,
 } from '../core/config';
@@ -25,8 +26,12 @@ export default class Options extends HandScene {
 
   private back: Button;
   private resetConfig: Button;
+  private onTimeDurationLimits: Vector2;
 
+  private targetExample: Sprite;
   private rotateTween: Tween;
+  private glowTween: Tween;
+  private glow: Phaser.FX.Glow | undefined;
 
   options: (Slider | Checkbox)[] = [];
 
@@ -47,16 +52,40 @@ export default class Options extends HandScene {
     if (this.rotateTween != undefined) {
       this.rotateTween.destroy();
     }
+    if (this.glowTween != undefined) {
+      this.glowTween.destroy();
+    }
+    if (this.glow != undefined) {
+      this.glow.destroy();
+    }
     this.scene.start('mainMenu');
   }
 
-  public async create() {
+  public create() {
     super.create();
 
     this.defaultData = defaultConfig;
     this.configData = config;
+    this.onTimeDurationLimits = new Vector2(50, 1000);
 
     this.createOptions();
+  }
+
+  private normalizeDuration(duration: number) {
+    if (duration < 0) {
+      return 0.001; // Handle negative durations
+    }
+
+    const normalizedDuration =
+      (duration - this.onTimeDurationLimits.x) /
+      (this.onTimeDurationLimits.y - this.onTimeDurationLimits.x);
+
+    // Ensure the normalized duration is within the 0-1 range
+    return 1.0 - Math.max(0, Math.min(1, normalizedDuration));
+  }
+
+  private setGlowTimeScale(duration: number) {
+    this.glowTween.setTimeScale(this.normalizeDuration(duration));
   }
 
   private createOptions() {
@@ -65,9 +94,12 @@ export default class Options extends HandScene {
       this.height * 0.03,
     );
 
+    const halfButtonGapX: number = this.width * 0.15;
+
     this.back = new Button(
       this,
-      this.center.x - this.width * 0.1,
+      'BACK',
+      this.center.x - halfButtonGapX,
       this.height * 0.9,
       () => {
         this.saveAndExit();
@@ -75,13 +107,16 @@ export default class Options extends HandScene {
     );
     this.resetConfig = new Button(
       this,
-      this.center.x + this.width * 0.1,
+      'RESET TO\nDEFAULT',
+      this.center.x + halfButtonGapX,
       this.height * 0.9,
       async () => {
-        this.configData = structuredClone(this.defaultData);
+        console.info('INFO: Reset config data to defaults');
         for (const option of this.options) {
-          option.reset(this.configData);
+          option.reset(this.defaultData);
         }
+        this.setGlowTimeScale(this.defaultData['onTimeDuration'] / 2);
+        this.configData = structuredClone(this.defaultData);
         this.setConfig();
       },
     );
@@ -128,7 +163,7 @@ export default class Options extends HandScene {
 
     // --------------------------------------------------------
 
-    const targetExample = this.add
+    this.targetExample = this.add
       .sprite(
         this.width * 0.5,
         this.height * 0.1 + this.height * 0.08 * 0 + this.height * 0.15,
@@ -138,17 +173,35 @@ export default class Options extends HandScene {
       .setScale(this.configData['targetSize']);
     // Make target spin on repeat.
     this.rotateTween = this.tweens.add({
-      targets: [targetExample],
+      targets: [this.targetExample],
       rotation: 2 * Math.PI,
       ease: 'Power0',
       duration: 1000,
       repeat: -1,
     });
+    this.glow = this.targetExample.postFX.addGlow(
+      targetGlowOptions.color,
+      0,
+      0,
+      false,
+      targetGlowOptions.quality,
+      targetGlowOptions.distance,
+    );
+    const glowDuration: number = this.configData['onTimeDuration'] / 2;
+    this.glowTween = this.tweens.add({
+      targets: this.glow,
+      outerStrength: targetGlowOptions.outerStrength,
+      yoyo: true,
+      duration: glowDuration,
+      ease: targetGlowOptions.ease,
+      repeat: -1,
+    });
+    this.setGlowTimeScale(glowDuration);
     if (
       this.configData['fancyEffectsDisabled'] &&
-      this.rotateTween != undefined
+      this.glowTween != undefined
     ) {
-      this.rotateTween.pause();
+      this.glowTween.pause();
     }
     const targetScaleSlider = new Slider(
       this,
@@ -162,7 +215,7 @@ export default class Options extends HandScene {
         slider.label!.setText('Target Scale: ' + slider.getStringValue());
         const sliderValue: number = slider.getValue();
         this.configData[slider.key] = sliderValue;
-        targetExample.setScale(sliderValue);
+        this.targetExample.setScale(sliderValue);
       },
     );
     this.options.push(targetScaleSlider);
@@ -381,16 +434,25 @@ export default class Options extends HandScene {
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
-      'Disable Fancy Effects',
+      'Disable Post-Processing',
       this.configData,
       'fancyEffectsDisabled',
       (checkbox: Checkbox) => {
         this.configData[checkbox.key] = checkbox.isChecked;
         if (checkbox.isChecked) {
-          if (this.rotateTween != undefined) this.rotateTween.pause();
+          if (this.glowTween != undefined) {
+            this.glowTween.restart();
+            this.glowTween.pause();
+          }
+          if (this.glow != undefined) {
+            this.targetExample.postFX.disable();
+          }
         } else if (!checkbox.isChecked) {
-          if (this.rotateTween != undefined && targetExample != undefined)
-            this.rotateTween.resume();
+          if (this.glowTween != undefined && this.targetExample != undefined)
+            this.glowTween.resume();
+          if (this.glow != undefined) {
+            this.targetExample.postFX.enable();
+          }
         }
       },
     );
@@ -409,12 +471,13 @@ export default class Options extends HandScene {
       new Vector2(0, optionsSliderLabelOffset.y),
       this.configData,
       'onTimeDuration',
-      new Vector2(50, 1000),
+      this.onTimeDurationLimits,
       (slider: Slider) => {
         slider.label!.setText(
           'On Time Duration: ' + slider.getStringValue() + ' ms',
         );
         this.configData[slider.key] = slider.getValue();
+        this.setGlowTimeScale(this.configData['onTimeDuration'] / 2);
       },
     ).setIsInteger(true);
     this.options.push(onTimeDurationSlider);

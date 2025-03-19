@@ -56,8 +56,6 @@ export interface WebcamOptions {
   visible: boolean;
   flip: boolean;
   opacity: number;
-  width: number;
-  height: number;
   objectFit: string; // 'fill', etc
 }
 

@@ -8,13 +8,15 @@ class Webcam {
 
   public async init(
     options: WebcamOptions,
+    width: number,
+    height: number,
     progressCallback: (text: string) => void,
   ): Promise<boolean | string | string[]> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise<boolean | string | string[]>(async (resolve, reject) => {
-      progressCallback('Loading webcam...');
+      progressCallback('LOADING WEBCAM...');
 
-      this.setupVideoElement(options);
+      this.setupVideoElement(options, width, height);
 
       // From: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
       // To select a webmca use mediaDevices.enumerateDevices() and add set
@@ -50,29 +52,25 @@ class Webcam {
     this.video.style.visibility = visible ? 'shown' : 'hidden';
   }
 
-  private setWidth(width: number) {
-    this.video.width = width;
-  }
-
-  private setHeight(height: number) {
-    this.video.height = height;
-  }
-
-  private setupVideoElement(options: WebcamOptions) {
+  private setupVideoElement(
+    options: WebcamOptions,
+    width: number,
+    height: number,
+  ) {
     this.video = document.body.appendChild(document.createElement('video'));
     // Mandatory settings
     this.video.autoplay = true;
     this.video.muted = true;
     this.video.playsInline = true;
+    this.video.width = width;
+    this.video.height = height;
     // Configurable settings
-    this.video.style.objectFit = options.objectFit; // DISCUSS: Slight but tolerable stretch of video?
-    this.setWidth(options.width);
-    this.setHeight(options.height);
+    //this.video.style.objectFit = options.objectFit; // DISCUSS: Slight but tolerable stretch of video?
     if (options.flip) {
       this.video.style.cssText +=
-        '-moz-transform: scale(-1, 1); \
-         -webkit-transform: scale(-1, 1); -o-transform: scale(-1, 1); \
-         transform: scale(-1, 1); filter: FlipH;';
+        '-moz-transform: translate(-50%, -50%) scale(-1, 1); \
+         -webkit-transform: translate(-50%, -50%) scale(-1, 1); -o-transform: translate(-50%, -50%) scale(-1, 1); \
+         transform: translate(-50%, -50%) scale(-1, 1); filter: FlipH;';
     }
     this.setVisibility(false); // Only show webcam after landmarks are pre-cached.
   }

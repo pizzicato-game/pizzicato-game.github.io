@@ -6,7 +6,7 @@ import { PlayableLayer } from '../level/layer';
 import { Streak } from '../level/streak';
 import { Score } from '../level/score';
 import { config, autoSaveToCSV } from '../managers/storageManager';
-import { AudioTrack, SoundConfig } from '../core/phaserTypes';
+import { AudioTrack, Scene, SoundConfig } from '../core/phaserTypes';
 import {
   invalidBpmIndex,
   layerStartTimeDelay,
@@ -24,7 +24,7 @@ export default class Level {
   private abortCallback: () => void = () => {};
 
   public track: Track;
-  public scene: HandScene;
+  public scene: HandScene | Scene;
   public streak: Streak;
   public score: Score;
 
@@ -33,9 +33,21 @@ export default class Level {
   private activeAudioTracks: AudioTrack[] = [];
   private bpmIndex_: number = invalidBpmIndex;
 
-  constructor(trackKey: string) {
+  constructor(scene: Scene, trackKey: string) {
+    this.scene = scene;
     this.trackKey_ = trackKey;
-    this.track = new Track(this.trackKey_);
+    this.track = new Track(scene, this.trackKey_);
+  }
+
+  public preload(scene: HandScene) {
+    this.scene = scene;
+    this.preloadPreview();
+    this.track.preload(scene);
+    this.preloadLayers();
+  }
+
+  public unload() {
+    this.track.unload();
   }
 
   public setBPM(bpmIndex: number) {
@@ -57,9 +69,11 @@ export default class Level {
 
   public init(scene: HandScene) {
     this.scene = scene;
-    this.streak = new Streak(this.scene);
+    this.streak = new Streak(this.scene as HandScene);
     this.score = new Score(this.track);
-    this.preloadLayers();
+    this.playableLayers.forEach((layer: PlayableLayer) => {
+      layer.init(this.scene as HandScene);
+    });
   }
 
   public hasCustomBackground(): boolean {
@@ -78,31 +92,36 @@ export default class Level {
     return this.trackKey + '/' + levelPreviewFileName;
   }
 
-  public preloadTrack(scene: HandScene) {
+  private preloadPreview() {
     const previewFile = levelDir + this.getPreviewVideoKey();
     const backgroundFile = levelDir + this.getBackgroundTextureKey();
 
     if (fileExistsRelative(previewFile)) {
-      scene.load.video(this.getPreviewVideoKey(), absPath(previewFile), true);
+      this.scene.load.video(
+        this.getPreviewVideoKey(),
+        absPath(previewFile),
+        true,
+      );
     }
     if (fileExistsRelative(backgroundFile)) {
-      scene.load.image(this.getBackgroundTextureKey(), absPath(backgroundFile));
+      this.scene.load.image(
+        this.getBackgroundTextureKey(),
+        absPath(backgroundFile),
+      );
     }
-    this.track.preload(scene);
-  }
-
-  public unloadTrack(scene: HandScene) {
-    this.track.unload(scene);
   }
 
   private preloadLayers() {
-    this.track.preloadNotes(this.scene);
     this.playableLayers = [];
 
     this.track.forEachLayer(
       undefined,
       (layer: PlayableTrackLayerData, _layerIndex: number) => {
-        const playableLayer = new PlayableLayer(this.scene, this, layer);
+        const playableLayer = new PlayableLayer(
+          this.scene as HandScene,
+          this,
+          layer,
+        );
         this.playableLayers.push(playableLayer);
       },
     );
@@ -113,13 +132,13 @@ export default class Level {
       layer.unload();
     });
 
-    this.track.unloadNotes(this.scene);
+    this.track.unload();
   }
 
   public start(finishCallback: () => void, abortCallback: () => void) {
     this.activeLayerIndex = 0;
 
-    this.removeBackgroundAudio(this.scene);
+    this.removeBackgroundAudio();
 
     this.playableLayers.forEach((layer: PlayableLayer) => {
       layer.stop();
@@ -145,7 +164,7 @@ export default class Level {
       this.bpmIndex_ != invalidBpmIndex,
       'Set BPM before adding background audio to level',
     );
-    this.removeBackgroundAudio(scene);
+    this.removeBackgroundAudio();
     this.activeAudioTracks = this.track.addBackgroundAudioTracks(
       scene,
       soundConfig,
@@ -154,10 +173,10 @@ export default class Level {
     );
   }
 
-  public removeBackgroundAudio(scene: HandScene) {
+  public removeBackgroundAudio() {
     this.activeAudioTracks.forEach((track: AudioTrack) => {
       track.stop();
-      scene.sound.remove(track);
+      this.scene.sound.remove(track);
     });
     this.activeAudioTracks = [];
   }
@@ -204,7 +223,7 @@ export default class Level {
     }
 
     this.addBackgroundAudio(
-      this.scene,
+      this.scene as HandScene,
       {
         loop: true,
         volume: config.backgroundMusicLevel,
@@ -239,7 +258,7 @@ export default class Level {
       const previousLayer: PlayableLayer = this.getActiveLayer();
       previousLayer.preDelayStop();
 
-      this.removeBackgroundAudio(this.scene);
+      this.removeBackgroundAudio();
 
       this.activeLayerIndex++;
       const activeIndex: number = this.activeLayerIndex;
@@ -263,9 +282,8 @@ export default class Level {
   }
 
   private stop() {
-    this.removeBackgroundAudio(this.scene);
+    this.removeBackgroundAudio();
     this.streak.stop();
-    this.unloadLayers();
   }
 
   public end() {

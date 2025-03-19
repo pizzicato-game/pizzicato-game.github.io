@@ -1,5 +1,5 @@
 import { TextOptions } from '../core/interfaces';
-import { assert, normalizedToWindow } from '../core/common';
+import { assert } from '../core/common';
 import Level from '../level/level';
 import { config } from '../managers/storageManager';
 import HandScene from '../scenes/handScene';
@@ -44,11 +44,16 @@ export default class InfoHUD extends GameObject {
   }
 
   private addSkipButton() {
-    this.skipButton = new Button(this.scene, this.scene.width, 0, () => {
-      setInteraction(this.skipButton, false);
-      this.level.transitionLayers();
-    }).setOrigin(1, 0);
-    setInteraction(this.skipButton, false);
+    this.skipButton = new Button(
+      this.scene,
+      'SKIP LAYER',
+      this.scene.width - 200,
+      this.scene.height - 100,
+      () => {
+        setInteraction(this.skipButton, false);
+        this.level.transitionLayers();
+      },
+    );
     this.updateSkipButtonAvailability(false);
   }
 
@@ -61,6 +66,11 @@ export default class InfoHUD extends GameObject {
     if (this.loopText != undefined) this.loopText.setVisible(visible);
     if (this.infoBackground != undefined)
       this.infoBackground.setVisible(visible);
+    if (this.skipButton != undefined) {
+      this.skipButton.setVisible(visible);
+      if (this.skipButton.text != undefined)
+        this.skipButton.text.setVisible(visible);
+    }
 
     this.updateSkipButtonAvailability(visible);
   }
@@ -84,7 +94,10 @@ export default class InfoHUD extends GameObject {
   private addTexts() {
     this.loopText = this.addText(
       {
-        position: normalizedToWindow(new Vector2(0.85, 0.22)),
+        position: new Vector2(
+          0.85 * this.scene.width,
+          0.22 * this.scene.height,
+        ),
         color: 'white',
         font: '20px Arial',
         scale: 1,
@@ -95,7 +108,10 @@ export default class InfoHUD extends GameObject {
     const trackName: string = trackInfoText + this.level.track.data.displayName;
     this.trackText = this.addText(
       {
-        position: normalizedToWindow(new Vector2(0.85, 0.02)),
+        position: new Vector2(
+          0.85 * this.scene.width,
+          0.02 * this.scene.height,
+        ),
         color: 'white',
         font: '20px Arial',
         scale: 1,
@@ -136,7 +152,10 @@ export default class InfoHUD extends GameObject {
 
     this.difficultyText = this.addText(
       {
-        position: normalizedToWindow(new Vector2(0.85, 0.07)),
+        position: new Vector2(
+          0.85 * this.scene.width,
+          0.07 * this.scene.height,
+        ),
         color: 'white',
         font: '20px Arial',
         scale: 1,
@@ -147,7 +166,10 @@ export default class InfoHUD extends GameObject {
 
     this.bpmText = this.addText(
       {
-        position: normalizedToWindow(new Vector2(0.85, 0.12)),
+        position: new Vector2(
+          0.85 * this.scene.width,
+          0.12 * this.scene.height,
+        ),
         color: 'white',
         font: '20px Arial',
         scale: 1,
@@ -158,7 +180,10 @@ export default class InfoHUD extends GameObject {
 
     this.layerText = this.addText(
       {
-        position: normalizedToWindow(new Vector2(0.85, 0.17)),
+        position: new Vector2(
+          0.85 * this.scene.width,
+          0.17 * this.scene.height,
+        ),
         color: 'white',
         font: '20px Arial',
         scale: 1,
@@ -183,7 +208,8 @@ export default class InfoHUD extends GameObject {
       config.enableSkipButton &&
       this.level.score.getLoopCount() >= config.skipLoopThreshold &&
       visible;
-    if (this.skipButton != undefined)
+    if (this.skipButton != undefined) {
       setInteraction(this.skipButton, available);
+    }
   }
 }

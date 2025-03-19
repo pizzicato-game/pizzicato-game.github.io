@@ -5,13 +5,16 @@ import {
   configFilePath,
   defaultConfigFilePath,
   initialScene,
+  levelListPath,
   webcamDisplayOptions,
 } from '../core/config';
 import webcam from '../objects/webcam';
 import handTracker from '../objects/handTracker';
 import { ConfigData } from '../core/interfaces';
+import Level from '../level/level';
 
 export let background: Sprite;
+export const levels: Level[] = [];
 
 export class ElectronScene extends Scene {
   constructor() {
@@ -29,7 +32,19 @@ export class LoadingScene extends Scene {
   // Synchronous order of Phaser function execution: constructor() -> init() -> preload() -> create() -> update()
 
   constructor() {
-    super('loading');
+    super({
+      key: 'loading',
+      pack: {
+        files: [
+          { type: 'json', key: 'levelList', url: absPath(levelListPath) },
+          {
+            type: 'json',
+            key: 'defaultConfig',
+            url: absPath(defaultConfigFilePath),
+          },
+        ],
+      },
+    });
   }
 
   preload() {
@@ -45,6 +60,8 @@ export class LoadingScene extends Scene {
       absPath('assets/ui/level_background.png'),
     );
     this.load.image('levelChange', absPath('assets/ui/level_change.png'));
+    this.load.image('mute', absPath('assets/ui/mute.png'));
+    this.load.image('unmute', absPath('assets/ui/unmute.png'));
     this.load.image(
       'videoBackground',
       absPath('assets/ui/video_background.png'),
@@ -52,6 +69,10 @@ export class LoadingScene extends Scene {
     this.load.image(
       'optionsBackground',
       absPath('assets/ui/options_background.png'),
+    );
+    this.load.image(
+      'calibrationBackground',
+      absPath('assets/ui/calibration_background.png'),
     );
     this.load.image(
       'defaultVideoBackground',
@@ -67,13 +88,10 @@ export class LoadingScene extends Scene {
     );
     this.load.image('countdown', absPath('assets/sprites/countdown.png'));
     this.load.audio(
-      'metronomeHighNote',
+      'metronomeHigh',
       absPath('assets/sounds/metronome/high.mp3'),
     );
-    this.load.audio(
-      'metronomeLowNote',
-      absPath('assets/sounds/metronome/low.mp3'),
-    );
+    this.load.audio('metronomeLow', absPath('assets/sounds/metronome/low.mp3'));
 
     this.load.image(
       'scoreboardBackground1',
@@ -88,12 +106,19 @@ export class LoadingScene extends Scene {
       absPath('assets/ui/progress_segment.png'),
     );
     this.load.image('flare', absPath('assets/sprites/flare.png'));
+
+    this.load.image('flare', absPath('assets/sprites/flare.png'));
+
+    this.cache.json
+      .get('levelList')
+      .forEach((track: string, _index: number) => {
+        levels.push(new Level(this, track));
+      });
   }
 
   async create() {
     background = this.add
-      .sprite(0, 0, 'background')
-      .setOrigin(0, 0)
+      .sprite(this.scale.width / 2, this.scale.height / 2, 'background')
       .setVisible(false);
     // TODO: Check if necessary.
     // background.displayWidth = window.innerWidth;
@@ -101,31 +126,33 @@ export class LoadingScene extends Scene {
     //   (window.innerWidth * background.height) / background.width;
 
     const loadingText: PhaserText = this.add
-      .text(this.scale.width, this.scale.height, '', {
-        font: '32px Courier',
+      .text(this.scale.width / 2, this.scale.height / 2, '', {
+        font: '50px Courier New',
         color: '#00ff00',
       })
+      .setOrigin(0.5, 0.5)
       .setShadow(1, 1)
       .setDepth(1000);
 
     await webcam
-      .init(webcamDisplayOptions, this.updateText.bind(this, loadingText))
+      .init(
+        webcamDisplayOptions,
+        this.game.canvas.clientWidth,
+        this.game.canvas.clientHeight,
+        this.updateText.bind(this, loadingText),
+      )
       .catch(err => {
         this.updateText(loadingText, err);
       });
 
     if (!webcam.found()) return;
 
-    this.updateText(loadingText, 'Loading config data...');
+    this.updateText(loadingText, 'LOADING CONFIG DATA...');
     await loadData(configFilePath).catch(err =>
       this.updateText(loadingText, err),
     );
 
-    await loadData(defaultConfigFilePath)
-      .then((result: ConfigData) => {
-        updateDefaultConfig(result);
-      })
-      .catch(err => this.updateText(loadingText, err));
+    updateDefaultConfig(this.cache.json.get('defaultConfig'));
 
     await handTracker
       .init(this.updateText.bind(this, loadingText))
@@ -140,7 +167,7 @@ export class LoadingScene extends Scene {
 
     handTracker.precache(this.updateText.bind(this, loadingText));
 
-    this.updateText(loadingText, 'Loading game...');
+    this.updateText(loadingText, 'LOADING GAME DATA...');
 
     this.scene.get(initialScene).load.on('complete', () => {
       loadingText.destroy();
@@ -152,9 +179,9 @@ export class LoadingScene extends Scene {
     let content: string | string[] = err;
     if (err instanceof DOMException) {
       if (err.name == 'NotFoundError') {
-        content = 'Webcam not found';
+        content = 'WEBCAM NOT FOUND';
       } else if (err.name == 'PermissionError') {
-        content = 'Permission denied';
+        content = 'WEBCAM PERMISSION DENIED';
       } else if (err.name == 'NotADirectoryError') {
         content = err.message;
       } else {

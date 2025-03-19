@@ -5,7 +5,7 @@ import {
   TargetTweenOptions,
   WebcamOptions,
 } from '../core/interfaces';
-import { Vector2, normalizedToWindow } from '../core/common';
+import { Vector2 } from '../core/common';
 import { ParticleEmitterConfig } from '../core/phaserTypes';
 
 export const debugMode: boolean = true;
@@ -77,9 +77,17 @@ export const pinkyFingerId: string = 'pinky';
 
 // Hand UI interaction
 
+export const buttonTextStyle = {
+  align: 'center',
+  font: '50px Courier New',
+  color: '#01C303',
+};
 export const buttonPinchFinger: string = indexFingerId;
 export const buttonHoverTint: number = 0xffffff; // white
+export const buttonTextHoverTint: number = buttonHoverTint;
 export const difficultyButtonChosenTint: number = 0xe41a1c; // red
+export const difficultyButtonChosenTextTint: number =
+  difficultyButtonChosenTint;
 
 // Target general properties
 
@@ -166,7 +174,6 @@ export const streakInfoText: string = 'Streak: ';
 export const targetHitOnTimeStreakImpact: number = +1;
 
 export const streakTextOptions = {
-  position: normalizedToWindow(new Vector2(0.05, 0.05)),
   color: 'white',
   scale: 1,
   font: '30px Arial',
@@ -207,13 +214,6 @@ export const progressBarOptions = {
 // Metronome
 
 export const metronomeMinimumBarCount: number = 1;
-
-export const metronomeOptions = {
-  highKey: 'metronome/high',
-  highPath: 'assets/sounds/metronome/high' + soundFileExtension,
-  lowKey: 'metronome/low',
-  lowPath: 'assets/sounds/metronome/low' + soundFileExtension,
-};
 
 export const countdownTextureOptions = {
   scale: 1,
@@ -293,16 +293,14 @@ export const webcamDisplayOptions: WebcamOptions = {
   visible: false /* false overrides opacity */,
   flip: true,
   opacity: 0,
-  width: window.innerWidth,
-  height: window.innerHeight,
   objectFit: 'fill',
 };
 
 export const webcamSourceOptions: MediaStreamConstraints = {
   video: {
     /* Utilized webcam resolution. */
-    width: { ideal: 1280 / 2 },
-    height: { ideal: 720 / 2 },
+    width: { ideal: 1920 / 3 },
+    height: { ideal: 1080 / 3 },
   },
   audio: false,
 };

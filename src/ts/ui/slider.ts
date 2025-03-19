@@ -29,6 +29,7 @@ export class Slider extends Graphics {
     key: keyof ConfigData,
     range: Vector2,
     updateSliderCallback: (slider: Slider) => void,
+    stopDragCallback?: () => void,
   ) {
     super(scene);
     this.x = boxPosition.x;
@@ -60,7 +61,14 @@ export class Slider extends Graphics {
     this.setInteractive(this.box, Rectangle.Contains);
 
     this.on('pointerdown', this.startDrag, this);
-    this.scene.input.on('pointerup', this.stopDrag, this);
+    this.scene.input.on(
+      'pointerup',
+      () => {
+        this.stopDrag();
+        stopDragCallback?.();
+      },
+      this,
+    );
     this.scene.input.on('pointermove', this.doDrag, this);
 
     assert(typeof configData[this.key] == 'number');

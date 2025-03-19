@@ -6,7 +6,7 @@ import {
 } from '../level/trackTypes';
 import HandScene from '../scenes/handScene';
 import { absPath, assert } from '../core/common';
-import { AudioTrack, SoundConfig } from '../core/phaserTypes';
+import { AudioTrack, Scene, SoundConfig } from '../core/phaserTypes';
 import {
   barLength,
   levelDir,
@@ -19,6 +19,7 @@ import {
 
 export class Track {
   public data: TrackData;
+  public scene: Scene;
 
   private readonly trackKey: string = undefinedText;
   private trackDir?: string;
@@ -27,8 +28,14 @@ export class Track {
   private bpm: number = 0;
   private beatLength_: number = 1;
 
-  constructor(trackKey: string) {
+  constructor(scene: Scene, trackKey: string) {
+    this.scene = scene;
     this.trackKey = trackKey;
+    this.trackDir = levelDir + this.trackKey + '/';
+    this.scene.load.json(
+      this.trackKey,
+      absPath(this.trackDir + levelJsonFileName),
+    );
   }
 
   public get beatLength() {
@@ -56,16 +63,8 @@ export class Track {
     return this.bpm;
   }
 
-  public preload(scene: HandScene) {
-    this.preloadJson(scene);
-  }
-
-  public unload(scene: HandScene) {
-    this.unloadJson(scene);
-  }
-
   // Preloads all the notes in levelDir/<trackKey>/<layer_id>/<soundKey>.<soundFileExtension>
-  public preloadNotes(scene: HandScene) {
+  private preloadNotes() {
     assert(this.trackDir != undefined, 'Preload track before preloading notes');
     this.forEachLayer(undefined, (layer: PlayableTrackLayerData) => {
       // If layer has nodes, preload all the node sounds.
@@ -74,24 +73,24 @@ export class Track {
         const soundKey: string = this.getSoundKey(layer, node.soundKey);
         const soundPath: string =
           this.trackDir + layer.id + '/' + node.soundKey + soundFileExtension;
-        if (!scene.cache.audio.exists(soundKey) && node.soundKey !== '') {
-          scene.load.audio(soundKey, absPath(soundPath));
+        if (!this.scene.cache.audio.exists(soundKey) && node.soundKey !== '') {
+          this.scene.load.audio(soundKey, absPath(soundPath));
         }
       });
     });
   }
 
-  public unloadNotes(scene: HandScene) {
+  private unloadNotes() {
     this.forEachLayer(undefined, (layer: PlayableTrackLayerData) => {
       const l = layer as PlayableTrackLayerData;
       l.nodes.forEach((node, _nodeIndex) => {
-        scene.cache.audio.remove(this.getSoundKey(layer, node.soundKey));
+        this.scene.cache.audio.remove(this.getSoundKey(layer, node.soundKey));
       });
     });
   }
 
   // Preloads all the audio loop track in levelDir/<trackKey>/<layer_id>/<soundKey>.<soundFileExtension>
-  private preloadLoops(scene: HandScene) {
+  private preloadLoops() {
     this.forEachLayer((layer: TrackLayerData) => {
       assert(layer.soundLoopKeys !== undefined);
       assert(layer.soundLoopKeys.length > 0);
@@ -99,17 +98,17 @@ export class Track {
         const soundKey: string = this.getSoundKey(layer, loopKey);
         const soundPath: string =
           this.trackDir + layer.id + '/' + loopKey + soundFileExtension;
-        if (!scene.cache.audio.exists(soundKey) && loopKey !== '') {
-          scene.load.audio(soundKey, absPath(soundPath));
+        if (!this.scene.cache.audio.exists(soundKey) && loopKey !== '') {
+          this.scene.load.audio(soundKey, absPath(soundPath));
         }
       });
     });
   }
 
-  private unloadLoops(scene: HandScene) {
+  private unloadLoops() {
     this.forEachLayer((layer: TrackLayerData) => {
       layer.soundLoopKeys.forEach(loopKey => {
-        scene.cache.audio.remove(this.getSoundKey(layer, loopKey));
+        this.scene.cache.audio.remove(this.getSoundKey(layer, loopKey));
       });
     });
   }
@@ -205,26 +204,18 @@ export class Track {
     return time;
   }
 
-  private preloadJson(scene: HandScene) {
-    const jsonDir: string = levelDir + this.trackKey + '/';
-    this.trackDir = jsonDir;
-    const postJsonLoad = (_key: unknown, _type: unknown, data: TrackData) => {
-      this.data = data;
-      this.parseJson();
-      this.preloadLoops(scene);
-    };
-
-    if (scene.cache.json.exists(this.trackKey)) {
-      postJsonLoad(undefined, undefined, scene.cache.json.get(this.trackKey));
-    } else {
-      scene.load.json(this.trackKey, absPath(jsonDir + levelJsonFileName));
-      scene.load.on('filecomplete-json-' + this.trackKey, postJsonLoad, this);
-    }
+  public preload(scene: HandScene) {
+    this.scene = scene;
+    this.data = this.scene.cache.json.get(this.trackKey);
+    assert(this.data !== undefined, 'Failed to retrieve JSON for track');
+    this.parseJson();
+    this.preloadLoops();
+    this.preloadNotes();
   }
 
-  private unloadJson(scene: HandScene) {
-    this.unloadLoops(scene);
-    scene.cache.json.remove(this.trackKey);
+  public unload() {
+    this.unloadLoops();
+    this.unloadNotes();
   }
 
   private parseJson() {

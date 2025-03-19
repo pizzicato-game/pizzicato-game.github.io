@@ -6,6 +6,9 @@ import { config } from '../managers/storageManager';
 import { PhaserText, Sprite, Vector2, Video } from '../core/phaserTypes';
 import {
   defaultDifficultyButtonIndex,
+  difficultyTextEasy,
+  difficultyTextHard,
+  difficultyTextMedium,
   escapeKey,
   levelPrefix,
   levelSelectBackgroundAudioFeintness,
@@ -15,6 +18,8 @@ import {
 import { ToggleButton } from '../ui/toggleButton';
 import { DifficultyButton } from '../ui/difficultyButton';
 import TimerEvent = Phaser.Time.TimerEvent;
+import { levels } from './loadingScene';
+import setInteraction from '../util/interaction';
 
 export default class LevelSelect extends HandScene {
   private currentLevelIndex: number = levelSelectDefaultLevel;
@@ -32,8 +37,6 @@ export default class LevelSelect extends HandScene {
 
   private videoOffsetY: number = 124;
 
-  public levels: Level[] = [];
-
   constructor() {
     super('levelSelect');
     assert(
@@ -43,10 +46,8 @@ export default class LevelSelect extends HandScene {
   }
 
   preload() {
-    this.levels = this.scene.settings.data as Level[];
-
     assert(
-      this.currentLevelIndex < this.levels.length,
+      this.currentLevelIndex < levels.length,
       'Cannot set defaut level select index above the number of levels',
     );
   }
@@ -56,41 +57,63 @@ export default class LevelSelect extends HandScene {
 
     const levelChangeButtonOffsetX: number = 450;
 
-    this.play = new Button(this, this.center.x, 0, () => {
-      this.startLevel(this.getCurrentLevel());
-    }).setOrigin(0.5, 0);
+    const buttonOffsetX: number = 200;
+    const buttonOffsetY: number = 100;
+    const levelSelectOffsetY: number = 150 / 2;
+
+    this.play = new Button(
+      this,
+      'PLAY',
+      this.center.x,
+      this.height - buttonOffsetY,
+      () => {
+        this.startLevel(this.getCurrentLevel());
+      },
+    );
     this.previousLevel = new Button(
       this,
+      '',
       this.center.x - levelChangeButtonOffsetX,
-      0,
+      levelSelectOffsetY,
       () => {
         this.updateLevel(-1);
       },
       'levelChange',
-    ).setOrigin(0.5, 0);
+    );
+    this.previousLevel.setFlipX(true);
     this.nextLevel = new Button(
       this,
+      '',
       this.center.x + levelChangeButtonOffsetX,
-      0,
+      levelSelectOffsetY,
       () => {
         this.updateLevel(1);
       },
       'levelChange',
-    ).setOrigin(0.5, 0);
-    this.back = new Button(this, 0, this.height, () => {
-      this.scene.start('mainMenu');
-      this.exit();
-    }).setOrigin(0, 1);
+    );
+    this.back = new Button(
+      this,
+      'BACK',
+      buttonOffsetX,
+      this.height - buttonOffsetY,
+      () => {
+        this.scene.start('mainMenu');
+        this.exit();
+      },
+    );
+    const muteOffset: Vector2 = new Vector2(150 / 2);
     this.mute = new ToggleButton(
       this,
-      this.width,
-      this.height,
+      '',
+      this.width - muteOffset.x,
+      this.height - muteOffset.y,
       () => {
         this.mute.toggle();
       },
-      'unmute',
       'mute',
-    ).setOrigin(1, 1);
+      'unmute',
+      true,
+    );
 
     this.input.keyboard!.on(escapeKey, () => {
       this.scene.start('mainMenu');
@@ -108,11 +131,11 @@ export default class LevelSelect extends HandScene {
       .setOrigin(0.5, 0);
 
     this.songName = this.add
-      .text(this.center.x, 0, undefinedText, {
+      .text(this.center.x, levelSelectOffsetY, undefinedText, {
         font: '50px Courier New',
         color: 'white',
       })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 0.5);
 
     this.updateLevel(0);
 
@@ -122,6 +145,10 @@ export default class LevelSelect extends HandScene {
   }
 
   private exit() {
+    for (const button of this.difficultyButtons) {
+      button.destroy();
+    }
+
     this.stopAudio();
   }
 
@@ -152,11 +179,18 @@ export default class LevelSelect extends HandScene {
       'positions array length must at least match the number of track bpms',
     );
 
+    const buttonTexts: string[] = [
+      difficultyTextEasy,
+      difficultyTextMedium,
+      difficultyTextHard,
+    ];
+
     for (let i = 0; i < bpms.length; i++) {
       const difficultyButton: DifficultyButton = new DifficultyButton(
         i,
         bpms[i],
         this,
+        buttonTexts[i],
         positions[i].x,
         positions[i].y,
         () => {
@@ -171,7 +205,8 @@ export default class LevelSelect extends HandScene {
         'button',
         i == defaultDifficultyButtonIndex,
       );
-
+      difficultyButton.setScale(0.8);
+      difficultyButton.updateTint();
       difficultyButton.addToggleCallback((state: boolean) => {
         difficultyButton.updateTint();
         if (state) {
@@ -189,7 +224,7 @@ export default class LevelSelect extends HandScene {
   }
 
   private setBackgroundAudioMute(state: boolean) {
-    for (const level of this.levels) {
+    for (const level of levels) {
       level.setBackgroundAudioMute(state);
     }
   }
@@ -216,6 +251,7 @@ export default class LevelSelect extends HandScene {
         'defaultVideoBackground',
       );
     }
+    this.videoPreview.setScale(0.6);
   }
 
   private startPreview(level: Level) {
@@ -226,7 +262,7 @@ export default class LevelSelect extends HandScene {
       volume: config.backgroundMusicLevel * levelSelectBackgroundAudioFeintness,
     });
     level.playBackgroundAudio();
-    level.setBackgroundAudioMute(this.mute.getToggleState());
+    level.setBackgroundAudioMute(!this.mute.getToggleState());
 
     const loopTime = level.getAudioLoopTime() * 1000;
     this.videoRefreshEvent = this.time.addEvent({
@@ -243,8 +279,8 @@ export default class LevelSelect extends HandScene {
   private stopAudio() {
     if (this.videoRefreshEvent) this.videoRefreshEvent.destroy();
 
-    for (const level of this.levels) {
-      level.removeBackgroundAudio(this);
+    for (const level of levels) {
+      level.removeBackgroundAudio();
     }
   }
 
@@ -262,7 +298,7 @@ export default class LevelSelect extends HandScene {
   }
 
   private cycleLevel(amount: number) {
-    const levelCount: number = this.levels.length;
+    const levelCount: number = levels.length;
     // This mod wraps negative values to positive ones.
     this.currentLevelIndex =
       (((this.currentLevelIndex + amount) % levelCount) + levelCount) %
@@ -271,10 +307,10 @@ export default class LevelSelect extends HandScene {
 
   private getCurrentLevel(): Level {
     assert(
-      this.currentLevelIndex < this.levels.length,
+      this.currentLevelIndex < levels.length,
       'Current level index out of range of this.levels array',
     );
-    return this.levels[this.currentLevelIndex];
+    return levels[this.currentLevelIndex];
   }
 
   private getCurrentLevelKey(): string {

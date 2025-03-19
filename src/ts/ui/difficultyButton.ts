@@ -1,4 +1,7 @@
-import { difficultyButtonChosenTint, undefinedText } from '../core/config';
+import {
+  difficultyButtonChosenTextTint,
+  difficultyButtonChosenTint,
+} from '../core/config';
 import { PhaserText, Vector2 } from '../core/phaserTypes';
 import HandScene from '../scenes/handScene';
 import { ToggleButton } from '../ui/toggleButton';
@@ -12,6 +15,7 @@ export class DifficultyButton extends ToggleButton {
     bpmIndex: number,
     bpm: number,
     scene: HandScene,
+    textContent: string,
     x: number,
     y: number,
     onPinch: () => void = () => {},
@@ -20,18 +24,29 @@ export class DifficultyButton extends ToggleButton {
     toggled: boolean = false,
     soundKey: string = 'pinch',
   ) {
-    super(scene, x, y, onPinch, spriteKey, toggledSpriteKey, toggled, soundKey);
+    super(
+      scene,
+      textContent,
+      x,
+      y,
+      onPinch,
+      spriteKey,
+      toggledSpriteKey,
+      toggled,
+      soundKey,
+    );
+    this.resetTint = false;
     this.bpmIndex_ = bpmIndex;
     this.bpm = bpm;
-    this.bpmText = this.scene.add.text(0, 0, undefinedText, {
-      font: '20px Courier New',
-    });
-    this.bpmText.setText('BPM: ' + this.bpm.toString());
-
-    // Ensure position is set after text because text varies the displaySize.
     const textCenter: Vector2 = this.getCenter();
-
-    this.bpmText.setPosition(textCenter.x, textCenter.y + 25);
+    this.bpmText = this.scene.add
+      .text(textCenter.x, textCenter.y + 30, 'BPM: ' + this.bpm.toString(), {
+        font: '20px Courier New',
+      })
+      .setOrigin(0.5, 0.5);
+    if (this.text) {
+      this.text.y -= 10;
+    }
 
     this.updateTint();
 
@@ -42,10 +57,16 @@ export class DifficultyButton extends ToggleButton {
 
   public updateTint() {
     if (this.toggleState) {
-      this.bpmText.setTintFill(difficultyButtonChosenTint);
+      if (this.text) {
+        this.text.setTintFill(difficultyButtonChosenTextTint);
+      }
+      this.bpmText.setTintFill(difficultyButtonChosenTextTint);
       this.setTintFill(difficultyButtonChosenTint);
     } else {
-      this.bpmText.setTintFill(0xffffff);
+      if (this.text) {
+        this.text.clearTint();
+      }
+      this.bpmText.clearTint();
       this.clearTint();
     }
   }

@@ -3,12 +3,7 @@ import {
   HandLandmarkerResult,
   FilesetResolver,
 } from '@mediapipe/tasks-vision';
-import {
-  absRootPath,
-  absPath,
-  normalizedToWindow,
-  assert,
-} from '../core/common';
+import { absRootPath, absPath } from '../core/common';
 import webcam from '../objects/webcam';
 import {
   HandIndex,
@@ -23,8 +18,8 @@ import {
 import { Vector2 } from '../core/phaserTypes';
 
 export class HandTracker {
-  private results_: HandLandmarkerResult | undefined;
-  private handLandmarker_: HandLandmarker | undefined;
+  private results: HandLandmarkerResult | undefined;
+  private handLandmarker: HandLandmarker | undefined;
   private lastVideoTime: number = -1;
 
   constructor() {}
@@ -46,7 +41,7 @@ export class HandTracker {
           return;
         });
 
-      progressCallback('Loading hand landmarker...');
+      progressCallback('LOADING HAND TRACKER...');
       // TODO: Add check that modelPath exists:
       // if (!fileExists(modelPathRelativeToSrc)) reject("Model path not found");
       landmarkDetectionOptions.baseOptions!.modelAssetPath = absPath(modelPath);
@@ -55,7 +50,7 @@ export class HandTracker {
         wasmFileset,
         landmarkDetectionOptions,
       )
-        .then(result => (this.handLandmarker_ = result))
+        .then(result => (this.handLandmarker! = result))
         .catch(err => {
           if (err instanceof Event && (err as Event).type == 'error')
             reject(
@@ -74,12 +69,12 @@ export class HandTracker {
   public precache(progressCallback: (text: string) => void) {
     // MediaPipe seems to cache landmarks, so this initial update allows the game
     // loop update to start immediately with no delay before drawing landmarks.
-    progressCallback('Pre-caching landmarks...');
+    progressCallback('PRE-CACHING LANDMARKS...');
     this.update();
   }
 
   public found(): boolean {
-    return this.handLandmarker_ != undefined;
+    return this.handLandmarker != undefined;
   }
 
   public update() {
@@ -87,20 +82,10 @@ export class HandTracker {
 
     this.lastVideoTime = webcam.video.currentTime;
     // This updates MediaPipe hand landmarks from webcam video.
-    this.results_ = this.handLandmarker.detectForVideo(
+    this.results = this.handLandmarker!.detectForVideo(
       webcam.video,
       performance.now(),
     );
-  }
-
-  public get results(): HandLandmarkerResult {
-    assert(this.results_ != undefined);
-    return this.results_!;
-  }
-
-  private get handLandmarker(): HandLandmarker {
-    assert(this.handLandmarker_ != undefined);
-    return this.handLandmarker_!;
   }
 
   public landmarksFound(handIndex: HandIndex = 0): boolean {
@@ -115,7 +100,7 @@ export class HandTracker {
   ): boolean {
     if (!this.landmarksFound(handIndex)) return false;
 
-    const landmark = this.results.landmarks[handIndex][landmarkIndex];
+    const landmark = this.results!.landmarks[handIndex][landmarkIndex];
     return (
       landmark.x >= 0 && landmark.x <= 1 && landmark.y >= 0 && landmark.y <= 1
     );
@@ -127,7 +112,7 @@ export class HandTracker {
   ): Vector2 | undefined {
     if (!this.landmarksFound(handIndex)) return undefined;
 
-    const landmark = this.results.landmarks[handIndex][landmarkIndex];
+    const landmark = this.results!.landmarks[handIndex][landmarkIndex];
     return new Vector2(
       /* mirror landmarks in the x-direction */
       1.0 - landmark.x,
