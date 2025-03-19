@@ -1,29 +1,28 @@
 import { difficultyButtonChosenTint } from '../core/config';
-import { Vector2 } from '../core/phaserTypes';
 import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 
 export class ToggleButton extends Button {
   protected toggleState: boolean;
 
-  private onSpriteKey: string;
-  private offSpriteKey: string;
+  private spriteKey: string;
+  private toggledSpriteKey: string;
   private toggleCallback?: (newToggleState: boolean) => void;
 
   constructor(
     scene: HandScene,
-    position: Vector2,
-    scale: Vector2,
-    onSpriteKey: string,
-    offSpriteKey: string,
-    soundKey: string,
-    interactable: boolean,
-    initialState: boolean = true,
+    x: number,
+    y: number,
+    onPinch: () => void = () => {},
+    spriteKey: string,
+    toggledSpriteKey: string,
+    toggled: boolean = false,
+    soundKey: string = 'pinch',
   ) {
-    super(scene, position, scale, onSpriteKey, soundKey, interactable);
-    this.onSpriteKey = onSpriteKey;
-    this.offSpriteKey = offSpriteKey;
-    this.toggleState = initialState;
+    super(scene, x, y, onPinch, spriteKey, soundKey);
+    this.spriteKey = spriteKey;
+    this.toggledSpriteKey = toggledSpriteKey;
+    this.toggleState = toggled;
 
     this.setTexture(this.getSpriteKey());
   }
@@ -58,6 +57,6 @@ export class ToggleButton extends Button {
   }
 
   private getSpriteKey() {
-    return this.toggleState ? this.onSpriteKey : this.offSpriteKey;
+    return this.toggleState ? this.spriteKey : this.toggledSpriteKey;
   }
 }

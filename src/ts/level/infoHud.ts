@@ -1,28 +1,20 @@
 import { TextOptions } from '../core/interfaces';
-import { absPath, assert } from '../core/common';
+import { assert, normalizedToWindow } from '../core/common';
 import Level from '../level/level';
 import { config } from '../managers/storageManager';
 import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
-import { GameObject, PhaserText, Sprite } from '../core/phaserTypes';
+import { GameObject, PhaserText, Sprite, Vector2 } from '../core/phaserTypes';
 import {
   bpmInfoText,
-  bpmTextOptions,
   difficultyInfoText,
   difficultyTextEasy,
   difficultyTextHard,
   difficultyTextMedium,
-  difficultyTextOptions,
-  infoBackgroundOptions,
   layerDividerSymbol,
   layerInfoText,
-  layerTextOptions,
   loopInfoText,
-  loopTextOptions,
-  skipButtonOptions,
   trackInfoText,
-  trackTextOptions,
-  uiHoverColor,
   undefinedText,
 } from '../core/config';
 import setInteraction from '../util/interaction';
@@ -52,38 +44,12 @@ export default class InfoHUD extends GameObject {
   }
 
   private addSkipButton() {
-    this.skipButton = new Button(
-      this.scene,
-      skipButtonOptions.position,
-      skipButtonOptions.scale,
-      skipButtonOptions.textureKey,
-      skipButtonOptions.soundKey,
-      false,
-    );
-    this.skipButton.addPinchCallbacks({
-      startPinch: () => {
-        setInteraction(this.skipButton, false);
-        this.level.transitionLayers();
-      },
-      startHover: () => {
-        this.skipButton.setTintFill(uiHoverColor);
-      },
-      endHover: () => {
-        this.skipButton.clearTint();
-      },
-    });
+    this.skipButton = new Button(this.scene, this.scene.width, 0, () => {
+      setInteraction(this.skipButton, false);
+      this.level.transitionLayers();
+    }).setOrigin(1, 0);
+    setInteraction(this.skipButton, false);
     this.updateSkipButtonAvailability(false);
-  }
-
-  public preload() {
-    this.scene.load.image(
-      skipButtonOptions.textureKey,
-      absPath(skipButtonOptions.path),
-    );
-    this.scene.load.image(
-      infoBackgroundOptions.textureKey,
-      absPath(infoBackgroundOptions.path),
-    );
   }
 
   public setVisible(visible: boolean) {
@@ -116,9 +82,27 @@ export default class InfoHUD extends GameObject {
   }
 
   private addTexts() {
-    this.loopText = this.addText(loopTextOptions, this.getLoopText());
+    this.loopText = this.addText(
+      {
+        position: normalizedToWindow(new Vector2(0.85, 0.22)),
+        color: 'white',
+        font: '20px Arial',
+        scale: 1,
+        depth: 40,
+      },
+      this.getLoopText(),
+    );
     const trackName: string = trackInfoText + this.level.track.data.displayName;
-    this.trackText = this.addText(trackTextOptions, trackName);
+    this.trackText = this.addText(
+      {
+        position: normalizedToWindow(new Vector2(0.85, 0.02)),
+        color: 'white',
+        font: '20px Arial',
+        scale: 1,
+        depth: 40,
+      },
+      trackName,
+    );
 
     const layerName: string =
       layerInfoText +
@@ -126,18 +110,18 @@ export default class InfoHUD extends GameObject {
       layerDividerSymbol +
       this.level.playableLayers.length.toString();
 
-    let difficultyText: string = undefinedText;
+    let difficulty: string = undefinedText;
     switch (this.level.bpmIndex) {
       case 0: {
-        difficultyText = difficultyTextEasy;
+        difficulty = difficultyTextEasy;
         break;
       }
       case 1: {
-        difficultyText = difficultyTextMedium;
+        difficulty = difficultyTextMedium;
         break;
       }
       case 2: {
-        difficultyText = difficultyTextHard;
+        difficulty = difficultyTextHard;
         break;
       }
       default: {
@@ -146,34 +130,47 @@ export default class InfoHUD extends GameObject {
     }
 
     assert(
-      difficultyText != undefinedText,
+      difficulty != undefinedText,
       'Extend the switch statement to have a difficulty text for the given track bpmIndex',
     );
 
     this.difficultyText = this.addText(
-      difficultyTextOptions,
-      difficultyInfoText + difficultyText,
+      {
+        position: normalizedToWindow(new Vector2(0.85, 0.07)),
+        color: 'white',
+        font: '20px Arial',
+        scale: 1,
+        depth: 40,
+      },
+      difficultyInfoText + difficulty,
     );
 
     this.bpmText = this.addText(
-      bpmTextOptions,
+      {
+        position: normalizedToWindow(new Vector2(0.85, 0.12)),
+        color: 'white',
+        font: '20px Arial',
+        scale: 1,
+        depth: 40,
+      },
       bpmInfoText + this.level.track.getBPM(),
     );
 
-    this.layerText = this.addText(layerTextOptions, layerName);
+    this.layerText = this.addText(
+      {
+        position: normalizedToWindow(new Vector2(0.85, 0.17)),
+        color: 'white',
+        font: '20px Arial',
+        scale: 1,
+        depth: 40,
+      },
+      layerName,
+    );
 
     this.infoBackground = this.scene.add
-      .sprite(
-        infoBackgroundOptions.position.x,
-        infoBackgroundOptions.position.y,
-        infoBackgroundOptions.textureKey,
-      )
-      .setAlpha(infoBackgroundOptions.opacity)
-      .setOrigin(0, 0)
-      .setDisplaySize(
-        infoBackgroundOptions.size.x,
-        infoBackgroundOptions.size.y,
-      );
+      .sprite(this.scene.width, 0, 'trackInfoBackground')
+      .setAlpha(0.3)
+      .setOrigin(1, 0);
   }
 
   public updateLoopText() {

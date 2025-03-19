@@ -125,31 +125,6 @@ export function fileExistsAbsolute(absoluteFilePath: string): boolean {
   return fileExists(absoluteFilePath);
 }
 
-/**
- * Converts a normalized position (between 0 and 1) to a position in the window.
- *
- * @param x The normalized x-coordinate.
- * @param y The normalized y-coordinate.
- * @returns The corresponding position in the window.
- *
- * **Note:** The input values `x` and `y` must be between 0 and 1.
- */
-export function normalizedToWindow(
-  position: Vector2 | [number, number],
-): Vector2 {
-  if (position instanceof Vector2) {
-    return new Vector2(
-      position.x * window.innerWidth,
-      position.y * window.innerHeight,
-    );
-  } else {
-    return new Vector2(
-      position[0] * window.innerWidth,
-      position[1] * window.innerHeight,
-    );
-  }
-}
-
 // Returns a subset of array1 and array2 which contains only objects occurring in both arrays.
 export function getCommonItems<T>(array1: T[], array2: T[]): T[] {
   // Convert both arrays into unique sets using the Set data structure

@@ -1,5 +1,4 @@
 import { Track } from '../level/track';
-import Target from '../objects/target';
 import { absPath, assert, fileExistsRelative } from '../core/common';
 import HandScene from '../scenes/handScene';
 import { PlayableTrackLayerData, TrackLayerData } from '../level/trackTypes';
@@ -98,18 +97,12 @@ export default class Level {
 
   private preloadLayers() {
     this.track.preloadNotes(this.scene);
-
-    Target.preload(this.scene);
-
-    this.streak.preload();
-
     this.playableLayers = [];
 
     this.track.forEachLayer(
       undefined,
       (layer: PlayableTrackLayerData, _layerIndex: number) => {
         const playableLayer = new PlayableLayer(this.scene, this, layer);
-        playableLayer.preload();
         this.playableLayers.push(playableLayer);
       },
     );
@@ -121,10 +114,6 @@ export default class Level {
     });
 
     this.track.unloadNotes(this.scene);
-
-    Target.unload(this.scene);
-
-    this.streak.unload();
   }
 
   public start(finishCallback: () => void, abortCallback: () => void) {

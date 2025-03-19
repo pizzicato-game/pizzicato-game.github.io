@@ -6,7 +6,7 @@ import {
 } from '../util/drawUtil';
 import { assert } from '../core/common';
 import { config } from '../managers/storageManager';
-import { Graphics, Scene } from '../core/phaserTypes';
+import { Graphics, Scene, Vector2 } from '../core/phaserTypes';
 import {
   handLandmarkConnectionOptions,
   handLandmarkOptions,
@@ -18,6 +18,9 @@ export default class HandScene extends Scene {
   public graphics: Graphics;
   public hand: Hand;
   public bg: HTMLElement;
+  public width: number;
+  public height: number;
+  public center: Vector2;
 
   constructor(sceneKey: string) {
     super(sceneKey);
@@ -30,6 +33,10 @@ export default class HandScene extends Scene {
     cameraVisibility: boolean = config.enableCameraVisibility,
     cameraOpacity: number = config.cameraOpacity,
   ) {
+    this.width = this.scale.width;
+    this.height = this.scale.height;
+    this.center = new Vector2(this.width / 2, this.height / 2);
+
     webcam.setVisibility(cameraVisibility);
 
     // These calls are required because calibration scene hides, tints, and re-textures the background.
@@ -37,7 +44,7 @@ export default class HandScene extends Scene {
     document.getElementById('background_image')!;
     this.bg.style.backgroundSize = 'cover';
     this.bg.style.opacity = '1';
-    this.clearBackgroundTint();
+    background.clearTint();
     this.setOpacity(cameraOpacity);
 
     this.sound.pauseOnBlur = false;
@@ -85,13 +92,5 @@ export default class HandScene extends Scene {
     background.setTexture(textureKey);
     this.bg.style.backgroundSize = '0 0';
     background.setVisible(true);
-  }
-
-  public setBackgroundTint(color: number) {
-    background.setTint(color);
-  }
-
-  public clearBackgroundTint() {
-    background.clearTint();
   }
 }

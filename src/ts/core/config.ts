@@ -3,11 +3,10 @@ import {
   LandmarkConnectionOptions,
   LandmarkOptions,
   TargetTweenOptions,
-  TextOptions,
   WebcamOptions,
 } from '../core/interfaces';
 import { Vector2, normalizedToWindow } from '../core/common';
-import { ParticleEmitterConfig, TextStyle } from '../core/phaserTypes';
+import { ParticleEmitterConfig } from '../core/phaserTypes';
 
 export const debugMode: boolean = true;
 
@@ -21,86 +20,6 @@ export const soundFileExtension: string = '.mp3';
 export const levelJsonFileName: string = 'info.json';
 export const levelBackgroundFileName: string = 'background.png';
 export const levelPreviewFileName: string = 'preview.mp4';
-export const buttonPinchSoundPath: string =
-  'assets/sounds/ui/menu_ding' + soundFileExtension;
-
-// Texture keys
-
-export const fingerSpriteKey: string = 'finger';
-export const previewVideoBackgroundTextureKey: string =
-  'previewVideoBackground';
-export const songNameBackgroundTextureKey: string = 'songNameBackground';
-export const layerScoreBackgroundTextureKey: string = 'layerScoreBackground';
-export const scoreboardBackgroundTextureKey: string = 'scoreboardBackground';
-export const menuCalibrateButtonTextureKey: string = 'menuCalibrateButton';
-export const menuSelectButtonTextureKey: string = 'menuSelectButton';
-export const optionsButtonTextureKey: string = 'optionsButton';
-export const targetInnerTextureKey: string = 'targetInner';
-export const targetOuterTextureKey: string = 'targetOuter';
-export const optionsBackgroundTextureKey: string = 'background1';
-export const infoBackgroundTextureKey: string = 'infoBackground';
-export const backgroundTextureKey: string = 'mainBackground';
-export const playButtonTextureKey: string = 'playButton';
-export const easyButtonTextureKey: string = 'easyButton';
-export const mediumButtonTextureKey: string = 'mediumButton';
-export const hardButtonTextureKey: string = 'hardButton';
-export const backButtonTextureKey: string = 'backButton';
-export const skipButtonTextureKey: string = 'skipButton';
-export const buttonPinchSoundKey: string = 'buttonDing';
-export const calibrationBackgroundTextureKey: string = 'calibrationBackground';
-export const logoTextureKey: string = 'menuLogo';
-export const resetButtonTextureKey: string = 'resetButton';
-export const muteButtonTextureKey: string = 'muteButton';
-export const unmuteButtonTextureKey: string = 'unmuteButton';
-export const leftArrowTextureKey: string = 'leftArrow';
-export const rightArrowTextureKey: string = 'rightArrow';
-export const saveCSVButtonTextureKey: string = 'saveCSVButton';
-export const defaultLevelBackgroundKey: string = 'defaultLevelbackground';
-export const defaultLevelPreviewKey: string = 'defaultPreviewbackground';
-
-// Texture paths
-
-export const fingerSpritePath: string = 'assets/sprites/finger.png';
-export const previewVideoBackgroundTexturePath: string =
-  'assets/ui/video_background.png';
-export const songNameBackgroundTexturePath: string =
-  'assets/ui/song_name_background.png';
-export const menuCalibrateButtonTexturePath: string =
-  'assets/ui/menu_setup_camera.png';
-export const menuSelectButtonTexturePath: string =
-  'assets/ui/menu_select_level.png';
-export const infoBackgroundTexturePath: string =
-  'assets/ui/info_background.png';
-export const optionsButtonTexturePath: string = 'assets/ui/menu_options.png';
-export const targetInnerTexturePath: string =
-  'assets/sprites/defaultTargetInner.png';
-export const targetOuterTexturePath: string =
-  'assets/sprites/defaultTargetOuter.png';
-export const optionsBackgroundPath: string = 'assets/ui/options_background.png';
-export const layerScoreBackgroundPath: string =
-  'assets/ui/layer_score_background.png';
-export const scoreboardBackgroundPath: string =
-  'assets/ui/scoreboard_background.png';
-export const backgroundTexturePath: string = 'assets/ui/menu_background.png';
-export const playButtonTexturePath: string = 'assets/ui/play_button.png';
-export const easyButtonTexturePath: string = 'assets/ui/easy_button.png';
-export const mediumButtonTexturePath: string = 'assets/ui/medium_button.png';
-export const hardButtonTexturePath: string = 'assets/ui/hard_button.png';
-export const backButtonTexturePath: string = 'assets/ui/back_button.png';
-export const skipButtonTexturePath: string = 'assets/ui/skip_button.png';
-export const saveCSVButtonTexturePath: string = 'assets/ui/save_csv_button.png';
-export const calibrationBackgroundTexturePath: string =
-  'assets/ui/calibration_background.png';
-export const logoTexturePath: string = 'assets/ui/menu_logo.png';
-export const resetButtonTexturePath: string = 'assets/ui/reset_button.png';
-export const muteButtonTexturePath: string = 'assets/ui/mute_button.png';
-export const unmuteButtonTexturePath: string = 'assets/ui/unmute_button.png';
-export const leftArrowTexturePath: string = 'assets/ui/left_arrow.png';
-export const rightArrowTexturePath: string = 'assets/ui/right_arrow.png';
-export const defaultLevelBackgroundPath: string =
-  'assets/ui/default_level_background.png';
-export const defaultLevelPreviewPath: string =
-  'assets/ui/default_preview_background.png';
 
 // CSV
 
@@ -159,7 +78,7 @@ export const pinkyFingerId: string = 'pinky';
 // Hand UI interaction
 
 export const buttonPinchFinger: string = indexFingerId;
-export const uiHoverColor: number = 0xffffff; // white
+export const buttonHoverTint: number = 0xffffff; // white
 export const difficultyButtonChosenTint: number = 0xe41a1c; // red
 
 // Target general properties
@@ -180,16 +99,6 @@ export const targetRotationDuration: number = 1000; // Milliseconds.
 export const targetRotationEase: string = 'linear';
 
 export const targetCollisionLabel: string = '-node-';
-
-// Target colors and scaling
-
-// Do not change this, go up to the texture keys and paths instead.
-export const targetTextureOptions = {
-  keyInner: targetInnerTextureKey,
-  keyOuter: targetOuterTextureKey,
-  pathInner: targetInnerTexturePath,
-  pathOuter: targetOuterTexturePath,
-};
 
 // Relative to the inner sprite.
 export const outerRingStartScale: number = 0.5;
@@ -236,11 +145,6 @@ export const escapeKey: string = 'keydown-ESC';
 
 // Initial loading / preload screen
 
-export const preloadScreenText: string = 'Loading Webcam and Hand Tracker...';
-export const preloadTextStyle: TextStyle = {
-  font: '32px Courier',
-  color: '#00ff00',
-};
 export const backgroundTextureOpacity: number = 0.9;
 
 // Constants
@@ -285,11 +189,6 @@ export const streakFireOptions: ParticleEmitterConfig = {
   duration: 0,
 };
 
-export const streakParticleOptions = {
-  key: 'flare',
-  path: 'assets/sprites/flare.png',
-};
-
 // Progress bar
 
 // In the JSON setting a layer's progressCount to this value is
@@ -298,14 +197,10 @@ export const entireLayerProgressRequired: number = -1;
 export const startingProgress: number = 0;
 
 export const progressBarOptions = {
-  position: normalizedToWindow(new Vector2(0.5, 0)),
-  size: normalizedToWindow(new Vector2(0.4, 0.04)),
   requiredTint: 0x0800ff,
   completedRequiredTint: 0x2b58a5,
   completedTint: onTimeTargetOptions.color,
   extraTint: onTimeTargetOptions.color, // Used to be: 0x0633cc
-  path: 'assets/ui/progress_bar_segment.png',
-  key: 'segment',
   tintByNode: false,
 };
 
@@ -328,15 +223,6 @@ export const countdownTextureOptions = {
   path: 'assets/sprites/countdown.png',
 };
 
-export const countdownTextOptions: TextOptions = {
-  position: normalizedToWindow(new Vector2(0.5, 0.5)),
-  color: 'white',
-  scale: 1,
-  ease: 'Power0',
-  font: '240px Arial',
-  depth: 30,
-};
-
 // Info HUD (with all the layer and track info)
 
 export const trackInfoText: string = 'Track: ';
@@ -350,68 +236,7 @@ export const difficultyTextEasy: string = 'Easy';
 export const difficultyTextMedium: string = 'Medium';
 export const difficultyTextHard: string = 'Hard';
 
-export const infoBackgroundOptions = {
-  position: normalizedToWindow(new Vector2(0.835, 0)),
-  size: new Vector2(0.16 * window.innerWidth, 0.2684 * window.innerHeight),
-  textureKey: infoBackgroundTextureKey,
-  opacity: 0.3,
-  path: infoBackgroundTexturePath,
-};
-
-export const skipButtonOptions = {
-  position: normalizedToWindow(new Vector2(0.93, 0.9)),
-  scale: new Vector2(0.3, 0.3),
-  soundKey: buttonPinchSoundKey,
-  textureKey: skipButtonTextureKey,
-  path: skipButtonTexturePath,
-};
-
-export const trackTextOptions: TextOptions = {
-  position: normalizedToWindow(new Vector2(0.85, 0.02)),
-  color: 'white',
-  font: '20px Arial',
-  scale: 1,
-  depth: 40,
-};
-
-export const difficultyTextOptions: TextOptions = {
-  position: normalizedToWindow(new Vector2(0.85, 0.07)),
-  color: 'white',
-  font: '20px Arial',
-  scale: 1,
-  depth: 40,
-};
-
-export const bpmTextOptions: TextOptions = {
-  position: normalizedToWindow(new Vector2(0.85, 0.12)),
-  color: 'white',
-  font: '20px Arial',
-  scale: 1,
-  depth: 40,
-};
-
-export const layerTextOptions: TextOptions = {
-  position: normalizedToWindow(new Vector2(0.85, 0.17)),
-  color: 'white',
-  font: '20px Arial',
-  scale: 1,
-  depth: 40,
-};
-
-export const loopTextOptions: TextOptions = {
-  position: normalizedToWindow(new Vector2(0.85, 0.22)),
-  color: 'white',
-  font: '20px Arial',
-  scale: 1,
-  depth: 40,
-};
-
 // Level select scene
-
-export const levelSelectSongNameOptions = {
-  font: '50px Courier New',
-  color: 'white',
-};
 
 export const defaultDifficultyButtonIndex: number = 0; // 0 Easy, 1 Medium, 2 Hard, etc.
 
@@ -421,16 +246,6 @@ export const calibrationMenuWebcamOpacity: number = 0.8; // 0 to 1.
 export const handTooFarThreshold: number = 40; // centimeters.
 export const handTooCloseThreshold: number = 20; // centimeters.
 
-export const handDistanceTextOptions = {
-  font: '60px Arial',
-  color: 'white',
-};
-export const handDistanceTextShadowOptions = {
-  x: 5,
-  y: 5,
-  color: 'rgba(0,0,0,0.5)',
-  blur: 15,
-};
 export const handNotFoundText: string = 'Hand Not Recognized';
 export const handTooFarText: string = 'Too Far - Estimated Distance: ';
 export const handTooCloseText: string = 'Too Close - Estimated Distance: ';
@@ -450,51 +265,15 @@ export const scoreboardBackgroundAudioFeintness: number = 0.5;
 
 export const levelSelectDefaultLevel: number = 0;
 export const levelSelectBackgroundAudioFeintness: number = 0.5;
-export const levelSelectVideoOffset: number = 0.115; // Percentage vertically upward.
-
-// User interface scales
-
-export const levelSelectVideoScale: Vector2 = new Vector2(0.43, 0.43);
-export const standardButtonScale: Vector2 = new Vector2(0.6, 0.6);
-export const muteButtonScale: Vector2 = new Vector2(1.5, 1.5);
 
 // User interfaces ratios
 
 export const optionsCheckboxOffset = new Vector2(-32, -32);
 export const optionsSliderLabelOffset = new Vector2(32, -32);
-export const optionsButtonGap = 0.1;
-export const optionsButtonTopLevel = 0.9;
-
-export const calibrationButtonBottomLevel = 0.9;
-export const calibrationTextTopLevel = 0.1;
-
-export const levelSelectbuttonTopLevel = 0.07;
-export const levelSelectLeftButtonOffset = 0.4;
-export const levelSelectRightButtonOffset = 0.45;
-export const levelSelectButtonGap = 0.235;
-export const levelSelectButtonBottomLevel = 0.9;
-export const levelSelectButtonMidLevel = 0.71;
-export const levelSelectLevelButtonGap = 0.2;
-
-export const mainMenuButtonGap = 0.25;
-export const mainMenubuttonTopLevel = 0.75;
-
-export const scoreboardButtonTopLevel = 0.9;
-export const scoreboardRightButtonOffset = 0.45;
-export const scoreboardButtonBottomLevel = 0.9;
 
 // Scene keys
 
-export const electronScene: string = 'electron';
-export const loadingScene: string = 'loading';
-export const levelScene: string = 'level';
-export const scoreboardScene: string = 'scoreboard';
-export const mainMenuScene: string = 'mainMenu';
-export const levelSelectScene: string = 'levelSelect';
-export const calibrationScene: string = 'calibration';
-export const optionsScene: string = 'options';
-
-export const initialScene: string = mainMenuScene;
+export const initialScene: string = 'mainMenu';
 
 // Depths
 

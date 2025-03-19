@@ -121,30 +121,30 @@ export class HandTracker {
     );
   }
 
-  public getLandmarkPosition(
+  public getNormalizedLandmarkPosition(
     landmarkIndex: HandLandmarkIndex,
     handIndex: HandIndex = 0,
   ): Vector2 | undefined {
     if (!this.landmarksFound(handIndex)) return undefined;
 
     const landmark = this.results.landmarks[handIndex][landmarkIndex];
-    const position = normalizedToWindow(new Vector2(landmark.x, landmark.y));
     return new Vector2(
-      window.innerWidth - position.x,
-      position.y,
-    ); /* mirror landmarks in the x-direction */
+      /* mirror landmarks in the x-direction */
+      1.0 - landmark.x,
+      landmark.y,
+    );
   }
 
-  public forEachLandmarkPosition(
-    landmarkPositionCallback: (position: Vector2) => void,
+  public forEachNormalizedLandmarkPosition(
+    landmarkPositionCallback: (normalizedPosition: Vector2) => void,
     handIndex: HandIndex = 0,
   ) {
     for (let i = 0; i < handLandmarkCount; ++i) {
-      const position: Vector2 | undefined = this.getLandmarkPosition(
+      const nPosition: Vector2 | undefined = this.getNormalizedLandmarkPosition(
         i,
         handIndex,
       );
-      if (position !== undefined) landmarkPositionCallback(position);
+      if (nPosition !== undefined) landmarkPositionCallback(nPosition);
     }
   }
 }

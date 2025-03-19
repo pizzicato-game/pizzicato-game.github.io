@@ -9,7 +9,6 @@ import {
   Vector2,
 } from '../core/phaserTypes';
 import {
-  fingerSpriteKey,
   fingerSpriteScale,
   focalLength,
   indexFingerId,
@@ -132,7 +131,6 @@ export class Hand extends GameObject {
     const addFinger = (id: string, landmarkIndex: HandLandmarkIndex) => {
       const finger: Finger = new Finger(
         this.scene,
-        fingerSpriteKey,
         id,
         landmarkIndex,
         fingerSpriteScale * config.fingerSize,
@@ -395,11 +393,11 @@ export class Hand extends GameObject {
     );
 
     for (const finger of this.fingers) {
-      const position: Vector2 | undefined = handTracker.getLandmarkPosition(
-        finger.landmarkIndex,
-      );
-      const foundFinger: boolean = position !== undefined;
+      const normalizedPosition: Vector2 | undefined =
+        handTracker.getNormalizedLandmarkPosition(finger.landmarkIndex);
+      const foundFinger: boolean = normalizedPosition !== undefined;
       if (foundFinger) {
+        // TODO: Scale to screen.
         finger.setPosition(position!.x, position!.y);
       }
       setInteraction(finger, foundFinger);
@@ -428,6 +426,7 @@ export class Hand extends GameObject {
 
   // Returns hand distance from camera in centimeters or 0 if hand was not recognized.
   calculateHandDistance(handIndex: HandIndex = 0): number {
+    // TODO: Fix scaling.
     const pos1: Vector2 | undefined = handTracker.getLandmarkPosition(
       HandLandmarkIndex.INDEX_FINGER_MCP,
       handIndex,
@@ -442,7 +441,7 @@ export class Hand extends GameObject {
     );
     let distanceWidth: number = 0;
     let distanceHeight: number = 0;
-    const screenSize: number = innerWidth * innerHeight;
+    const screenSize: number = this.scene.scale.width * this.scene.scale.height;
     if (pos1 !== undefined && pos2 !== undefined) {
       const pos4 = new Vector2((pos1.x + pos2.x) / 2, (pos1.y + pos2.y) / 2);
 

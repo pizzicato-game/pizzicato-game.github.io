@@ -2,16 +2,9 @@ import { loadData, updateDefaultConfig } from '../managers/storageManager';
 import { absPath, initVariables } from '../core/common';
 import { PhaserText, Scene, Sprite } from '../core/phaserTypes';
 import {
-  backgroundTextureKey,
-  backgroundTexturePath,
   configFilePath,
   defaultConfigFilePath,
-  electronScene,
-  fingerSpriteKey,
-  fingerSpritePath,
   initialScene,
-  loadingScene,
-  preloadTextStyle,
   webcamDisplayOptions,
 } from '../core/config';
 import webcam from '../objects/webcam';
@@ -22,12 +15,12 @@ export let background: Sprite;
 
 export class ElectronScene extends Scene {
   constructor() {
-    super(electronScene);
+    super('electron');
   }
 
   public async create() {
     await initVariables().then(() => {
-      this.scene.start(loadingScene);
+      this.scene.start('loading');
     });
   }
 }
@@ -36,33 +29,84 @@ export class LoadingScene extends Scene {
   // Synchronous order of Phaser function execution: constructor() -> init() -> preload() -> create() -> update()
 
   constructor() {
-    super(loadingScene);
+    super('loading');
   }
 
   preload() {
-    this.load.image(fingerSpriteKey, absPath(fingerSpritePath));
-    this.load.image(backgroundTextureKey, absPath(backgroundTexturePath));
+    this.load.image('finger', absPath('assets/sprites/finger.png'));
+    this.load.image('button', absPath('assets/ui/button.png'));
+    this.load.image('targetOuter', absPath('assets/sprites/target_outer.png'));
+    this.load.image('targetInner', absPath('assets/sprites/target_inner.png'));
+    this.load.audio('pinch', absPath('assets/sounds/ui/menu_ding.mp3'));
+    this.load.image('title', absPath('assets/ui/title.png'));
+    this.load.image('background', absPath('assets/ui/background.png'));
+    this.load.image(
+      'levelBackground',
+      absPath('assets/ui/level_background.png'),
+    );
+    this.load.image('levelChange', absPath('assets/ui/level_change.png'));
+    this.load.image(
+      'videoBackground',
+      absPath('assets/ui/video_background.png'),
+    );
+    this.load.image(
+      'optionsBackground',
+      absPath('assets/ui/options_background.png'),
+    );
+    this.load.image(
+      'defaultVideoBackground',
+      absPath('assets/ui/default_video_background.png'),
+    );
+    this.load.image(
+      'songNameBackground',
+      absPath('assets/ui/song_name_background.png'),
+    );
+    this.load.image(
+      'trackInfoBackground',
+      absPath('assets/ui/track_info_background.png'),
+    );
+    this.load.image('countdown', absPath('assets/sprites/countdown.png'));
+    this.load.audio(
+      'metronomeHighNote',
+      absPath('assets/sounds/metronome/high.mp3'),
+    );
+    this.load.audio(
+      'metronomeLowNote',
+      absPath('assets/sounds/metronome/low.mp3'),
+    );
+
+    this.load.image(
+      'scoreboardBackground1',
+      absPath('assets/ui/scoreboard_background1.png'),
+    );
+    this.load.image(
+      'scoreboardBackground2',
+      absPath('assets/ui/scoreboard_background2.png'),
+    );
+    this.load.image(
+      'progressSegment',
+      absPath('assets/ui/progress_segment.png'),
+    );
+    this.load.image('flare', absPath('assets/sprites/flare.png'));
   }
 
   async create() {
     background = this.add
-      .sprite(0, 0, backgroundTextureKey)
+      .sprite(0, 0, 'background')
       .setOrigin(0, 0)
       .setVisible(false);
-    background.displayWidth = window.innerWidth;
-    background.displayHeight =
-      (window.innerWidth * background.height) / background.width;
+    // TODO: Check if necessary.
+    // background.displayWidth = window.innerWidth;
+    // background.displayHeight =
+    //   (window.innerWidth * background.height) / background.width;
 
     const loadingText: PhaserText = this.add
-      .text(
-        this.cameras.main.worldView.x + this.cameras.main.width / 2,
-        this.cameras.main.worldView.y + this.cameras.main.height / 2,
-        '',
-        preloadTextStyle,
-      )
+      .text(this.scale.width, this.scale.height, '', {
+        font: '32px Courier',
+        color: '#00ff00',
+      })
       .setShadow(1, 1)
-      .setDepth(1000)
-      .setOrigin(0.5);
+      .setDepth(1000);
 
     await webcam
       .init(webcamDisplayOptions, this.updateText.bind(this, loadingText))

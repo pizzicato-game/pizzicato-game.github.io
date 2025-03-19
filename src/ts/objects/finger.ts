@@ -9,10 +9,10 @@ export default class Finger extends MatterSprite {
 
   constructor(
     scene: Scene,
-    spriteKey: string,
     name: string,
     landmarkIndex: HandLandmarkIndex,
     spriteScale: number,
+    spriteKey: string = 'finger',
   ) {
     super(scene.matter.world, 0, 0, spriteKey, undefined, {
       render: {

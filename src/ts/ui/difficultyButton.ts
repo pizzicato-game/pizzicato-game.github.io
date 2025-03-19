@@ -3,54 +3,35 @@ import { PhaserText, Vector2 } from '../core/phaserTypes';
 import HandScene from '../scenes/handScene';
 import { ToggleButton } from '../ui/toggleButton';
 
-const bpmTextOffset: number = 0.023;
-
 export class DifficultyButton extends ToggleButton {
   private readonly bpmIndex_: number;
   private readonly bpm: number;
   private readonly bpmText: PhaserText;
 
-  private readonly bpmTextOptions = {
-    font: '20px Courier New',
-    color: 0xffffff,
-  };
-
   constructor(
-    scene: HandScene,
-    position: Vector2,
-    scale: Vector2,
-    onSpriteKey: string,
-    offSpriteKey: string,
-    soundKey: string,
-    interactable: boolean,
     bpmIndex: number,
     bpm: number,
-    initialState: boolean = true,
+    scene: HandScene,
+    x: number,
+    y: number,
+    onPinch: () => void = () => {},
+    spriteKey: string,
+    toggledSpriteKey: string,
+    toggled: boolean = false,
+    soundKey: string = 'pinch',
   ) {
-    super(
-      scene,
-      position,
-      scale,
-      onSpriteKey,
-      offSpriteKey,
-      soundKey,
-      interactable,
-      initialState,
-    );
+    super(scene, x, y, onPinch, spriteKey, toggledSpriteKey, toggled, soundKey);
     this.bpmIndex_ = bpmIndex;
     this.bpm = bpm;
     this.bpmText = this.scene.add.text(0, 0, undefinedText, {
-      font: this.bpmTextOptions.font,
+      font: '20px Courier New',
     });
     this.bpmText.setText('BPM: ' + this.bpm.toString());
 
     // Ensure position is set after text because text varies the displaySize.
-    this.bpmText.setPosition(
-      position.x - this.bpmText.displayWidth / 2,
-      position.y -
-        this.bpmText.displayHeight / 2 +
-        window.innerHeight * bpmTextOffset,
-    );
+    const textCenter: Vector2 = this.getCenter();
+
+    this.bpmText.setPosition(textCenter.x, textCenter.y + 25);
 
     this.updateTint();
 
@@ -64,7 +45,7 @@ export class DifficultyButton extends ToggleButton {
       this.bpmText.setTintFill(difficultyButtonChosenTint);
       this.setTintFill(difficultyButtonChosenTint);
     } else {
-      this.bpmText.setTintFill(this.bpmTextOptions.color);
+      this.bpmText.setTintFill(0xffffff);
       this.clearTint();
     }
   }

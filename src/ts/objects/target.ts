@@ -2,7 +2,6 @@ import { TargetTweenOptions } from '../core/interfaces';
 import HandScene from '../scenes/handScene';
 import { config } from '../managers/storageManager';
 import { PlayableLayer } from '../level/layer';
-import { absPath } from '../core/common';
 
 import {
   AudioTrack,
@@ -26,7 +25,6 @@ import {
   targetRotationDuration,
   targetRotationEase,
   targetTextOptions,
-  targetTextureOptions,
   undefinedText,
   outerRingDepth,
   targetDepth,
@@ -61,22 +59,6 @@ export default class Target extends MatterSprite {
   // Based on layer preview time and onTimeDuration.
   private readonly earlyDuration: number;
   // deadDuration is constant and taken from config.ts
-
-  public static preload(scene: HandScene) {
-    scene.load.image(
-      targetTextureOptions.keyInner,
-      absPath(targetTextureOptions.pathInner),
-    );
-    scene.load.image(
-      targetTextureOptions.keyOuter,
-      absPath(targetTextureOptions.pathOuter),
-    );
-  }
-
-  public static unload(scene: HandScene) {
-    scene.textures.remove(targetTextureOptions.keyInner);
-    scene.textures.remove(targetTextureOptions.keyOuter);
-  }
 
   constructor(
     scene: HandScene,
@@ -184,7 +166,6 @@ export default class Target extends MatterSprite {
         color: targetTextOptions.color,
       },
     );
-    this.targetText.setOrigin(0.5, 0.5);
     this.targetText.setDepth(targetTextDepth);
   }
 

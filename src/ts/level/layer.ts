@@ -74,14 +74,7 @@ export class PlayableLayer extends Layer {
     return this.songTime_;
   }
 
-  public preload() {
-    this.infoHud.preload();
-    this.metronome.preload();
-    this.progress.preload();
-  }
-
   public unload() {
-    this.metronome.unload();
     this.infoHud.destroy();
   }
 

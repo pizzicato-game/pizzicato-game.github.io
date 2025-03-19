@@ -1,29 +1,17 @@
 import HandScene from '../scenes/handScene';
 import Level from '../level/level';
-import {
-  defaultLevelBackgroundKey,
-  defaultLevelBackgroundPath,
-  escapeKey,
-  levelScene,
-  mainMenuScene,
-  scoreboardScene,
-} from '../core/config';
-import { absPath } from '../core/common';
+import { escapeKey } from '../core/config';
 
 export default class LevelScene extends HandScene {
   private level: Level;
 
   constructor() {
-    super(levelScene);
+    super('level');
   }
 
   preload() {
     this.level = this.scene.settings.data as Level;
     this.level.init(this);
-    this.load.image(
-      defaultLevelBackgroundKey,
-      absPath(defaultLevelBackgroundPath),
-    );
   }
 
   create() {
@@ -32,7 +20,7 @@ export default class LevelScene extends HandScene {
     if (this.level.hasCustomBackground()) {
       this.setBackgroundTexture(this.level.getBackgroundTextureKey());
     } else {
-      this.setBackgroundTexture(defaultLevelBackgroundKey);
+      this.setBackgroundTexture('levelBackground');
     }
 
     this.input.keyboard!.on(escapeKey, () => {
@@ -42,11 +30,11 @@ export default class LevelScene extends HandScene {
     this.level.start(
       () => {
         // Finished level callback.
-        this.scene.start(scoreboardScene, this.level);
+        this.scene.start('scoreboard', this.level);
       },
       () => {
         // Aborted level callback.
-        this.scene.start(mainMenuScene);
+        this.scene.start('mainMenu');
       },
     );
   }

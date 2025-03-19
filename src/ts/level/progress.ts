@@ -1,4 +1,4 @@
-import { absPath, assert } from '../core/common';
+import { assert } from '../core/common';
 import {
   entireLayerProgressRequired,
   progressBarDepth,
@@ -24,13 +24,6 @@ export default class Progress extends Group {
     this.setVisible(false);
   }
 
-  public preload() {
-    this.scene.load.image(
-      progressBarOptions.key,
-      absPath(progressBarOptions.path),
-    );
-  }
-
   public setup(
     initialProgress: number,
     nodeCount: number,
@@ -51,27 +44,33 @@ export default class Progress extends Group {
     this.tints = tints;
     this.requiredProgress = requiredProgress;
 
-    const progressSpriteWidth: number =
-      progressBarOptions.size.x / this.nodeCount;
+    const progressBarWidth: number = 768;
+    const progressSpriteHeight: number = 43;
+
+    const progressSpriteWidth: number = progressBarWidth / this.nodeCount;
 
     this.clear();
 
     this.createMultiple({
       quantity: this.nodeCount,
-      key: progressBarOptions.key,
+      key: 'progressSegment',
       visible: true,
       setXY: {
         x:
-          progressBarOptions.position.x -
-          progressBarOptions.size.x / 2 +
+          this.scene.scale.width / 2 -
+          progressBarWidth / 2 +
           progressSpriteWidth / 2,
-        y: progressBarOptions.position.y + progressBarOptions.size.y / 2,
+        y: 0,
         stepX: progressSpriteWidth,
+      },
+      setOrigin: {
+        x: 0.5,
+        y: 0,
       },
     });
 
     this.propertyValueSet('displayWidth', progressSpriteWidth);
-    this.propertyValueSet('displayHeight', progressBarOptions.size.y);
+    this.propertyValueSet('displayHeight', progressSpriteHeight);
 
     this.setDepth(progressBarDepth);
     this.redraw();

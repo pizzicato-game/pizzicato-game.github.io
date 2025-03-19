@@ -1,5 +1,5 @@
 import HandScene from '../scenes/handScene';
-import { absPath, assert } from '../core/common';
+import { assert } from '../core/common';
 import { config } from '../managers/storageManager';
 import {
   ColorObject,
@@ -14,7 +14,6 @@ import {
   streakOnFireColorWheelExtent,
   streakOnFireDuration,
   streakOnFireRequirement,
-  streakParticleOptions,
   streakStartRequirement,
   streakTextOptions,
   undefinedText,
@@ -47,7 +46,6 @@ export class Streak extends GameObject {
         },
       )
       .setVisible(false)
-      .setOrigin(0.5, 0.5)
       .setScale(streakTextOptions.scale)
       .setDepth(streakTextOptions.depth)
       .setStroke(streakTextOptions.color, streakTextOptions.strokeThickness)
@@ -59,17 +57,6 @@ export class Streak extends GameObject {
         true,
         true,
       );
-  }
-
-  public preload() {
-    this.scene.load.image(
-      streakParticleOptions.key,
-      absPath(streakParticleOptions.path),
-    );
-  }
-
-  public unload() {
-    this.scene.textures.remove(streakParticleOptions.key);
   }
 
   get current() {
@@ -150,7 +137,7 @@ export class Streak extends GameObject {
           this.flame = this.scene.add.particles(
             this.streakText.x,
             this.streakText.y,
-            streakParticleOptions.key,
+            'flare',
             streakFireOptions,
           );
           assert(streakTextOptions.depth != 0);

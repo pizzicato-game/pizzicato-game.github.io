@@ -29,7 +29,14 @@ export let currentUser: User | null = null;
 
 const config = {
   type: Phaser.WEBGL, // PHASER.CANVAS, PHASER.AUTO
-  scale: { mode: Phaser.Scale.RESIZE },
+  width: 1920,
+  height: 1080,
+  scale: {
+    // Fit to window
+    mode: Phaser.Scale.ScaleModes.FIT,
+    // Center vertically and horizontally
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
   transparent: true,
   physics: {
     default: 'matter',

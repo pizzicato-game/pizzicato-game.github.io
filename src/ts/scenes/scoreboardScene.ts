@@ -1,36 +1,10 @@
-import { absPath } from '../core/common';
 import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 import { config, saveToCSV, autoSaveToCSV } from '../managers/storageManager';
 import { LevelStats } from '../core/interfaces';
 import Level from '../level/level';
-import { Sprite, Vector2 } from '../core/phaserTypes';
-import {
-  layerScoreBackgroundPath,
-  layerScoreBackgroundTextureKey,
-  saveCSVButtonTextureKey,
-  saveCSVButtonTexturePath,
-  scoreboardBackgroundPath,
-  scoreboardBackgroundTextureKey,
-  backButtonTextureKey,
-  backButtonTexturePath,
-  buttonPinchSoundKey,
-  buttonPinchSoundPath,
-  escapeKey,
-  mainMenuScene,
-  muteButtonScale,
-  muteButtonTextureKey,
-  muteButtonTexturePath,
-  scoreboardBackgroundAudioFeintness,
-  scoreboardButtonBottomLevel,
-  scoreboardButtonTopLevel,
-  scoreboardRightButtonOffset,
-  scoreboardScene,
-  standardButtonScale,
-  uiHoverColor,
-  unmuteButtonTextureKey,
-  unmuteButtonTexturePath,
-} from '../core/config';
+import { Sprite } from '../core/phaserTypes';
+import { escapeKey, scoreboardBackgroundAudioFeintness } from '../core/config';
 
 import { ToggleButton } from '../ui/toggleButton';
 import { PlayableTrackLayerData } from '../level/trackTypes';
@@ -41,36 +15,22 @@ const leftButtonOffset = 0.4;
 const capitalize = s => (s && s[0].toUpperCase() + s.slice(1)) || '';
 
 export default class Scoreboard extends HandScene {
-  private backToMenu: Button;
-  private saveButton: Button;
-  private muteButton: ToggleButton;
+  private back: Button;
+  private save: Button;
+  private mute: ToggleButton;
   private level: Level;
   private levelStats: LevelStats;
 
   constructor() {
-    super(scoreboardScene);
+    super('scoreboard');
   }
 
   private exit() {
     this.level.removeBackgroundAudio(this);
-    this.scene.start(mainMenuScene);
+    this.scene.start('mainMenu');
   }
 
   preload() {
-    this.load.audio(buttonPinchSoundKey, absPath(buttonPinchSoundPath));
-    this.load.image(backButtonTextureKey, absPath(backButtonTexturePath));
-    this.load.image(muteButtonTextureKey, absPath(muteButtonTexturePath));
-    this.load.image(unmuteButtonTextureKey, absPath(unmuteButtonTexturePath));
-    this.load.image(saveCSVButtonTextureKey, absPath(saveCSVButtonTexturePath));
-    this.load.image(
-      layerScoreBackgroundTextureKey,
-      absPath(layerScoreBackgroundPath),
-    );
-    this.load.image(
-      scoreboardBackgroundTextureKey,
-      absPath(scoreboardBackgroundPath),
-    );
-
     this.level = this.scene.settings.data as Level;
     this.levelStats = this.level.score.levelStats;
     if (config.autoSaveCSV) {
@@ -80,32 +40,20 @@ export default class Scoreboard extends HandScene {
 
   create() {
     super.create();
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    const horizontalCenter = 0.5 * windowWidth;
-    const scaleFactor = Math.min(windowWidth / 1920, windowHeight / 1080);
 
-    this.backToMenu = new Button(
-      this,
-      new Vector2(horizontalCenter, windowHeight * scoreboardButtonTopLevel),
-      standardButtonScale,
-      backButtonTextureKey,
-      buttonPinchSoundKey,
-      true,
-    );
+    this.back = new Button(this, this.center.x, this.height * 0.9, () => {
+      this.exit();
+    });
 
-    this.muteButton = new ToggleButton(
+    this.mute = new ToggleButton(
       this,
-      new Vector2(
-        horizontalCenter + windowWidth * scoreboardRightButtonOffset,
-        windowHeight * scoreboardButtonBottomLevel,
-      ),
-      muteButtonScale,
-      muteButtonTextureKey,
-      unmuteButtonTextureKey,
-      buttonPinchSoundKey,
-      true,
-      true,
+      this.center.x + this.width * 0.45,
+      this.height * 0.9,
+      () => {
+        this.mute.toggle();
+      },
+      'unmute',
+      'mute',
     );
 
     this.level.addBackgroundAudio(this, {
@@ -114,20 +62,8 @@ export default class Scoreboard extends HandScene {
     });
     this.level.playBackgroundAudio();
 
-    this.muteButton.addToggleCallback((state: boolean) => {
+    this.mute.addToggleCallback((state: boolean) => {
       this.level.setBackgroundAudioMute(!state);
-    });
-
-    this.muteButton.addPinchCallbacks({
-      startPinch: () => {
-        this.muteButton.toggle();
-      },
-      startHover: () => {
-        this.muteButton.setTintFill(uiHoverColor);
-      },
-      endHover: () => {
-        this.muteButton.clearTint();
-      },
     });
 
     this.input.keyboard!.on(escapeKey, () => {
@@ -135,31 +71,16 @@ export default class Scoreboard extends HandScene {
     });
 
     if (!config.autoSaveCSV) {
-      this.saveButton = new Button(
+      this.save = new Button(
         this,
-        new Vector2(
-          horizontalCenter - windowWidth * leftButtonOffset,
-          windowHeight * buttonBottomLevel,
-        ),
-        new Vector2(0.6, 0.6),
-        saveCSVButtonTextureKey,
-        buttonPinchSoundKey,
-        true,
-      );
-
-      this.saveButton.addPinchCallbacks({
-        startPinch: () => {
+        this.center.x - this.width * leftButtonOffset,
+        this.height * buttonBottomLevel,
+        () => {
           saveToCSV(this.levelStats);
           // Optionally hide the save CSV button after file is saved.
           //setInteraction(this.saveButton, false)
         },
-        startHover: () => {
-          this.saveButton.setTintFill(uiHoverColor);
-        },
-        endHover: () => {
-          this.saveButton.clearTint();
-        },
-      });
+      );
     }
 
     //--------------------------------------------------------
@@ -167,21 +88,20 @@ export default class Scoreboard extends HandScene {
     const scoreboardBackgroundOpacity: number = 0.6;
 
     const _background0l: Sprite = this.add
-      .sprite(0, 0, scoreboardBackgroundTextureKey)
-      .setOrigin(0.5, 0.5)
-      .setScale(1.35 * scaleFactor, 1.25 * scaleFactor)
+      .sprite(0, 0, 'scoreboardBackground1')
+      .setScale(1.35, 1.25)
       .setAlpha(scoreboardBackgroundOpacity)
-      .setPosition(horizontalCenter, windowHeight * 0.25);
+      .setPosition(this.center.x, this.height * 0.25);
 
     //--------------------------------------------------------
 
     // Title
-    const title = this.add.text(horizontalCenter, 0, 'Scoreboard', {
+    const title = this.add.text(this.center.x, 0, 'Scoreboard', {
       color: '#01c303',
-      font: `${96 * scaleFactor}px Arial`,
+      font: `${96}px Arial`,
     });
-    title.setStroke('#000', 6 * scaleFactor);
-    title.setPosition(horizontalCenter - title.width / 2, windowHeight * 0.07);
+    title.setStroke('#000', 6);
+    title.setPosition(this.center.x - title.width / 2, this.height * 0.07);
 
     const totalNotes = this.levelStats.layersStats.reduce(
       (sum, x) => sum + x.total,
@@ -205,7 +125,7 @@ export default class Scoreboard extends HandScene {
     );
 
     const infoText = this.add.text(
-      horizontalCenter,
+      this.center.x,
       0,
       `Total Correct: ${hitNotes.toString()}/${totalNotes.toString()}\nLongest Streak: ${
         this.levelStats.maxStreak
@@ -213,12 +133,12 @@ export default class Scoreboard extends HandScene {
       {
         color: '#ffffff',
         align: 'center',
-        font: `${48 * scaleFactor}px Arial`,
+        font: `${48}px Arial`,
       },
     );
     infoText.setPosition(
-      horizontalCenter - infoText.width / 2,
-      windowHeight * 0.19,
+      this.center.x - infoText.width / 2,
+      this.height * 0.19,
     );
 
     //------------------------------------------
@@ -228,27 +148,26 @@ export default class Scoreboard extends HandScene {
       undefined,
       (layer: PlayableTrackLayerData, i: number) => {
         this.add
-          .sprite(0, 0, layerScoreBackgroundTextureKey)
-          .setOrigin(0.5, 0.5)
-          .setScale(1.35 * scaleFactor, 1.15 * scaleFactor)
+          .sprite(0, 0, 'scoreboardBackground2')
+          .setScale(1.35, 1.15)
           .setAlpha(scoreboardBackgroundOpacity)
           .setPosition(
-            windowWidth * layerBackgroundOffsets[i],
-            windowHeight * 0.63,
+            this.width * layerBackgroundOffsets[i],
+            this.height * 0.63,
           );
 
         const layerTitle = this.add.text(0, 0, `${capitalize(layer.id)}`, {
           color: '#01c303',
           align: 'center',
-          font: `${72 * scaleFactor}px Arial`,
+          font: `${72}px Arial`,
           fontStyle: 'bold',
         });
 
-        layerTitle.setStroke('#000', 4 * scaleFactor);
+        layerTitle.setStroke('#000', 4);
 
         layerTitle.setPosition(
-          windowWidth * layerTextOffsets[i] - layerTitle.width / 2,
-          windowHeight * 0.53,
+          this.width * layerTextOffsets[i] - layerTitle.width / 2,
+          this.height * 0.53,
         );
         const stats = this.levelStats.layersStats[i];
         let correct = 0;
@@ -267,27 +186,15 @@ export default class Scoreboard extends HandScene {
           {
             color: '#ffffff',
             align: 'center',
-            font: `${48 * scaleFactor}px Arial`,
+            font: `${48}px Arial`,
           },
         );
         layerText.setPosition(
-          windowWidth * layerTextOffsets[i] - layerText.width / 2,
-          windowHeight * 0.575 + 0.01,
+          this.width * layerTextOffsets[i] - layerText.width / 2,
+          this.height * 0.575 + 0.01,
         );
       },
     );
-
-    this.backToMenu.addPinchCallbacks({
-      startPinch: () => {
-        this.exit();
-      },
-      startHover: () => {
-        this.backToMenu.setTintFill(uiHoverColor);
-      },
-      endHover: () => {
-        this.backToMenu.clearTint();
-      },
-    });
   }
 
   update(time: number, delta: number): void {

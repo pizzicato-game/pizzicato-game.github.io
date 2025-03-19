@@ -12,6 +12,7 @@ export function drawHandLandmarks(
 ) {
   graphics.setDepth(landmarkDepth);
   handTracker.forEachLandmarkPosition((position: Vector2) => {
+    // TODO: Fix scaling.
     graphics.lineStyle(options.lineWidth, options.color, options.alpha);
     graphics.strokeCircle(position.x, position.y, options.radius);
   }, handIndex);
@@ -24,6 +25,7 @@ export function drawHandLandmarkConnections(
 ) {
   graphics.setDepth(landmarkConnectionDepth);
   handConnections.forEach(connection => {
+    // TODO: Fix scaling.
     const pos1: Vector2 | undefined = handTracker.getLandmarkPosition(
       connection[0],
       handIndex,

@@ -1,5 +1,5 @@
 import HandScene from '../scenes/handScene';
-import { absPath, assert } from '../core/common';
+import { assert } from '../core/common';
 import { config } from '../managers/storageManager';
 import {
   GameObject,
@@ -9,7 +9,6 @@ import {
   Tween,
 } from '../core/phaserTypes';
 import {
-  countdownTextOptions,
   countdownTextureOptions,
   metronomeMinimumBarCount,
   metronomeOptions,
@@ -27,52 +26,25 @@ export default class Metronome extends GameObject {
   constructor(scene: HandScene) {
     super(scene, 'metronome');
     this.timer = new TimerEvent({});
+
     this.countdownText = this.scene.add
-      .text(
-        countdownTextOptions.position.x,
-        countdownTextOptions.position.y,
-        undefinedText,
-        {
-          font: countdownTextOptions.font,
-          color: countdownTextOptions.color,
-        },
-      )
-      .setOrigin(0.5, 0.5)
-      .setScale(countdownTextOptions.scale)
-      .setDepth(countdownTextOptions.depth);
+      .text(scene.center.x, scene.center.y, undefinedText, {
+        font: '240px Arial',
+        color: 'white',
+      })
+      .setDepth(30);
     this.setVisible(false);
-  }
-
-  public preload() {
-    this.scene.load.image(
-      countdownTextureOptions.key,
-      absPath(countdownTextureOptions.path),
-    );
-    this.scene.load.audio(
-      metronomeOptions.highKey,
-      absPath(metronomeOptions.highPath),
-    );
-    this.scene.load.audio(
-      metronomeOptions.lowKey,
-      absPath(metronomeOptions.lowPath),
-    );
-  }
-
-  public unload() {
-    this.scene.cache.audio.remove(metronomeOptions.highKey);
-    this.scene.cache.audio.remove(metronomeOptions.lowKey);
   }
 
   public setup() {
     this.countdownTexture = this.scene.add
       .sprite(
-        countdownTextOptions.position.x,
-        countdownTextOptions.position.y,
-        countdownTextureOptions.key,
+        this.countdownText.getCenter().x,
+        this.countdownText.getCenter().y,
+        'countdown',
       )
       .setScale(countdownTextureOptions.scale)
       .setVisible(false)
-      .setOrigin(0.5, 0.5)
       .setAlpha(countdownTextureOptions.opacity)
       .setDepth(countdownTextureOptions.depth);
   }
@@ -149,12 +121,12 @@ export default class Metronome extends GameObject {
 
   private display(beat: number, beatDuration: number) {
     this.countdownText.setText(beat.toString());
-    this.countdownText.setScale(countdownTextOptions.scale);
+    this.countdownText.setScale(1);
     this.countdownTexture.setScale(countdownTextureOptions.scale);
     this.setVisible(true);
     this.shrinkTween = this.scene.tweens.add({
       targets: [this.countdownText, this.countdownTexture],
-      ease: countdownTextOptions.ease,
+      ease: 'Power0',
       duration: beatDuration * 0.9, // 0.9 provides a short buffer for next countdown number to spawn
       scale: 0,
       repeat: 0,

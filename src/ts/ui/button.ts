@@ -1,9 +1,12 @@
-import { buttonDepth, buttonPinchFinger } from '../core/config';
+import {
+  buttonDepth,
+  buttonHoverTint,
+  buttonPinchFinger,
+} from '../core/config';
 import { PinchCallbacks } from '../core/interfaces';
-import { AudioTrack, MatterSprite, Vector2 } from '../core/phaserTypes';
+import { AudioTrack, MatterSprite } from '../core/phaserTypes';
 import { config } from '../managers/storageManager';
 import HandScene from '../scenes/handScene';
-import setInteraction from '../util/interaction';
 
 export class Button extends MatterSprite {
   public readonly scene: HandScene;
@@ -11,13 +14,13 @@ export class Button extends MatterSprite {
 
   constructor(
     scene: HandScene,
-    position: Vector2,
-    scale: Vector2,
-    spriteKey: string,
-    soundKey: string,
-    interactable: boolean,
+    x: number,
+    y: number,
+    onPinch: () => void = () => {},
+    spriteKey: string = 'button',
+    soundKey: string = 'pinch',
   ) {
-    super(scene.matter.world, position.x, position.y, spriteKey, undefined, {
+    super(scene.matter.world, x, y, spriteKey, undefined, {
       render: {
         visible: true,
       },
@@ -32,10 +35,17 @@ export class Button extends MatterSprite {
     });
 
     this.setSensor(true);
-    this.setOrigin(0.5, 0.5);
-    this.setScale(scale.x, scale.y);
     this.setDepth(buttonDepth);
-    setInteraction(this, interactable);
+
+    this.setPinchCallbacks({
+      startPinch: onPinch,
+      startHover: () => {
+        this.setTintFill(buttonHoverTint);
+      },
+      endHover: () => {
+        this.clearTint();
+      },
+    });
 
     this.on('destroy', () => {
       this.scene.hand.removePinchCheck(buttonPinchFinger, this);
@@ -46,7 +56,19 @@ export class Button extends MatterSprite {
     this.scene.hand.removePinchCheck(buttonPinchFinger, this);
   }
 
-  public addPinchCallbacks(pinchCallbacks: PinchCallbacks) {
+  public setOnPinch(onPinch: () => void) {
+    this.setPinchCallbacks({
+      startPinch: onPinch,
+      startHover: () => {
+        this.setTintFill(buttonHoverTint);
+      },
+      endHover: () => {
+        this.clearTint();
+      },
+    });
+  }
+
+  public setPinchCallbacks(pinchCallbacks: PinchCallbacks) {
     const onTriggerStart = () => {
       pinchCallbacks.startPinch?.();
       this.sound.play({

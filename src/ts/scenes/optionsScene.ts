@@ -1,4 +1,3 @@
-import { absPath } from '../core/common';
 import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
@@ -6,60 +5,25 @@ import { Checkbox } from '../ui/checkbox';
 import {
   config,
   defaultConfig,
-  loadData,
   saveConfigData,
 } from '../managers/storageManager';
 import webcam from '../objects/webcam';
 import { ConfigData } from '../core/interfaces';
 import { EventEmitter, Sprite, Tween, Vector2 } from '../core/phaserTypes';
 import {
-  backButtonTextureKey,
-  backButtonTexturePath,
-  buttonPinchSoundKey,
-  buttonPinchSoundPath,
   escapeKey,
   fingerColors,
-  mainMenuScene,
-  optionsBackgroundPath,
-  optionsBackgroundTextureKey,
-  optionsButtonGap,
-  optionsButtonTopLevel,
   optionsCheckboxOffset,
-  optionsScene,
   optionsSliderLabelOffset,
-  resetButtonTextureKey,
-  resetButtonTexturePath,
-  standardButtonScale,
-  targetInnerTextureKey,
-  targetInnerTexturePath,
   thumbFingerId,
-  uiHoverColor,
   undefinedText,
 } from '../core/config';
-
-const windowWidth = window.innerWidth;
-const windowHeight = window.innerHeight;
-
-const horizontalCenter = 0.5 * windowWidth;
-
-const leftAlignment = windowWidth * 0.1;
-const rightAlignment = windowWidth * 0.64;
-const verticalAlignment1 = windowHeight * 0.1;
-const verticalAlignment1Offset = windowHeight * 0.08;
-
-const verticalAlignment2 = windowHeight * 0.32;
-const verticalAlignment2Offset = windowHeight * 0.08;
-
-const verticalAlignment3 = windowHeight * 0.57;
-const verticalAlignment3Offset = windowHeight * 0.08;
-
-const optionsSliderSize = new Vector2(windowWidth * 0.26, windowHeight * 0.03);
 
 export default class Options extends HandScene {
   private configData: ConfigData;
   private defaultData: ConfigData;
 
-  private backToMenu: Button;
+  private back: Button;
   private resetConfig: Button;
 
   private rotateTween: Tween;
@@ -69,7 +33,7 @@ export default class Options extends HandScene {
   private emitter: EventEmitter;
 
   constructor() {
-    super(optionsScene);
+    super('options');
   }
 
   private setConfig() {
@@ -83,18 +47,7 @@ export default class Options extends HandScene {
     if (this.rotateTween != undefined) {
       this.rotateTween.destroy();
     }
-    this.scene.start(mainMenuScene);
-  }
-
-  async preload() {
-    this.load.audio(buttonPinchSoundKey, absPath(buttonPinchSoundPath));
-    this.load.image(
-      optionsBackgroundTextureKey,
-      absPath(optionsBackgroundPath),
-    );
-    this.load.image(backButtonTextureKey, absPath(backButtonTexturePath));
-    this.load.image(resetButtonTextureKey, absPath(resetButtonTexturePath));
-    this.load.image(targetInnerTextureKey, absPath(targetInnerTexturePath));
+    this.scene.start('mainMenu');
   }
 
   public async create() {
@@ -107,27 +60,30 @@ export default class Options extends HandScene {
   }
 
   private createOptions() {
-    this.backToMenu = new Button(
+    const optionsSliderSize = new Vector2(
+      this.width * 0.26,
+      this.height * 0.03,
+    );
+
+    this.back = new Button(
       this,
-      new Vector2(
-        horizontalCenter - windowWidth * optionsButtonGap,
-        windowHeight * optionsButtonTopLevel,
-      ),
-      standardButtonScale,
-      backButtonTextureKey,
-      buttonPinchSoundKey,
-      true,
+      this.center.x - this.width * 0.1,
+      this.height * 0.9,
+      () => {
+        this.saveAndExit();
+      },
     );
     this.resetConfig = new Button(
       this,
-      new Vector2(
-        horizontalCenter + windowWidth * optionsButtonGap,
-        windowHeight * optionsButtonTopLevel,
-      ),
-      standardButtonScale,
-      resetButtonTextureKey,
-      buttonPinchSoundKey,
-      true,
+      this.center.x + this.width * 0.1,
+      this.height * 0.9,
+      async () => {
+        this.configData = structuredClone(this.defaultData);
+        for (const option of this.options) {
+          option.reset(this.configData);
+        }
+        this.setConfig();
+      },
     );
 
     this.input.keyboard!.on(escapeKey, () => {
@@ -135,72 +91,48 @@ export default class Options extends HandScene {
     });
 
     const _background1l: Sprite = this.add
-      .sprite(
-        windowWidth * 0.09,
-        windowHeight * 0.05,
-        optionsBackgroundTextureKey,
-      )
+      .sprite(this.width * 0.09, this.height * 0.05, 'optionsBackground')
       .setOrigin(0, 0)
       .setAlpha(0.8)
-      .setDisplaySize(windowWidth * 0.28, windowHeight * 0.185);
+      .setDisplaySize(this.width * 0.28, this.height * 0.185);
 
     const _background2l: Sprite = this.add
-      .sprite(
-        windowWidth * 0.09,
-        windowHeight * 0.26,
-        optionsBackgroundTextureKey,
-      )
+      .sprite(this.width * 0.09, this.height * 0.26, 'optionsBackground')
       .setOrigin(0, 0)
       .setAlpha(0.8)
-      .setDisplaySize(windowWidth * 0.28, windowHeight * 0.27);
+      .setDisplaySize(this.width * 0.28, this.height * 0.27);
 
     const _background3l: Sprite = this.add
-      .sprite(
-        windowWidth * 0.09,
-        windowHeight * 0.55,
-        optionsBackgroundTextureKey,
-      )
+      .sprite(this.width * 0.09, this.height * 0.55, 'optionsBackground')
       .setOrigin(0, 0)
       .setAlpha(0.8)
-      .setDisplaySize(windowWidth * 0.28, windowHeight * 0.23);
+      .setDisplaySize(this.width * 0.28, this.height * 0.23);
 
     const _background1r: Sprite = this.add
-      .sprite(
-        windowWidth * 0.63,
-        windowHeight * 0.05,
-        optionsBackgroundTextureKey,
-      )
+      .sprite(this.width * 0.63, this.height * 0.05, 'optionsBackground')
       .setOrigin(0, 0)
       .setAlpha(0.8)
-      .setDisplaySize(windowWidth * 0.28, windowHeight * 0.185);
+      .setDisplaySize(this.width * 0.28, this.height * 0.185);
 
     const _background2r: Sprite = this.add
-      .sprite(
-        windowWidth * 0.63,
-        windowHeight * 0.26,
-        optionsBackgroundTextureKey,
-      )
+      .sprite(this.width * 0.63, this.height * 0.26, 'optionsBackground')
       .setOrigin(0, 0)
       .setAlpha(0.8)
-      .setDisplaySize(windowWidth * 0.28, windowHeight * 0.27);
+      .setDisplaySize(this.width * 0.28, this.height * 0.27);
 
     const _background3r: Sprite = this.add
-      .sprite(
-        windowWidth * 0.63,
-        windowHeight * 0.55,
-        optionsBackgroundTextureKey,
-      )
+      .sprite(this.width * 0.63, this.height * 0.55, 'optionsBackground')
       .setOrigin(0, 0)
       .setAlpha(0.8)
-      .setDisplaySize(windowWidth * 0.28, windowHeight * 0.23);
+      .setDisplaySize(this.width * 0.28, this.height * 0.23);
 
     // --------------------------------------------------------
 
     const targetExample = this.add
       .sprite(
-        windowWidth * 0.5,
-        verticalAlignment1 + verticalAlignment1Offset * 0 + windowHeight * 0.15,
-        targetInnerTextureKey,
+        this.width * 0.5,
+        this.height * 0.1 + this.height * 0.08 * 0 + this.height * 0.15,
+        'targetInner',
       )
       .setTint(fingerColors[thumbFingerId])
       .setScale(this.configData['targetSize']);
@@ -220,10 +152,7 @@ export default class Options extends HandScene {
     }
     const targetScaleSlider = new Slider(
       this,
-      new Vector2(
-        leftAlignment,
-        verticalAlignment1 + verticalAlignment1Offset * 0,
-      ),
+      new Vector2(this.width * 0.1, this.height * 0.1 + this.height * 0.08 * 0),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
       this.configData,
@@ -243,10 +172,7 @@ export default class Options extends HandScene {
 
     const fingerScaleSlider = new Slider(
       this,
-      new Vector2(
-        leftAlignment,
-        verticalAlignment1 + verticalAlignment1Offset * 1,
-      ),
+      new Vector2(this.width * 0.1, this.height * 0.1 + this.height * 0.08 * 1),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
       this.configData,
@@ -276,8 +202,8 @@ export default class Options extends HandScene {
     const cameraOpacitySlider = new Slider(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment2 + verticalAlignment2Offset * 0,
+        this.width * 0.1,
+        this.height * 0.32 + this.height * 0.08 * 0,
       ),
       optionsSliderSize,
       optionsSliderLabelOffset,
@@ -289,10 +215,8 @@ export default class Options extends HandScene {
     const cameraVisibility = new Checkbox(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment2 +
-          verticalAlignment2Offset * 0 +
-          optionsCheckboxOffset.y,
+        this.width * 0.1,
+        this.height * 0.32 + this.height * 0.08 * 0 + optionsCheckboxOffset.y,
       ),
       25,
       undefined,
@@ -322,8 +246,8 @@ export default class Options extends HandScene {
     const layerSkipLoopSlider = new Slider(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment2 + verticalAlignment2Offset * 1,
+        this.width * 0.1,
+        this.height * 0.32 + this.height * 0.08 * 1,
       ),
       optionsSliderSize,
       optionsSliderLabelOffset,
@@ -340,10 +264,8 @@ export default class Options extends HandScene {
     const layerSkipButton = new Checkbox(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment2 +
-          verticalAlignment2Offset * 1 +
-          optionsCheckboxOffset.y,
+        this.width * 0.1,
+        this.height * 0.32 + this.height * 0.08 * 1 + optionsCheckboxOffset.y,
       ),
       25,
       undefined,
@@ -369,8 +291,8 @@ export default class Options extends HandScene {
     const layerSkipLoopThresholdSlider = new Slider(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment2 + verticalAlignment2Offset * 2,
+        this.width * 0.1,
+        this.height * 0.32 + this.height * 0.08 * 2,
       ),
       optionsSliderSize,
       optionsSliderLabelOffset,
@@ -387,10 +309,8 @@ export default class Options extends HandScene {
     const skipLayers = new Checkbox(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment2 +
-          verticalAlignment2Offset * 2 +
-          optionsCheckboxOffset.y,
+        this.width * 0.1,
+        this.height * 0.32 + this.height * 0.08 * 2 + optionsCheckboxOffset.y,
       ),
       25,
       undefined,
@@ -416,8 +336,8 @@ export default class Options extends HandScene {
     const disableLayerProgress = new Checkbox(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment3 + verticalAlignment3Offset * 0,
+        this.width * 0.1,
+        this.height * 0.57 + this.height * 0.08 * 0,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -436,8 +356,8 @@ export default class Options extends HandScene {
     const fingerPinchesOnly = new Checkbox(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment3 + verticalAlignment3Offset * 1,
+        this.width * 0.1,
+        this.height * 0.57 + this.height * 0.08 * 1,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -456,8 +376,8 @@ export default class Options extends HandScene {
     const disableEffects = new Checkbox(
       this,
       new Vector2(
-        leftAlignment,
-        verticalAlignment3 + verticalAlignment3Offset * 2,
+        this.width * 0.1,
+        this.height * 0.57 + this.height * 0.08 * 2,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -482,8 +402,8 @@ export default class Options extends HandScene {
     const onTimeDurationSlider = new Slider(
       this,
       new Vector2(
-        rightAlignment,
-        verticalAlignment1 + verticalAlignment1Offset * 0,
+        this.width * 0.64,
+        this.height * 0.1 + this.height * 0.08 * 0,
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
@@ -505,8 +425,8 @@ export default class Options extends HandScene {
     const lateDurationSlider = new Slider(
       this,
       new Vector2(
-        rightAlignment,
-        verticalAlignment1 + verticalAlignment1Offset * 1,
+        this.width * 0.64,
+        this.height * 0.1 + this.height * 0.08 * 1,
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
@@ -528,8 +448,8 @@ export default class Options extends HandScene {
     const pinchVolumeSlider = new Slider(
       this,
       new Vector2(
-        rightAlignment,
-        verticalAlignment2 + verticalAlignment2Offset * 0,
+        this.width * 0.64,
+        this.height * 0.32 + this.height * 0.08 * 0,
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
@@ -549,8 +469,8 @@ export default class Options extends HandScene {
     const backgroundVolumeSlider = new Slider(
       this,
       new Vector2(
-        rightAlignment,
-        verticalAlignment2 + verticalAlignment2Offset * 1,
+        this.width * 0.64,
+        this.height * 0.32 + this.height * 0.08 * 1,
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
@@ -570,8 +490,8 @@ export default class Options extends HandScene {
     const requireSinglePinch = new Checkbox(
       this,
       new Vector2(
-        rightAlignment,
-        verticalAlignment2 + verticalAlignment2Offset * 2,
+        this.width * 0.64,
+        this.height * 0.32 + this.height * 0.08 * 2,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -590,8 +510,8 @@ export default class Options extends HandScene {
     const disableVisualMetronome = new Checkbox(
       this,
       new Vector2(
-        rightAlignment,
-        verticalAlignment3 + verticalAlignment3Offset * 0,
+        this.width * 0.64,
+        this.height * 0.57 + this.height * 0.08 * 0,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -610,8 +530,8 @@ export default class Options extends HandScene {
     const disableSonification = new Checkbox(
       this,
       new Vector2(
-        rightAlignment,
-        verticalAlignment3 + verticalAlignment3Offset * 1,
+        this.width * 0.64,
+        this.height * 0.57 + this.height * 0.08 * 1,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -630,7 +550,7 @@ export default class Options extends HandScene {
     // TODO: Re-enable this once there is a way to store it automatically on a server or elsewhere.
     // const autoSaveCSV = new Checkbox(
     //   this,
-    //   new Vector2(rightAlignment, verticalAlignment3 + verticalAlignment3Offset * 2),
+    //   new Vector2(this.width * 0.64, this.height * 0.57 + this.height * 0.08 * 2),
     //   25,
     //   new Vector2(-optionsCheckboxOffset.x, 0),
     //   'Automatically Save CSV',
@@ -644,34 +564,6 @@ export default class Options extends HandScene {
     // this.add.existing(autoSaveCSV)
 
     // -------------------------------------------------------- MENU BUTTONS --------------------------------------------------------
-
-    this.backToMenu.addPinchCallbacks({
-      startPinch: () => {
-        this.saveAndExit();
-      },
-      startHover: () => {
-        this.backToMenu.setTintFill(uiHoverColor);
-      },
-      endHover: () => {
-        this.backToMenu.clearTint();
-      },
-    });
-
-    this.resetConfig.addPinchCallbacks({
-      startPinch: async () => {
-        this.configData = structuredClone(this.defaultData);
-        for (const option of this.options) {
-          option.reset(this.configData);
-        }
-        this.setConfig();
-      },
-      startHover: () => {
-        this.resetConfig.setTintFill(uiHoverColor);
-      },
-      endHover: () => {
-        this.resetConfig.clearTint();
-      },
-    });
   }
 
   public update(time: number, delta: number): void {

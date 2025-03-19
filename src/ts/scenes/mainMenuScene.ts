@@ -2,58 +2,24 @@ import { absPath, listLevelDirectories } from '../core/common';
 import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 import Level from '../level/level';
-import { Sprite, Vector2 } from '../core/phaserTypes';
-import {
-  buttonPinchSoundKey,
-  buttonPinchSoundPath,
-  calibrationScene,
-  levelListPath,
-  levelSelectScene,
-  logoTextureKey,
-  logoTexturePath,
-  mainMenuButtonGap,
-  mainMenuScene,
-  mainMenubuttonTopLevel,
-  menuCalibrateButtonTextureKey,
-  menuCalibrateButtonTexturePath,
-  menuSelectButtonTextureKey,
-  menuSelectButtonTexturePath,
-  optionsButtonTextureKey,
-  optionsButtonTexturePath,
-  optionsScene,
-  standardButtonScale,
-  uiHoverColor,
-} from '../core/config';
+import { Sprite } from '../core/phaserTypes';
+import { levelListPath } from '../core/config';
 
 export default class MainMenu extends HandScene {
-  private menuLogo: Sprite | undefined;
-  private menuSelectLevel: Button;
-  private menuCalibrate: Button;
-  private menuOptions: Button;
+  private title: Sprite;
+  private calibration: Button;
+  private levelSelect: Button;
+  private options: Button;
 
   private levels: Level[];
 
   constructor() {
-    super(mainMenuScene);
+    super('mainMenu');
 
     this.levels = [];
   }
 
   async preload() {
-    super.preload();
-
-    this.load.audio(buttonPinchSoundKey, absPath(buttonPinchSoundPath));
-    this.load.image(logoTextureKey, absPath(logoTexturePath));
-    this.load.image(optionsButtonTextureKey, absPath(optionsButtonTexturePath));
-    this.load.image(
-      menuSelectButtonTextureKey,
-      absPath(menuSelectButtonTexturePath),
-    );
-    this.load.image(
-      menuCalibrateButtonTextureKey,
-      absPath(menuCalibrateButtonTexturePath),
-    );
-
     await listLevelDirectories(absPath(levelListPath)).then(trackNames => {
       trackNames.forEach((track: string, _index: number) => {
         this.levels.push(new Level(track));
@@ -66,7 +32,7 @@ export default class MainMenu extends HandScene {
       });
     });
 
-    // TODO: Call this.level.unloadTrack(this) somewhere.
+    // TODO: Call this.level.unloadTrack(this) somewhere?
   }
 
   create() {
@@ -76,88 +42,22 @@ export default class MainMenu extends HandScene {
       level.setBPM(0);
     });
 
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    const horizontalCenter = 0.5 * windowWidth;
+    const buttonsY: number = 800;
 
-    this.menuCalibrate = new Button(
-      this,
-      new Vector2(
-        horizontalCenter - windowWidth * mainMenuButtonGap,
-        mainMenubuttonTopLevel * windowHeight,
-      ),
-      standardButtonScale,
-      menuCalibrateButtonTextureKey,
-      buttonPinchSoundKey,
-      true,
-    );
+    this.calibration = new Button(this, this.center.x - 300, buttonsY, () => {
+      this.scene.start('calibration');
+    });
+    this.options = new Button(this, this.center.x + 300, buttonsY, () => {
+      this.scene.start('options');
+    });
 
     if (this.levels.length > 0) {
-      this.menuSelectLevel = new Button(
-        this,
-        new Vector2(horizontalCenter, mainMenubuttonTopLevel * windowHeight),
-        standardButtonScale,
-        menuSelectButtonTextureKey,
-        buttonPinchSoundKey,
-        true,
-      );
-      this.menuSelectLevel.addPinchCallbacks({
-        startPinch: () => {
-          this.scene.start(levelSelectScene, this.levels);
-        },
-        startHover: () => {
-          this.menuSelectLevel.setTintFill(uiHoverColor);
-        },
-        endHover: () => {
-          this.menuSelectLevel.clearTint();
-        },
+      this.levelSelect = new Button(this, this.center.x, buttonsY, () => {
+        this.scene.start('levelSelect', this.levels);
       });
     }
 
-    this.menuOptions = new Button(
-      this,
-      new Vector2(
-        horizontalCenter + windowWidth * mainMenuButtonGap,
-        mainMenubuttonTopLevel * windowHeight,
-      ),
-      standardButtonScale,
-      optionsButtonTextureKey,
-      buttonPinchSoundKey,
-      true,
-    );
-
-    this.menuLogo = this.add
-      .sprite(0, 0, logoTextureKey)
-      .setOrigin(0, 0)
-      .setScale(0.7, 0.7);
-    this.menuLogo.setPosition(
-      horizontalCenter - this.menuLogo.displayWidth / 2,
-      0.25 * windowHeight,
-    );
-
-    this.menuCalibrate.addPinchCallbacks({
-      startPinch: () => {
-        this.scene.start(calibrationScene);
-      },
-      startHover: () => {
-        this.menuCalibrate.setTintFill(uiHoverColor);
-      },
-      endHover: () => {
-        this.menuCalibrate.clearTint();
-      },
-    });
-
-    this.menuOptions.addPinchCallbacks({
-      startPinch: () => {
-        this.scene.start(optionsScene);
-      },
-      startHover: () => {
-        this.menuOptions.setTintFill(uiHoverColor);
-      },
-      endHover: () => {
-        this.menuOptions.clearTint();
-      },
-    });
+    this.title = this.add.sprite(this.center.x, 270, 'title');
   }
 
   update(time: number, delta: number): void {
