@@ -597,7 +597,7 @@ export default class Options extends HandScene {
       this,
       new Vector2(
         this.width * 0.64,
-        this.height * 0.57 + this.height * 0.08 * 1,
+        this.height * 0.57 + this.height * 0.08 * 0.5,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -615,7 +615,7 @@ export default class Options extends HandScene {
       this,
       new Vector2(
         this.width * 0.64,
-        this.height * 0.57 + this.height * 0.08 * 2,
+        this.height * 0.57 + this.height * 0.08 * 1,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -628,6 +628,42 @@ export default class Options extends HandScene {
     );
     this.options.push(synchronizationEnabled);
     this.add.existing(synchronizationEnabled);
+
+    const unplayableBackingTracksEnabled = new Checkbox(
+      this,
+      new Vector2(
+        this.width * 0.64,
+        this.height * 0.57 + this.height * 0.08 * 1.5,
+      ),
+      25,
+      new Vector2(-optionsCheckboxOffset.x, 0),
+      'Enable Unplayable Backing Tracks',
+      config,
+      'unplayableBackingTracksEnabled',
+      (checkbox: Checkbox) => {
+        updateConfigValue(checkbox.key, checkbox.isChecked);
+      },
+    );
+    this.options.push(unplayableBackingTracksEnabled);
+    this.add.existing(unplayableBackingTracksEnabled);
+
+    const playableBackingTracksEnabled = new Checkbox(
+      this,
+      new Vector2(
+        this.width * 0.64,
+        this.height * 0.57 + this.height * 0.08 * 2.0,
+      ),
+      25,
+      new Vector2(-optionsCheckboxOffset.x, 0),
+      'Enable Playable Backing Tracks',
+      config,
+      'playableBackingTracksEnabled',
+      (checkbox: Checkbox) => {
+        updateConfigValue(checkbox.key, checkbox.isChecked);
+      },
+    );
+    this.options.push(playableBackingTracksEnabled);
+    this.add.existing(playableBackingTracksEnabled);
 
     // --------------------------------------------------------
 

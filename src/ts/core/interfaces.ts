@@ -22,9 +22,12 @@ export interface ConfigData {
   skipLayersAutomaticallyAfterLoop: number;
   autoSaveCSV: boolean;
 
-  disableLayerProgression: boolean;
   sonificationEnabled: boolean;
   synchronizationEnabled: boolean;
+  playableBackingTracksEnabled: boolean;
+  unplayableBackingTracksEnabled: boolean;
+
+  disableLayerProgression: boolean;
   indexFingerOnly: boolean;
 
   pinchVolume: number;

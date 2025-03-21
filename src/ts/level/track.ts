@@ -16,6 +16,7 @@ import {
   ticksPerBar,
   undefinedText,
 } from '../core/config';
+import { config } from '../managers/storageManager';
 
 export class Track {
   public data: TrackData;
@@ -151,17 +152,22 @@ export class Track {
     const audioTracks: AudioTrack[] = [];
     this.forEachLayer((layer: TrackLayerData, index: number) => {
       if (predicate == undefined || predicate(layer, index)) {
-        assert(layer.soundLoopKeys != undefined);
-        assert(
-          bpmIndex < layer.soundLoopKeys.length,
-          'BPM index out of range of layer sound loop keys',
-        );
-        audioTracks.push(
-          scene.sound.add(
-            this.getSoundKey(layer, layer.soundLoopKeys[bpmIndex]),
-            soundConfig,
-          ),
-        );
+        if (
+          (layer.playable && config.playableBackingTracksEnabled) ||
+          (!layer.playable && config.unplayableBackingTracksEnabled)
+        ) {
+          assert(layer.soundLoopKeys != undefined);
+          assert(
+            bpmIndex < layer.soundLoopKeys.length,
+            'BPM index out of range of layer sound loop keys',
+          );
+          audioTracks.push(
+            scene.sound.add(
+              this.getSoundKey(layer, layer.soundLoopKeys[bpmIndex]),
+              soundConfig,
+            ),
+          );
+        }
       }
     });
     return audioTracks;
