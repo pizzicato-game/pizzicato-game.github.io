@@ -61,7 +61,7 @@ export default class MainMenu extends HandScene {
       },
     );
 
-    this.title = this.add.sprite(this.center.x, 270, 'title');
+    this.title = this.add.sprite(this.center.x, 360, 'title');
   }
 
   update(time: number, delta: number): void {

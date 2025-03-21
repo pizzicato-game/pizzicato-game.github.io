@@ -35,9 +35,15 @@ export default class Calibration extends HandScene {
     super.create();
     this.enableCamera(true, calibrationMenuWebcamOpacity);
 
-    this.back = new Button(this, 'BACK', this.center.x, 972, () => {
-      this.exit();
-    });
+    this.back = new Button(
+      this,
+      'BACK',
+      this.center.x,
+      this.height - 100,
+      () => {
+        this.exit();
+      },
+    );
 
     this.setBackgroundTexture('calibrationBackground');
 

@@ -87,7 +87,7 @@ export default class Options extends HandScene {
       this,
       'BACK',
       this.center.x - halfButtonGapX,
-      this.height * 0.9,
+      this.height - 100,
       () => {
         this.saveAndExit();
       },
@@ -96,8 +96,8 @@ export default class Options extends HandScene {
       this,
       'RESET TO\nDEFAULT',
       this.center.x + halfButtonGapX,
-      this.height * 0.9,
-      async () => {
+      this.height - 100,
+      () => {
         console.info('INFO: Reset config to default');
         updateConfig(defaultConfig, false);
         for (const option of this.options) {

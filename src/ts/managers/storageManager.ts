@@ -11,7 +11,7 @@ export function updateConfig(
   data: ConfigData,
   announceInConsole: boolean = true,
 ) {
-  config = data;
+  config = structuredClone(data);
   if (announceInConsole) {
     console.info('INFO: Config set to:');
     console.info(config);
