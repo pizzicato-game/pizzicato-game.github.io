@@ -100,7 +100,7 @@ export default class Metronome extends GameObject {
       // Check metronome has not exited early.
       if (this.countdownText.active) {
         this.scene.sound.play(soundKey, {
-          volume: config.backgroundMusicLevel,
+          volume: config.backgroundMusicVolume,
         });
       }
     }
@@ -109,7 +109,7 @@ export default class Metronome extends GameObject {
     assert(totalBeats - beatsPerBar >= 0);
     if (this.beat >= totalBeats - beatsPerBar) {
       // Check metronome has not exited early.
-      if (this.countdownText.active && !config.disableVisualMetronome) {
+      if (this.countdownText.active && config.displayVisualMetronome) {
         this.display(beatInBar + metronomeMinimumBarCount, beatDuration);
       }
     }

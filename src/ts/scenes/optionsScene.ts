@@ -198,7 +198,7 @@ export default class Options extends HandScene {
     });
     this.setGlowTimeScale(glowDuration);
     if (
-      this.configData['fancyEffectsDisabled'] &&
+      this.configData['postProcessingDisabled'] &&
       this.glowTween != undefined
     ) {
       this.glowTween.pause();
@@ -305,7 +305,7 @@ export default class Options extends HandScene {
       optionsSliderSize,
       optionsSliderLabelOffset,
       this.configData,
-      'skipLoopThreshold',
+      'skipButtonAppearsAfterLoop',
       new Vector2(1, 16),
       (slider: Slider) => {
         slider.label!.setText(
@@ -324,7 +324,7 @@ export default class Options extends HandScene {
       undefined,
       undefinedText,
       this.configData,
-      'enableSkipButton',
+      'showSkipButton',
       (checkbox: Checkbox) => {
         this.configData[checkbox.key] = checkbox.isChecked;
         if (checkbox.isChecked) {
@@ -341,7 +341,7 @@ export default class Options extends HandScene {
 
     // --------------------------------------------------------
 
-    const layerSkipLoopThresholdSlider = new Slider(
+    const layerskipButtonAppearsAfterLoopSlider = new Slider(
       this,
       new Vector2(
         this.width * 0.1,
@@ -350,7 +350,7 @@ export default class Options extends HandScene {
       optionsSliderSize,
       optionsSliderLabelOffset,
       this.configData,
-      'autoSkipThreshold',
+      'skipLayersAutomaticallyAfterLoop',
       new Vector2(1, 16),
       (slider: Slider) => {
         slider.label!.setText(
@@ -369,19 +369,21 @@ export default class Options extends HandScene {
       undefined,
       undefinedText,
       this.configData,
-      'enableAutoSkip',
+      'skipLayersAutomatically',
       (checkbox: Checkbox) => {
         this.configData[checkbox.key] = checkbox.isChecked;
         if (checkbox.isChecked) {
-          layerSkipLoopThresholdSlider.draw();
+          layerskipButtonAppearsAfterLoopSlider.draw();
         } else {
-          layerSkipLoopThresholdSlider.hide('Skip Layers Automatically');
+          layerskipButtonAppearsAfterLoopSlider.hide(
+            'Skip Layers Automatically',
+          );
         }
       },
     );
-    this.options.push(layerSkipLoopThresholdSlider);
+    this.options.push(layerskipButtonAppearsAfterLoopSlider);
     this.options.push(skipLayers);
-    this.add.existing(layerSkipLoopThresholdSlider);
+    this.add.existing(layerskipButtonAppearsAfterLoopSlider);
     this.add.existing(skipLayers);
 
     // --------------------------------------------------------
@@ -436,7 +438,7 @@ export default class Options extends HandScene {
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Disable Post-Processing',
       this.configData,
-      'fancyEffectsDisabled',
+      'postProcessingDisabled',
       (checkbox: Checkbox) => {
         this.configData[checkbox.key] = checkbox.isChecked;
         if (checkbox.isChecked) {
@@ -517,7 +519,7 @@ export default class Options extends HandScene {
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
       this.configData,
-      'sonificationLevel',
+      'pinchVolume',
       new Vector2(0, 1),
       (slider: Slider) => {
         slider.label!.setText('Pinch Volume: ' + slider.getStringValue());
@@ -538,7 +540,7 @@ export default class Options extends HandScene {
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
       this.configData,
-      'backgroundMusicLevel',
+      'backgroundMusicVolume',
       new Vector2(0, 1),
       (slider: Slider) => {
         slider.label!.setText('Track Volume: ' + slider.getStringValue());
@@ -558,9 +560,9 @@ export default class Options extends HandScene {
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
-      'Require Single Pinches',
+      'Ignore Multifinger Pinches',
       this.configData,
-      'singlePinchRequirement',
+      'ignoreMultifingerPinches',
       (checkbox: Checkbox) => {
         this.configData[checkbox.key] = checkbox.isChecked;
       },
@@ -570,7 +572,7 @@ export default class Options extends HandScene {
 
     // --------------------------------------------------------
 
-    const disableVisualMetronome = new Checkbox(
+    const displayVisualMetronome = new Checkbox(
       this,
       new Vector2(
         this.width * 0.64,
@@ -578,19 +580,19 @@ export default class Options extends HandScene {
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
-      'Disable Visual Metronome',
+      'Display Visual Metronome',
       this.configData,
-      'disableVisualMetronome',
+      'displayVisualMetronome',
       (checkbox: Checkbox) => {
         this.configData[checkbox.key] = checkbox.isChecked;
       },
     );
-    this.options.push(disableVisualMetronome);
-    this.add.existing(disableVisualMetronome);
+    this.options.push(displayVisualMetronome);
+    this.add.existing(displayVisualMetronome);
 
     // --------------------------------------------------------
 
-    const disableSonification = new Checkbox(
+    const sonificationEnabled = new Checkbox(
       this,
       new Vector2(
         this.width * 0.64,
@@ -598,15 +600,33 @@ export default class Options extends HandScene {
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
-      'Disable Sonification',
+      'Enable Sonification',
       this.configData,
-      'disableSonification',
+      'sonificationEnabled',
       (checkbox: Checkbox) => {
         this.configData[checkbox.key] = checkbox.isChecked;
       },
     );
-    this.options.push(disableSonification);
-    this.add.existing(disableSonification);
+    this.options.push(sonificationEnabled);
+    this.add.existing(sonificationEnabled);
+
+    const synchronizationEnabled = new Checkbox(
+      this,
+      new Vector2(
+        this.width * 0.64,
+        this.height * 0.57 + this.height * 0.08 * 2,
+      ),
+      25,
+      new Vector2(-optionsCheckboxOffset.x, 0),
+      'Enable Synchronization',
+      this.configData,
+      'synchronizationEnabled',
+      (checkbox: Checkbox) => {
+        this.configData[checkbox.key] = checkbox.isChecked;
+      },
+    );
+    this.options.push(synchronizationEnabled);
+    this.add.existing(synchronizationEnabled);
 
     // --------------------------------------------------------
 

@@ -205,8 +205,8 @@ export default class InfoHUD extends GameObject {
 
   private updateSkipButtonAvailability(visible: boolean) {
     const available: boolean =
-      config.enableSkipButton &&
-      this.level.score.getLoopCount() >= config.skipLoopThreshold &&
+      config.showSkipButton &&
+      this.level.score.getLoopCount() >= config.skipButtonAppearsAfterLoop &&
       visible;
     if (this.skipButton != undefined) {
       setInteraction(this.skipButton, available);

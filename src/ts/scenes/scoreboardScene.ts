@@ -9,9 +9,6 @@ import { escapeKey, scoreboardBackgroundAudioFeintness } from '../core/config';
 import { ToggleButton } from '../ui/toggleButton';
 import { PlayableTrackLayerData } from '../level/trackTypes';
 
-const buttonBottomLevel = 0.9;
-const leftButtonOffset = 0.4;
-
 const capitalize = s => (s && s[0].toUpperCase() + s.slice(1)) || '';
 
 export default class Scoreboard extends HandScene {
@@ -24,7 +21,6 @@ export default class Scoreboard extends HandScene {
   constructor() {
     super('scoreboard');
   }
-
   private exit() {
     this.level.removeBackgroundAudio();
     this.scene.start('mainMenu');
@@ -67,7 +63,7 @@ export default class Scoreboard extends HandScene {
 
     this.level.addBackgroundAudio(this, {
       loop: true,
-      volume: config.backgroundMusicLevel * scoreboardBackgroundAudioFeintness,
+      volume: config.backgroundMusicVolume * scoreboardBackgroundAudioFeintness,
     });
     this.level.playBackgroundAudio();
 

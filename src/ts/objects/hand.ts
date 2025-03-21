@@ -53,6 +53,24 @@ export class Hand extends GameObject {
   private readonly fingers: Finger[] = [];
   private observers_: Observer[] = [];
 
+  // @return Returns the display width normalized to the game width of the first finger in the fingers list that exists.
+  public getNormalizedFingerRadius(): number | null {
+    for (const f of this.fingers) {
+      if (f) {
+        return f.normalizedRadius;
+      }
+    }
+    return null;
+  }
+
+  public getNormalizedFingerPosition(name: string): [number, number] | null {
+    const finger: Finger | undefined = this.getFinger(name);
+    if (finger === undefined) {
+      return null;
+    }
+    return finger.normalizedPosition;
+  }
+
   private getFinger(name: string): Finger | undefined {
     const i: number = this.fingers.findIndex((f: Finger) => f.name == name);
     if (i === invalidFingerIndex) return undefined;
@@ -62,7 +80,7 @@ export class Hand extends GameObject {
   private getFingersOtherThan(name: string): Finger[] {
     const otherFingers: Finger[] = [];
     for (const f of this.fingers) {
-      if (f.name == name) continue;
+      if (f && f.name == name) continue;
       otherFingers.push(f);
     }
     return otherFingers;
@@ -290,8 +308,8 @@ export class Hand extends GameObject {
         () => {
           if (overlapping(fingerName)) {
             if (
-              !config.singlePinchRequirement ||
-              (config.singlePinchRequirement &&
+              !config.ignoreMultifingerPinches ||
+              (config.ignoreMultifingerPinches &&
                 !otherFingerOverlapsThumb(fingerName))
             ) {
               callbacks.startPinch?.();
@@ -306,8 +324,8 @@ export class Hand extends GameObject {
         () => {
           if (overlapping(fingerName)) {
             if (
-              !config.singlePinchRequirement ||
-              (config.singlePinchRequirement &&
+              !config.ignoreMultifingerPinches ||
+              (config.ignoreMultifingerPinches &&
                 !otherFingerOverlapsThumb(fingerName))
             ) {
               callbacks.pinched?.();
@@ -322,8 +340,8 @@ export class Hand extends GameObject {
         () => {
           if (overlapping(fingerName)) {
             if (
-              !config.singlePinchRequirement ||
-              (config.singlePinchRequirement &&
+              !config.ignoreMultifingerPinches ||
+              (config.ignoreMultifingerPinches &&
                 !otherFingerOverlapsThumb(fingerName))
             ) {
               callbacks.endPinch?.();
@@ -397,14 +415,7 @@ export class Hand extends GameObject {
         handTracker.getNormalizedLandmarkPosition(finger.landmarkIndex);
       const foundFinger: boolean = normalizedPosition !== undefined;
       if (foundFinger) {
-        const size: Vector2 = new Vector2(
-          this.scene.scale.width,
-          this.scene.scale.height,
-        );
-        finger.setPosition(
-          normalizedPosition!.x * size.x,
-          normalizedPosition!.y * size.y,
-        );
+        finger.updatePosition(normalizedPosition!.x, normalizedPosition!.y);
       }
       setInteraction(finger, foundFinger);
       // When the hand goes off screen, send pinch end and hover end events to all observers.

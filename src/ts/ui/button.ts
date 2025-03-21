@@ -46,7 +46,7 @@ export class Button extends MatterSprite {
     this.setOrigin(originX, originY);
 
     this.sound = this.scene.sound.add(soundKey, {
-      volume: config.sonificationLevel,
+      volume: config.pinchVolume,
     });
 
     if (textContent !== '') {
@@ -98,7 +98,7 @@ export class Button extends MatterSprite {
     const onTriggerStart = () => {
       pinchCallbacks.startPinch?.();
       this.sound.play({
-        volume: config.sonificationLevel,
+        volume: config.pinchVolume,
       });
     };
 

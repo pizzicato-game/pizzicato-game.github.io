@@ -6,11 +6,15 @@ function levelStatsToCSV(id, levelStats) {
   if (!levelStats.hasOwnProperty('layersStats')) {
     return '';
   }
+
   let csvContent = id + '\n';
+
+  // Row labels.
   csvContent +=
-    'layerID,noteID,loopNumber,playerTime,correctTime,classification\n'; // column headers
+    'layerID,noteID,pinchType,loopNumber,playerTime,correctTime,classification,normalizedTargetRadius,normalizedTargetPositionX,normalizedTargetPositionY,normalizedFingerRadius,normalizedPinkyFingerPositionX,normalizedPinkyFingerPositionY,normalizedRingFingerPositionX,normalizedRingFingerPositionY,normalizedMiddleFingerPositionX,normalizedMiddleFingerPositionY,normalizedIndexFingerPositionX,normalizedIndexFingerPositionY,normalizedThumbFingerPositionX,normalizedThumbFingerPositionY\n';
 
   let addedRows = 0;
+
   for (const layerStats of levelStats.layersStats) {
     const layerID = levelStats.layersStats.indexOf(layerStats);
     if (!layerStats.hasOwnProperty('hits')) {
@@ -19,16 +23,44 @@ function levelStatsToCSV(id, levelStats) {
     for (const hitInfo of layerStats.hits) {
       if (
         !hitInfo.hasOwnProperty('noteID') ||
+        !hitInfo.hasOwnProperty('pinchType') ||
         !hitInfo.hasOwnProperty('loopNumber') ||
         !hitInfo.hasOwnProperty('playerTime') ||
         !hitInfo.hasOwnProperty('correctTime') ||
-        !hitInfo.hasOwnProperty('classification')
+        !hitInfo.hasOwnProperty('classification') ||
+        !hitInfo.hasOwnProperty('normalizedTargetRadius') ||
+        !hitInfo.hasOwnProperty('normalizedTargetPosition') ||
+        !hitInfo.hasOwnProperty('normalizedFingerRadius') ||
+        !hitInfo.hasOwnProperty('normalizedPinkyFingerPosition') ||
+        !hitInfo.hasOwnProperty('normalizedRingFingerPosition') ||
+        !hitInfo.hasOwnProperty('normalizedMiddleFingerPosition') ||
+        !hitInfo.hasOwnProperty('normalizedIndexFingerPosition') ||
+        !hitInfo.hasOwnProperty('normalizedThumbFingerPosition')
       ) {
         continue;
       }
-      const row = `${layerID},${hitInfo.noteID},${hitInfo.loopNumber},${millisecondsToSeconds(
-        hitInfo.playerTime,
-      )},${millisecondsToSeconds(hitInfo.correctTime)},${hitInfo.classification}\n`;
+      const fingerRadius = hitInfo.normalizedFingerRadius
+        ? hitInfo.normalizedFingerRadius
+        : null;
+      const [targetX, targetY] = hitInfo.normalizedTargetPosition;
+      const [pinkyX, pinkyY] = hitInfo.normalizedPinkyFingerPosition
+        ? hitInfo.normalizedPinkyFingerPosition
+        : [null, null];
+      const [ringX, ringY] = hitInfo.normalizedRingFingerPosition
+        ? hitInfo.normalizedRingFingerPosition
+        : [null, null];
+      const [middleX, middleY] = hitInfo.normalizedMiddleFingerPosition
+        ? hitInfo.normalizedMiddleFingerPosition
+        : [null, null];
+      const [indexX, indexY] = hitInfo.normalizedIndexFingerPosition
+        ? hitInfo.normalizedIndexFingerPosition
+        : [null, null];
+      const [thumbX, thumbY] = hitInfo.normalizedThumbFingerPosition
+        ? hitInfo.normalizedThumbFingerPosition
+        : [null, null];
+
+      const row = `${layerID},${hitInfo.noteID},${hitInfo.pinchType},${hitInfo.loopNumber},${millisecondsToSeconds(hitInfo.playerTime)},${millisecondsToSeconds(hitInfo.correctTime)},${hitInfo.classification},${hitInfo.normalizedTargetRadius},${targetX},${targetY},${fingerRadius},${pinkyX},${pinkyY},${ringX},${ringY},${middleX},${middleY},${indexX},${indexY},${thumbX},${thumbY}\n`;
+
       csvContent += row;
       addedRows++;
     }

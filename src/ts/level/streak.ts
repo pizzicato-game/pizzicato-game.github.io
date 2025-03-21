@@ -124,7 +124,7 @@ export class Streak extends GameObject {
             this.scene.tweens.remove(this.onFireTween);
         },
       });
-      if (!config.fancyEffectsDisabled) {
+      if (!config.postProcessingDisabled) {
         if (this.flame != undefined) {
           this.flame.destroy();
         }

@@ -7,26 +7,27 @@ export interface ConfigData {
   targetSize: number;
   fingerSize: number;
   // On which loop does the skip option become available.
-  enableSkipButton: boolean;
-  skipLoopThreshold: number;
+  showSkipButton: boolean;
+  skipButtonAppearsAfterLoop: number;
 
-  singlePinchRequirement: boolean;
-  disableVisualMetronome: boolean;
-  fancyEffectsDisabled: boolean;
+  ignoreMultifingerPinches: boolean;
+  displayVisualMetronome: boolean;
+  postProcessingDisabled: boolean;
 
   enableCameraVisibility: boolean;
   cameraOpacity: number;
 
-  enableAutoSkip: boolean;
-  autoSkipThreshold: number;
+  skipLayersAutomatically: boolean;
+  skipLayersAutomaticallyAfterLoop: number;
   autoSaveCSV: boolean;
 
   disableLayerProgression: boolean;
-  disableSonification: boolean;
+  sonificationEnabled: boolean;
+  synchronizationEnabled: boolean;
   indexFingerOnly: boolean;
 
-  sonificationLevel: number;
-  backgroundMusicLevel: number;
+  pinchVolume: number;
+  backgroundMusicVolume: number;
 
   onTimeDuration: number;
   lateTimeDuration: number;
@@ -90,11 +91,20 @@ export interface Observer {
 export type OverlapCallback = (overlap?: MatterOverlapData) => void;
 
 export interface HitInfo {
-  noteID: number; // What's the noteID in the loop.
-  loopNumber: number; // What's the loop count when this was played?
-  playerTime: number; // When player hit the target. -1 if the player missed the target.
-  correctTime: number; // When player was supposed to hit the target.
+  noteID: number; // The noteID in the loop.
+  pinchType: string; // What type of finger the note needed to be pinched with.
+  loopNumber: number; // The current loop count.
+  playerTime: number; // When player hit the target relative to the start of the song (unit: seconds). -1 if the player missed the target.
+  correctTime: number; // When player was supposed to hit the target relative to the start of the song (unit: seconds).
   classification: string; // Categorical attribute that denotes what we classified this hit as, see score.ts class.
+  normalizedTargetRadius: number; // [0, 1] radius of the target normalized to the game window (based on width).
+  normalizedTargetPosition: [number, number]; // [0, 1] position of the target normalized to the game window.
+  normalizedFingerRadius: number | null; // [0, 1] radius of the finger normalized to the game window (based on width).
+  normalizedPinkyFingerPosition: [number, number] | null; // [0, 1] position on the screen when the hit was registered.
+  normalizedRingFingerPosition: [number, number] | null; // [0, 1] position on the screen when the hit was registered.
+  normalizedMiddleFingerPosition: [number, number] | null; // [0, 1] position on the screen when the hit was registered.
+  normalizedIndexFingerPosition: [number, number] | null; // [0, 1] position on the screen when the hit was registered.
+  normalizedThumbFingerPosition: [number, number] | null; // [0, 1] position on the screen when the hit was registered.
 }
 
 export class LayerStats {

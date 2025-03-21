@@ -129,8 +129,8 @@ export class PlayableLayer extends Layer {
       this.scene,
       this.songTime_,
       new Vector2(
-        node.normalizedPosition[0] * this.scene.width,
-        node.normalizedPosition[1] * this.scene.height,
+        node.normalizedPosition[0],
+        node.normalizedPosition[1],
       ) /* screenPosition */,
       this.getPreviewTime() /* lifetime */,
       this.level.track.getSoundKey(
@@ -208,9 +208,9 @@ export class PlayableLayer extends Layer {
 
       this.level.streak.check();
 
-      if (!config.disableSonification)
+      if (config.sonificationEnabled)
         target.sound.play({
-          volume: config.sonificationLevel,
+          volume: config.pinchVolume,
         });
 
       this.targetManager.destroyTarget(target);
@@ -232,8 +232,9 @@ export class PlayableLayer extends Layer {
       // Transition if auto skip is enabled, and the desired loop-count has been reached,
       // or if the player's progress is sufficient
       if (
-        (config.enableAutoSkip &&
-          this.level.score.getLoopCount() >= config.autoSkipThreshold) ||
+        (config.skipLayersAutomatically &&
+          this.level.score.getLoopCount() >=
+            config.skipLayersAutomaticallyAfterLoop) ||
         (this.progress.canProgress() && !config.disableLayerProgression)
       ) {
         // Enough progress, transition to next layer / end scene.

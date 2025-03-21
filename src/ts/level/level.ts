@@ -70,7 +70,7 @@ export default class Level {
   public init(scene: HandScene) {
     this.scene = scene;
     this.streak = new Streak(this.scene as HandScene);
-    this.score = new Score(this.track);
+    this.score = new Score(scene, this.track);
     this.playableLayers.forEach((layer: PlayableLayer) => {
       layer.init(this.scene as HandScene);
     });
@@ -216,9 +216,7 @@ export default class Level {
 
     const backgroundLayers: string[] = [...layer.data.backgroundLayers];
 
-    // Disabling sonification causes current layer loop
-    // to also be played and target sounds to be disabled.
-    if (config.disableSonification) {
+    if (config.synchronizationEnabled) {
       backgroundLayers.push(layer.data.id);
     }
 
@@ -226,7 +224,7 @@ export default class Level {
       this.scene as HandScene,
       {
         loop: true,
-        volume: config.backgroundMusicLevel,
+        volume: config.backgroundMusicVolume,
       },
       (otherLayer: TrackLayerData, _index: number) => {
         return backgroundLayers.includes(otherLayer.id);

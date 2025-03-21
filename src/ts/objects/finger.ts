@@ -6,6 +6,20 @@ import setInteraction from '../util/interaction';
 export default class Finger extends MatterSprite {
   public readonly name: string;
   public readonly landmarkIndex: HandLandmarkIndex;
+  public readonly normalizedRadius: number; // display width of the finger normalized to the screen width.
+  private normalizedPosition_: [number, number] | null;
+
+  public get normalizedPosition() {
+    return this.normalizedPosition_;
+  }
+
+  public updatePosition(normalizedX: number, normalizedY: number) {
+    this.normalizedPosition_ = [normalizedX, normalizedY];
+    this.setPosition(
+      normalizedX * this.scene.scale.width,
+      normalizedY * this.scene.scale.height,
+    );
+  }
 
   constructor(
     scene: Scene,
@@ -19,7 +33,7 @@ export default class Finger extends MatterSprite {
         visible: true,
       },
     });
-
+    this.normalizedPosition_ = null;
     this.name = name;
     this.landmarkIndex = landmarkIndex;
 
@@ -29,7 +43,10 @@ export default class Finger extends MatterSprite {
     this.setTint(fingerColors[this.name]);
     this.setDepth(fingerSpriteDepth);
 
-    this.setCircle(this.displayWidth / 2, {
+    const fingerRadius: number = this.displayWidth / 2;
+    this.normalizedRadius = fingerRadius / scene.scale.width;
+
+    this.setCircle(fingerRadius, {
       label: this.name,
     });
 

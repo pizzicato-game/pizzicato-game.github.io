@@ -19,7 +19,6 @@ import { ToggleButton } from '../ui/toggleButton';
 import { DifficultyButton } from '../ui/difficultyButton';
 import TimerEvent = Phaser.Time.TimerEvent;
 import { levels } from './loadingScene';
-import setInteraction from '../util/interaction';
 
 export default class LevelSelect extends HandScene {
   private currentLevelIndex: number = levelSelectDefaultLevel;
@@ -259,7 +258,8 @@ export default class LevelSelect extends HandScene {
 
     level.addBackgroundAudio(this, {
       loop: true,
-      volume: config.backgroundMusicLevel * levelSelectBackgroundAudioFeintness,
+      volume:
+        config.backgroundMusicVolume * levelSelectBackgroundAudioFeintness,
     });
     level.playBackgroundAudio();
     level.setBackgroundAudioMute(!this.mute.getToggleState());

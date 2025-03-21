@@ -36,9 +36,11 @@ export default class Target extends MatterSprite {
   public readonly sound: AudioTrack;
   public readonly songTime: number;
   public readonly nodeIndex: number;
+  public readonly normalizedPosition: [number, number]; // Not a vector because this is used for storing data to csv.
+  public readonly normalizedRadius: number; // display width of the target normalized to the screen width.
 
   private readonly outerRing: Sprite;
-  private readonly fingerId: string;
+  public readonly fingerId: string;
   private readonly lifetime: number;
   private readonly spriteScale: number;
 
@@ -63,13 +65,17 @@ export default class Target extends MatterSprite {
   constructor(
     scene: HandScene,
     songTime: number,
-    position: Vector2,
+    normalizedPosition: Vector2,
     lifetime: number,
     soundKey: string,
     layer: PlayableLayer,
     fingerId: string,
     nodeIndex: number,
   ) {
+    const position: Vector2 = new Vector2(
+      normalizedPosition.x * scene.width,
+      normalizedPosition.y * scene.height,
+    );
     super(
       scene.matter.world,
       position.x,
@@ -83,6 +89,7 @@ export default class Target extends MatterSprite {
       },
     );
     this.scene = scene;
+    this.normalizedPosition = [normalizedPosition.x, normalizedPosition.y];
     this.lifetime = lifetime;
     this.fingerId = fingerId;
     this.nodeIndex = nodeIndex;
@@ -98,7 +105,7 @@ export default class Target extends MatterSprite {
     this.earlyDuration = this.lifetime - this.onTimeDuration / 2;
 
     this.sound = this.scene.sound.add(soundKey, {
-      volume: config.sonificationLevel,
+      volume: config.pinchVolume,
     });
 
     this.setScale(this.spriteScale);
@@ -106,7 +113,10 @@ export default class Target extends MatterSprite {
     this.setDepth(targetDepth);
     setInteraction(this, true);
 
-    this.setCircle(this.displayWidth / 2, {
+    const targetRadius: number = this.displayWidth / 2;
+    this.normalizedRadius = targetRadius / scene.width;
+
+    this.setCircle(targetRadius, {
       label:
         layer.level.trackKey +
         '-' +
@@ -117,7 +127,7 @@ export default class Target extends MatterSprite {
 
     this.setSensor(true);
 
-    if (!config.fancyEffectsDisabled) {
+    if (!config.postProcessingDisabled) {
       this.glow = this.postFX.addGlow(
         targetGlowOptions.color,
         0,
@@ -197,7 +207,7 @@ export default class Target extends MatterSprite {
   }
 
   private setupTweens() {
-    //if (!config.fancyEffectsDisabled) {
+    //if (!config.postProcessingDisabled) {
     // Make target spin on repeat.
     this.rotateTween = this.scene.tweens.add({
       targets: [this],
@@ -223,7 +233,7 @@ export default class Target extends MatterSprite {
         },
         this.onTimeDuration,
       );
-      if (!config.fancyEffectsDisabled && this.glow != undefined) {
+      if (!config.postProcessingDisabled && this.glow != undefined) {
         this.glowTween = this.scene.tweens.add({
           targets: this.glow,
           outerStrength: targetGlowOptions.outerStrength,
@@ -261,7 +271,9 @@ export default class Target extends MatterSprite {
   }
 
   public destroyTarget() {
-    this.scene.hand.removePinchCheck(this.fingerId, this);
+    if (this.scene.hand) {
+      this.scene.hand.removePinchCheck(this.fingerId, this);
+    }
     this.off('pointerdown');
 
     if (this.rotateTween != undefined)
@@ -275,7 +287,9 @@ export default class Target extends MatterSprite {
     if (this.glow != undefined) this.glow.destroy();
     if (this.targetText != undefined) this.targetText.destroy();
 
-    this.outerRing.destroy();
+    if (this.outerRing) {
+      this.outerRing.destroy();
+    }
 
     this.destroy();
   }
