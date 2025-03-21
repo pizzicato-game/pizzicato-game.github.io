@@ -63,6 +63,15 @@ export default class InfoHUD extends GameObject {
         this.level.transitionLayers();
       },
     );
+    const skipButtonScale: number = 0.8;
+    this.skipButton.setScale(skipButtonScale);
+    this.skipButton.text!.setScale(skipButtonScale);
+    this.skipButton.setPosition(
+      this.scene.width - this.skipButton.displayWidth / 2,
+      this.scene.height - this.skipButton.displayHeight / 2,
+    );
+    const skipButtonCenter: Vector2 = this.skipButton.getCenter();
+    this.skipButton.text!.setPosition(skipButtonCenter.x, skipButtonCenter.y);
     this.updateSkipButtonAvailability(false);
   }
 
@@ -93,7 +102,10 @@ export default class InfoHUD extends GameObject {
 
   private getLoopText(): string {
     const loopCount: number = this.level.score.getLoopCount();
-    const loopName: string = loopInfoText + loopCount.toString();
+    let loopName: string = loopInfoText + loopCount.toString();
+    if (config.skipLayersAutomatically) {
+      loopName += '/' + config.skipLayersAutomaticallyAfterLoop.toString();
+    }
     return loopName;
   }
 
@@ -105,7 +117,7 @@ export default class InfoHUD extends GameObject {
           0.22 * this.scene.height,
         ),
         color: 'white',
-        font: '20px Arial',
+        font: '20px Courier New',
         scale: 1,
         depth: 40,
       },
@@ -119,7 +131,7 @@ export default class InfoHUD extends GameObject {
           0.02 * this.scene.height,
         ),
         color: 'white',
-        font: '20px Arial',
+        font: '20px Courier New',
         scale: 1,
         depth: 40,
       },
@@ -163,7 +175,7 @@ export default class InfoHUD extends GameObject {
           0.07 * this.scene.height,
         ),
         color: 'white',
-        font: '20px Arial',
+        font: '20px Courier New',
         scale: 1,
         depth: 40,
       },
@@ -177,7 +189,7 @@ export default class InfoHUD extends GameObject {
           0.12 * this.scene.height,
         ),
         color: 'white',
-        font: '20px Arial',
+        font: '20px Courier New',
         scale: 1,
         depth: 40,
       },
@@ -191,7 +203,7 @@ export default class InfoHUD extends GameObject {
           0.17 * this.scene.height,
         ),
         color: 'white',
-        font: '20px Arial',
+        font: '20px Courier New',
         scale: 1,
         depth: 40,
       },

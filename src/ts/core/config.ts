@@ -99,7 +99,7 @@ export const targetHitLateProgressImpact: number = 0;
 export const targetHitOnTimeProgressImpact: number = +1;
 
 export const targetTextOptions = {
-  font: '20px Arial',
+  font: '30px Courier New',
   color: 'white',
 };
 
@@ -176,7 +176,7 @@ export const targetHitOnTimeStreakImpact: number = +1;
 export const streakTextOptions = {
   color: 'white',
   scale: 1,
-  font: '30px Arial',
+  font: '30px Courier New',
   depth: 40,
   strokeThickness: 0,
   shadowOffset: new Vector2(2, 2),

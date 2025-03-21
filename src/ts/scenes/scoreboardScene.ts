@@ -98,7 +98,7 @@ export default class Scoreboard extends HandScene {
     // Title
     const title = this.add.text(this.center.x, 0, 'Scoreboard', {
       color: '#01c303',
-      font: `${96}px Arial`,
+      font: `${96}px Courier New`,
     });
     title.setStroke('#000', 6);
     title.setPosition(this.center.x - title.width / 2, this.height * 0.07);
@@ -133,7 +133,7 @@ export default class Scoreboard extends HandScene {
       {
         color: '#ffffff',
         align: 'center',
-        font: `${48}px Arial`,
+        font: `${48}px Courier New`,
       },
     );
     infoText.setPosition(
@@ -159,7 +159,7 @@ export default class Scoreboard extends HandScene {
         const layerTitle = this.add.text(0, 0, `${capitalize(layer.id)}`, {
           color: '#01c303',
           align: 'center',
-          font: `${72}px Arial`,
+          font: `${72}px Courier New`,
           fontStyle: 'bold',
         });
 
@@ -186,7 +186,7 @@ export default class Scoreboard extends HandScene {
           {
             color: '#ffffff',
             align: 'center',
-            font: `${48}px Arial`,
+            font: `${48}px Courier New`,
           },
         );
         layerText.setPosition(

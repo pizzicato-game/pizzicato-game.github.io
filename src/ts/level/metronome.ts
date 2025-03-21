@@ -28,7 +28,7 @@ export default class Metronome extends GameObject {
 
     this.countdownText = this.scene.add
       .text(scene.center.x, scene.center.y, undefinedText, {
-        font: '240px Arial',
+        font: '240px Courier New',
         color: 'white',
       })
       .setOrigin(0.5, 0.5)
