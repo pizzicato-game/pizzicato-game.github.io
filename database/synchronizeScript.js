@@ -85,6 +85,18 @@ function addCSVToSheet(sheet, csvData) {
   sheet.getRange(startRow, startCol, numRows, numColumns).setValues(data);
 }
 
+function removeParticipantPrefix(str) {
+  if (typeof str !== 'string') {
+    return str; // Return the input if it's not a string
+  }
+  const prefix = 'participant';
+  if (str.toLowerCase().startsWith(prefix)) {
+    return str.slice(prefix.length);
+  } else {
+    return str; // Return the original string if the prefix is not found
+  }
+}
+
 function getAllPizzicatoData() {
   const databaseURL =
     'https://pizzicato-1f765-default-rtdb.europe-west1.firebasedatabase.app/';
@@ -109,8 +121,14 @@ function getAllPizzicatoData() {
   for (var key in users) {
     const user = users[key];
     if (user.hasOwnProperty('name')) {
-      const userSheet = ss.insertSheet(user.name);
+      const userSheet = ss.insertSheet(removeParticipantPrefix(user.name)); // slice the word "participant" off the front.
       let csv = 'Username:,' + user.name + '\n';
+      if (user.hasOwnProperty('experimentStart')) {
+        csv += 'Experiment Start:,' + user.experimentStart + '\n';
+      }
+      if (user.hasOwnProperty('week')) {
+        csv += 'Week:,' + user.week + '\n';
+      }
       if (user.hasOwnProperty('lastLogin')) {
         csv += 'Last Login:,' + user.lastLogin + '\n';
       }
