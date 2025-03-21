@@ -1,4 +1,4 @@
-import { difficultyButtonChosenTint } from '../core/config';
+import { buttonPinchFinger, difficultyButtonChosenTint } from '../core/config';
 import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 
@@ -26,6 +26,20 @@ export class ToggleButton extends Button {
     this.toggleState = toggled;
 
     this.setTexture(this.getSpriteKey());
+
+    this.on('destroy', () => {
+      this.scene.hand.removePinchCheck(buttonPinchFinger, this);
+      if (this.sound) {
+        if (this.sound.isPlaying) {
+          this.sound.on('complete', () => {
+            this.sound.destroy();
+          });
+        } else {
+          this.sound.destroy();
+        }
+      }
+      if (this.text) this.text.destroy();
+    });
   }
 
   public setToggleState(newToggleState: boolean) {

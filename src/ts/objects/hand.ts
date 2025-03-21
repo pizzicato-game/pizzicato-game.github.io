@@ -53,93 +53,6 @@ export class Hand extends GameObject {
   private readonly fingers: Finger[] = [];
   private observers_: Observer[] = [];
 
-  // @return Returns the display width normalized to the game width of the first finger in the fingers list that exists.
-  public getNormalizedFingerRadius(): number | null {
-    for (const f of this.fingers) {
-      if (f) {
-        return f.normalizedRadius;
-      }
-    }
-    return null;
-  }
-
-  public getNormalizedFingerPosition(name: string): [number, number] | null {
-    const finger: Finger | undefined = this.getFinger(name);
-    if (finger === undefined) {
-      return null;
-    }
-    return finger.normalizedPosition;
-  }
-
-  private getFinger(name: string): Finger | undefined {
-    const i: number = this.fingers.findIndex((f: Finger) => f.name == name);
-    if (i === invalidFingerIndex) return undefined;
-    return this.fingers[i];
-  }
-
-  private getFingersOtherThan(name: string): Finger[] {
-    const otherFingers: Finger[] = [];
-    for (const f of this.fingers) {
-      if (f && f.name == name) continue;
-      otherFingers.push(f);
-    }
-    return otherFingers;
-  }
-
-  private get observers() {
-    return this.observers_;
-  }
-
-  private isObserver(observer: Observer): boolean {
-    return (
-      this.observers_.find((o: Observer) => {
-        return (
-          o.fingerName === observer.fingerName && o.object == observer.object
-        );
-      }) !== undefined
-    );
-  }
-
-  private wasObserverHovering(observer: Observer): boolean {
-    assert(this.isObserver(observer));
-    return this.observers_.find((o: Observer) => {
-      return (
-        o.fingerName === observer.fingerName && o.object == observer.object
-      );
-    })!.wasHovering!;
-  }
-
-  private setObserverHover(observer: Observer, state: boolean) {
-    const index: number = this.observers_.findIndex((o: Observer) => {
-      return (
-        o.fingerName === observer.fingerName && o.object == observer.object
-      );
-    });
-    assert(
-      index !== invalidFingerIndex,
-      'Cannot set observer hover before observer is pushed',
-    );
-    this.observers_[index].wasHovering = state;
-  }
-
-  private pushNewObserversOnly(observer: Observer) {
-    if (!this.isObserver(observer)) {
-      this.observers.push(observer);
-      this.setObserverHover(observer, false);
-    }
-  }
-
-  private removeObserver(observer: Observer) {
-    const index: number = this.observers_.findIndex((o: Observer) => {
-      return (
-        o.fingerName === observer.fingerName && o.object == observer.object
-      );
-    });
-    if (index > invalidFingerIndex) {
-      this.observers_.splice(index, 1);
-    }
-  }
-
   constructor(scene: Scene) {
     super(scene, 'hand');
 
@@ -184,11 +97,11 @@ export class Hand extends GameObject {
     ) => {
       onOverlap((overlap: MatterOverlapData) => {
         const finger: Finger | undefined = this.getFinger(overlap.bodyB.label);
-        if (finger !== undefined) {
+        if (finger != undefined) {
           for (const observer of this.observers) {
             if (
               observer.fingerName == finger.name &&
-              observer.object != undefined &&
+              observer.object &&
               observer.object.input &&
               observer.object.input.enabled
             ) {
@@ -263,6 +176,101 @@ export class Hand extends GameObject {
       thumb.setOnCollideEnd.bind(thumb),
       FingerOverlapStates.end,
     );
+
+    this.on('destroy', () => {
+      for (const f of this.fingers) {
+        if (f) {
+          f.destroy();
+        }
+      }
+    });
+  }
+
+  // @return Returns the display width normalized to the game width of the first finger in the fingers list that exists.
+  public getNormalizedFingerRadius(): number | null {
+    for (const f of this.fingers) {
+      if (f) {
+        return f.normalizedRadius;
+      }
+    }
+    return null;
+  }
+
+  public getNormalizedFingerPosition(name: string): [number, number] | null {
+    const finger: Finger | undefined = this.getFinger(name);
+    if (finger === undefined) {
+      return null;
+    }
+    return finger.normalizedPosition;
+  }
+
+  private getFinger(name: string): Finger | undefined {
+    const i: number = this.fingers.findIndex((f: Finger) => f.name == name);
+    if (i === invalidFingerIndex) return undefined;
+    return this.fingers[i];
+  }
+
+  private getFingersOtherThan(name: string): Finger[] {
+    const otherFingers: Finger[] = [];
+    for (const f of this.fingers) {
+      if (f && f.name == name) continue;
+      otherFingers.push(f);
+    }
+    return otherFingers;
+  }
+
+  private get observers() {
+    return this.observers_;
+  }
+
+  private isObserver(observer: Observer): boolean {
+    return (
+      this.observers_.find((o: Observer) => {
+        return (
+          o.fingerName === observer.fingerName && o.object == observer.object
+        );
+      }) != undefined
+    );
+  }
+
+  private wasObserverHovering(observer: Observer): boolean {
+    assert(this.isObserver(observer));
+    return this.observers_.find((o: Observer) => {
+      return (
+        o.fingerName === observer.fingerName && o.object == observer.object
+      );
+    })!.wasHovering!;
+  }
+
+  private setObserverHover(observer: Observer, state: boolean) {
+    const index: number = this.observers_.findIndex((o: Observer) => {
+      return (
+        o.fingerName === observer.fingerName && o.object == observer.object
+      );
+    });
+    assert(
+      index !== invalidFingerIndex,
+      'Cannot set observer hover before observer is pushed',
+    );
+    this.observers_[index].wasHovering = state;
+  }
+
+  private pushNewObserversOnly(observer: Observer) {
+    if (!this.isObserver(observer)) {
+      this.observers.push(observer);
+      this.setObserverHover(observer, false);
+    }
+  }
+
+  private removeObserver(observer: Observer) {
+    const index: number = this.observers_.findIndex((o: Observer) => {
+      return (
+        o.fingerName === observer.fingerName && o.object == observer.object
+      );
+    });
+    if (index > invalidFingerIndex) {
+      this.observers_.splice(index, 1);
+    }
   }
 
   public setFingerScale(newScale: number) {
@@ -302,7 +310,7 @@ export class Hand extends GameObject {
       return false;
     };
 
-    if (callbacks.startPinch != undefined) {
+    if (callbacks.startPinch) {
       obj.on(
         fingerName + FingerOverlapEvents.pinch + FingerOverlapStates.start,
         () => {
@@ -318,7 +326,7 @@ export class Hand extends GameObject {
         },
       );
     }
-    if (callbacks.pinched != undefined) {
+    if (callbacks.pinched) {
       obj.on(
         fingerName + FingerOverlapEvents.pinch + FingerOverlapStates.continue,
         () => {
@@ -334,7 +342,7 @@ export class Hand extends GameObject {
         },
       );
     }
-    if (callbacks.endPinch != undefined) {
+    if (callbacks.endPinch) {
       obj.on(
         fingerName + FingerOverlapEvents.pinch + FingerOverlapStates.end,
         () => {
@@ -350,7 +358,7 @@ export class Hand extends GameObject {
         },
       );
     }
-    if (callbacks.startHover != undefined) {
+    if (callbacks.startHover) {
       obj.on(
         fingerName + FingerOverlapEvents.hover + FingerOverlapStates.start,
         () => {
@@ -358,7 +366,7 @@ export class Hand extends GameObject {
         },
       );
     }
-    if (callbacks.hovering != undefined) {
+    if (callbacks.hovering) {
       obj.on(
         fingerName + FingerOverlapEvents.hover + FingerOverlapStates.continue,
         () => {
@@ -366,7 +374,7 @@ export class Hand extends GameObject {
         },
       );
     }
-    if (callbacks.endHover != undefined) {
+    if (callbacks.endHover) {
       obj.on(
         fingerName + FingerOverlapEvents.hover + FingerOverlapStates.end,
         () => {
@@ -413,13 +421,13 @@ export class Hand extends GameObject {
     for (const finger of this.fingers) {
       const normalizedPosition: Vector2 | undefined =
         handTracker.getNormalizedLandmarkPosition(finger.landmarkIndex);
-      const foundFinger: boolean = normalizedPosition !== undefined;
+      const foundFinger: boolean = normalizedPosition != undefined;
       if (foundFinger) {
         finger.updatePosition(normalizedPosition!.x, normalizedPosition!.y);
       }
       setInteraction(finger, foundFinger);
       // When the hand goes off screen, send pinch end and hover end events to all observers.
-      if (!foundFinger && pointer != undefined) {
+      if (!foundFinger && pointer) {
         for (const observer of this.observers) {
           if (pointer == undefined) continue;
           if (observer.object == undefined || !observer.object.active) continue;
@@ -457,10 +465,10 @@ export class Hand extends GameObject {
     );
     let distanceWidth2: number = 0;
     let distanceHeight2: number = 0;
-    if (pos1 !== undefined && pos2 !== undefined) {
+    if (pos1 != undefined && pos2 != undefined) {
       const pos4 = new Vector2((pos1.x + pos2.x) / 2, (pos1.y + pos2.y) / 2);
       distanceWidth2 = pos2.distanceSq(pos1);
-      if (pos3 !== undefined) {
+      if (pos3 != undefined) {
         distanceHeight2 = pos3.distanceSq(pos4);
       }
     }

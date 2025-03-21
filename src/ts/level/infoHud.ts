@@ -35,6 +35,15 @@ export default class InfoHUD extends GameObject {
     super(scene, 'infoHUD');
     this.scene = scene;
     this.level = level;
+    this.on('destroy', () => {
+      if (this.trackText) this.trackText.destroy();
+      if (this.difficultyText) this.difficultyText.destroy();
+      if (this.bpmText) this.bpmText.destroy();
+      if (this.layerText) this.layerText.destroy();
+      if (this.loopText) this.loopText.destroy();
+      if (this.infoBackground) this.infoBackground.destroy();
+      if (this.skipButton) this.skipButton.destroy();
+    });
   }
 
   public setup() {
@@ -58,18 +67,15 @@ export default class InfoHUD extends GameObject {
   }
 
   public setVisible(visible: boolean) {
-    if (this.trackText != undefined) this.trackText.setVisible(visible);
-    if (this.difficultyText != undefined)
-      this.difficultyText.setVisible(visible);
-    if (this.bpmText != undefined) this.bpmText.setVisible(visible);
-    if (this.layerText != undefined) this.layerText.setVisible(visible);
-    if (this.loopText != undefined) this.loopText.setVisible(visible);
-    if (this.infoBackground != undefined)
-      this.infoBackground.setVisible(visible);
-    if (this.skipButton != undefined) {
+    if (this.trackText) this.trackText.setVisible(visible);
+    if (this.difficultyText) this.difficultyText.setVisible(visible);
+    if (this.bpmText) this.bpmText.setVisible(visible);
+    if (this.layerText) this.layerText.setVisible(visible);
+    if (this.loopText) this.loopText.setVisible(visible);
+    if (this.infoBackground) this.infoBackground.setVisible(visible);
+    if (this.skipButton) {
       this.skipButton.setVisible(visible);
-      if (this.skipButton.text != undefined)
-        this.skipButton.text.setVisible(visible);
+      if (this.skipButton.text) this.skipButton.text.setVisible(visible);
     }
 
     this.updateSkipButtonAvailability(visible);
@@ -208,7 +214,7 @@ export default class InfoHUD extends GameObject {
       config.showSkipButton &&
       this.level.score.getLoopCount() >= config.skipButtonAppearsAfterLoop &&
       visible;
-    if (this.skipButton != undefined) {
+    if (this.skipButton) {
       setInteraction(this.skipButton, available);
     }
   }

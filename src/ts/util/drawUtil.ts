@@ -32,10 +32,10 @@ export function drawHandLandmarkConnections(
   handConnections.forEach(connection => {
     const nPos1: Vector2 | undefined =
       handTracker.getNormalizedLandmarkPosition(connection[0], handIndex);
-    if (nPos1 !== undefined) {
+    if (nPos1 != undefined) {
       const nPos2: Vector2 | undefined =
         handTracker.getNormalizedLandmarkPosition(connection[1], handIndex);
-      if (nPos2 !== undefined) {
+      if (nPos2 != undefined) {
         const size: Vector2 = new Vector2(
           graphics.scene.scale.width,
           graphics.scene.scale.height,

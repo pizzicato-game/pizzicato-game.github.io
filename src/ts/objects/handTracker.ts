@@ -129,7 +129,7 @@ export class HandTracker {
         i,
         handIndex,
       );
-      if (nPosition !== undefined) landmarkPositionCallback(nPosition);
+      if (nPosition != undefined) landmarkPositionCallback(nPosition);
     }
   }
 }

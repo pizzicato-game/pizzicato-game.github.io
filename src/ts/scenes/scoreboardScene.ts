@@ -173,7 +173,7 @@ export default class Scoreboard extends HandScene {
         let correct = 0;
         let total = 0;
         let loops = 0;
-        if (stats != undefined) {
+        if (stats) {
           correct = stats.correct;
           total = stats.total;
           loops = stats.loop;

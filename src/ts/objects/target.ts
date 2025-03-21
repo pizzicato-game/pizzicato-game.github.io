@@ -158,6 +158,34 @@ export default class Target extends MatterSprite {
     this.addTargetText();
 
     this.setupTweens();
+
+    this.on('destroy', () => {
+      if (this.scene && this.scene.hand)
+        this.scene.hand.removePinchCheck(this.fingerId, this);
+      this.off('pointerdown');
+
+      if (this.rotateTween) this.scene.tweens.remove(this.rotateTween);
+      if (this.earlyTween) this.scene.tweens.remove(this.earlyTween);
+      if (this.onTimeTween) this.scene.tweens.remove(this.onTimeTween);
+      if (this.lateTween) this.scene.tweens.remove(this.lateTween);
+      if (this.deathTween) this.scene.tweens.remove(this.deathTween);
+      if (this.glowTween) this.scene.tweens.remove(this.glowTween);
+      if (this.glow) this.glow.destroy();
+      if (this.targetText) this.targetText.destroy();
+
+      if (this.outerRing) {
+        this.outerRing.destroy();
+      }
+      if (this.sound) {
+        if (this.sound.isPlaying) {
+          this.sound.on('complete', () => {
+            this.sound.destroy();
+          });
+        } else {
+          this.sound.destroy();
+        }
+      }
+    });
   }
 
   public setOnTargetMiss(onTargetMiss: () => void) {
@@ -168,7 +196,7 @@ export default class Target extends MatterSprite {
     this.scene.hand.addPinchCheck(this.fingerId, this, {
       startPinch: onTargetHit,
     });
-    this.once('pointerdown', onTargetHit);
+    if (config.mousePinchesEnabled) this.once('pointerdown', onTargetHit);
   }
 
   private addTargetText() {
@@ -233,7 +261,7 @@ export default class Target extends MatterSprite {
         },
         this.onTimeDuration,
       );
-      if (!config.postProcessingDisabled && this.glow != undefined) {
+      if (!config.postProcessingDisabled && this.glow) {
         this.glowTween = this.scene.tweens.add({
           targets: this.glow,
           outerStrength: targetGlowOptions.outerStrength,
@@ -244,9 +272,7 @@ export default class Target extends MatterSprite {
         });
       }
       this.onTimeTween.on('complete', () => {
-        if (this.glow != undefined) {
-          this.glow.destroy();
-        }
+        if (this.glow) this.glow.destroy();
         this.lateTween = this.createTween(
           [this, this.outerRing],
           {
@@ -262,35 +288,11 @@ export default class Target extends MatterSprite {
             deadTargetOptions,
             targetDeathDuration,
           );
-          if (this.onTargetMiss != undefined) {
+          if (this.onTargetMiss) {
             this.deathTween.on('complete', this.onTargetMiss);
           }
         });
       });
     });
-  }
-
-  public destroyTarget() {
-    if (this.scene.hand) {
-      this.scene.hand.removePinchCheck(this.fingerId, this);
-    }
-    this.off('pointerdown');
-
-    if (this.rotateTween != undefined)
-      this.scene.tweens.remove(this.rotateTween);
-    if (this.earlyTween != undefined) this.scene.tweens.remove(this.earlyTween);
-    if (this.onTimeTween != undefined)
-      this.scene.tweens.remove(this.onTimeTween);
-    if (this.lateTween != undefined) this.scene.tweens.remove(this.lateTween);
-    if (this.deathTween != undefined) this.scene.tweens.remove(this.deathTween);
-    if (this.glowTween != undefined) this.scene.tweens.remove(this.glowTween);
-    if (this.glow != undefined) this.glow.destroy();
-    if (this.targetText != undefined) this.targetText.destroy();
-
-    if (this.outerRing) {
-      this.outerRing.destroy();
-    }
-
-    this.destroy();
   }
 }

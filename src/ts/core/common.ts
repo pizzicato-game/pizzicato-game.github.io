@@ -17,55 +17,50 @@ export function isDebugMode(): boolean {
   return debugMode;
 }
 
-export function storeData(
-  _filePath: string,
-  _data: string | NodeJS.ArrayBufferView,
-): void {
-  // fs.mkdirSync(path.dirname(filePath), { recursive: true })
-  // fs.writeFileSync(filePath, data)
-}
+// export function storeData(
+//   _filePath: string,
+//   _data: string | NodeJS.ArrayBufferView,
+// ): void {
+//   // fs.mkdirSync(path.dirname(filePath), { recursive: true })
+//   // fs.writeFileSync(filePath, data)
+// }
 
-function makeRequest(method, url) {
-  return new Promise(function (resolve, reject) {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.onload = function () {
-      if (this.status >= 200 && this.status < 300) {
-        resolve(xhr);
-      } else {
-        reject({
-          status: this.status,
-          statusText: xhr.statusText,
-        });
-      }
-    };
-    xhr.onerror = function () {
-      reject({
-        status: this.status,
-        statusText: xhr.statusText,
-      });
-    };
-    xhr.send();
-  });
-}
+// function makeRequest(method, url) {
+//   return new Promise(function (resolve, reject) {
+//     const xhr = new XMLHttpRequest();
+//     xhr.open(method, url);
+//     xhr.onload = function () {
+//       if (this.status >= 200 && this.status < 300) {
+//         resolve(xhr);
+//       } else {
+//         reject({
+//           status: this.status,
+//           statusText: xhr.statusText,
+//         });
+//       }
+//     };
+//     xhr.onerror = function () {
+//       reject({
+//         status: this.status,
+//         statusText: xhr.statusText,
+//       });
+//     };
+//     xhr.send();
+//   });
+// }
 
-export function loadJSONData(filePath: string): Promise<string> {
-  return new Promise<string>(async (resolve, reject) => {
-    await makeRequest('GET', filePath)
-      .then((result: any) => {
-        resolve(JSON.parse(result.responseText.toString('utf8')));
-      })
-      .catch(() => {
-        reject();
-      });
-  });
-  //return fs.readFileSync(filePath, 'utf8')
-}
-
-export function fileExists(_absoluteFilePath: string): boolean {
-  return true;
-  //return fs.existsSync(absoluteFilePath)
-}
+// export function loadJSONData(filePath: string): Promise<string> {
+//   return new Promise<string>(async (resolve, reject) => {
+//     await makeRequest('GET', filePath)
+//       .then((result: any) => {
+//         resolve(JSON.parse(result.responseText.toString('utf8')));
+//       })
+//       .catch(() => {
+//         reject();
+//       });
+//   });
+//   //return fs.readFileSync(filePath, 'utf8')
+// }
 
 export function assert(
   value: boolean,
@@ -99,14 +94,6 @@ export function absRootPath(
 // Converts relative file paths to absolute ones (relative to src directory) (for executable and hot run to work correctly).
 export function absPath(relPath: string): string {
   return absRootPath(relPath, '');
-}
-
-export function fileExistsRelative(relativeFilePath: string): boolean {
-  return fileExists(absPath(relativeFilePath));
-}
-
-export function fileExistsAbsolute(absoluteFilePath: string): boolean {
-  return fileExists(absoluteFilePath);
 }
 
 // Returns a subset of array1 and array2 which contains only objects occurring in both arrays.

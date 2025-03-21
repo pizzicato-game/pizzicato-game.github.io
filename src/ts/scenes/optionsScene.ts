@@ -5,10 +5,10 @@ import { Checkbox } from '../ui/checkbox';
 import {
   config,
   defaultConfig,
-  saveConfigData,
+  updateConfig,
+  updateConfigValue,
 } from '../managers/storageManager';
 import webcam from '../objects/webcam';
-import { ConfigData } from '../core/interfaces';
 import { EventEmitter, Sprite, Tween, Vector2 } from '../core/phaserTypes';
 import {
   escapeKey,
@@ -19,11 +19,9 @@ import {
   thumbFingerId,
   undefinedText,
 } from '../core/config';
+import { assert } from '../core/common';
 
 export default class Options extends HandScene {
-  private configData: ConfigData;
-  private defaultData: ConfigData;
-
   private back: Button;
   private resetConfig: Button;
   private onTimeDurationLimits: Vector2;
@@ -41,31 +39,18 @@ export default class Options extends HandScene {
     super('options');
   }
 
-  private setConfig() {
-    saveConfigData(this.configData);
-    webcam.setVisibility(this.configData.enableCameraVisibility);
-  }
-
   private saveAndExit() {
-    this.setConfig();
-    //this.setOpacity(this.configData.cameraOpacity);
-    if (this.rotateTween != undefined) {
-      this.rotateTween.destroy();
-    }
-    if (this.glowTween != undefined) {
-      this.glowTween.destroy();
-    }
-    if (this.glow != undefined) {
-      this.glow.destroy();
-    }
+    webcam.setVisibility(config.enableCameraVisibility);
+    //this.setOpacity(config.cameraOpacity);
+    if (this.rotateTween) this.rotateTween.destroy();
+    if (this.glowTween) this.glowTween.destroy();
+    if (this.glow) this.glow.destroy();
     this.scene.start('mainMenu');
   }
 
   public create() {
     super.create();
 
-    this.defaultData = defaultConfig;
-    this.configData = config;
     this.onTimeDurationLimits = new Vector2(50, 1000);
 
     this.createOptions();
@@ -89,6 +74,8 @@ export default class Options extends HandScene {
   }
 
   private createOptions() {
+    assert(config != undefined, 'Failed to fetch configuration data');
+
     const optionsSliderSize = new Vector2(
       this.width * 0.26,
       this.height * 0.03,
@@ -111,13 +98,13 @@ export default class Options extends HandScene {
       this.center.x + halfButtonGapX,
       this.height * 0.9,
       async () => {
-        console.info('INFO: Reset config data to defaults');
+        console.info('INFO: Reset config to default');
+        updateConfig(defaultConfig, false);
         for (const option of this.options) {
-          option.reset(this.defaultData);
+          option.reset(config);
         }
-        this.setGlowTimeScale(this.defaultData['onTimeDuration'] / 2);
-        this.configData = structuredClone(this.defaultData);
-        this.setConfig();
+        this.setGlowTimeScale(config['onTimeDuration'] / 2);
+        webcam.setVisibility(config.enableCameraVisibility);
       },
     );
 
@@ -170,7 +157,7 @@ export default class Options extends HandScene {
         'targetInner',
       )
       .setTint(fingerColors[thumbFingerId])
-      .setScale(this.configData['targetSize']);
+      .setScale(config['targetSize']);
     // Make target spin on repeat.
     this.rotateTween = this.tweens.add({
       targets: [this.targetExample],
@@ -187,7 +174,7 @@ export default class Options extends HandScene {
       targetGlowOptions.quality,
       targetGlowOptions.distance,
     );
-    const glowDuration: number = this.configData['onTimeDuration'] / 2;
+    const glowDuration: number = config['onTimeDuration'] / 2;
     this.glowTween = this.tweens.add({
       targets: this.glow,
       outerStrength: targetGlowOptions.outerStrength,
@@ -197,10 +184,7 @@ export default class Options extends HandScene {
       repeat: -1,
     });
     this.setGlowTimeScale(glowDuration);
-    if (
-      this.configData['postProcessingDisabled'] &&
-      this.glowTween != undefined
-    ) {
+    if (config['postProcessingDisabled'] && this.glowTween) {
       this.glowTween.pause();
     }
     const targetScaleSlider = new Slider(
@@ -208,13 +192,13 @@ export default class Options extends HandScene {
       new Vector2(this.width * 0.1, this.height * 0.1 + this.height * 0.08 * 0),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
-      this.configData,
+      config,
       'targetSize',
       new Vector2(0.5, 3),
       (slider: Slider) => {
         slider.label!.setText('Target Scale: ' + slider.getStringValue());
         const sliderValue: number = slider.getValue();
-        this.configData[slider.key] = sliderValue;
+        updateConfigValue(slider.key, sliderValue);
         this.targetExample.setScale(sliderValue);
       },
     );
@@ -228,14 +212,14 @@ export default class Options extends HandScene {
       new Vector2(this.width * 0.1, this.height * 0.1 + this.height * 0.08 * 1),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
-      this.configData,
+      config,
       'fingerSize',
       new Vector2(0.5, 3),
       (slider: Slider) => {
-        if (slider.label != undefined)
+        if (slider.label)
           slider.label.setText('Finger Scale: ' + slider.getStringValue());
         const sliderValue: number = slider.getValue();
-        this.configData[slider.key] = sliderValue;
+        updateConfigValue(slider.key, sliderValue);
         this.hand.setFingerScale(sliderValue);
       },
     );
@@ -246,10 +230,10 @@ export default class Options extends HandScene {
 
     const opacityCallback = (slider: Slider) => {
       if (slider == undefined || !slider.active) return;
-      if (slider.label != undefined && slider.label.active)
+      if (slider.label && slider.label.active)
         slider.label.setText('Camera Opacity: ' + slider.getStringValue());
-      this.configData[slider.key] = slider.getValue();
-      this.setOpacity(this.configData[slider.key] as number);
+      updateConfigValue(slider.key, slider.getValue());
+      this.setOpacity(config[slider.key] as number);
     };
 
     const cameraOpacitySlider = new Slider(
@@ -260,7 +244,7 @@ export default class Options extends HandScene {
       ),
       optionsSliderSize,
       optionsSliderLabelOffset,
-      this.configData,
+      config,
       'cameraOpacity',
       new Vector2(0.01, 1.0),
       opacityCallback,
@@ -274,15 +258,15 @@ export default class Options extends HandScene {
       25,
       undefined,
       undefinedText,
-      this.configData,
+      config,
       'enableCameraVisibility',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
         webcam.setVisibility(checkbox.isChecked);
         if (checkbox.isChecked) {
           cameraOpacitySlider.draw();
         } else {
-          cameraOpacitySlider.setValue(this.configData['cameraOpacity']);
+          cameraOpacitySlider.setValue(config['cameraOpacity']);
           opacityCallback(cameraOpacitySlider);
           this.setOpacity(0);
           cameraOpacitySlider.hide('Show Camera');
@@ -304,14 +288,14 @@ export default class Options extends HandScene {
       ),
       optionsSliderSize,
       optionsSliderLabelOffset,
-      this.configData,
+      config,
       'skipButtonAppearsAfterLoop',
       new Vector2(1, 16),
       (slider: Slider) => {
         slider.label!.setText(
           'Skip Button After Loop: ' + slider.getStringValue(),
         );
-        this.configData[slider.key] = slider.getValue();
+        updateConfigValue(slider.key, slider.getValue());
       },
     ).setIsInteger(true);
     const layerSkipButton = new Checkbox(
@@ -323,10 +307,10 @@ export default class Options extends HandScene {
       25,
       undefined,
       undefinedText,
-      this.configData,
+      config,
       'showSkipButton',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
         if (checkbox.isChecked) {
           layerSkipLoopSlider.draw();
         } else {
@@ -349,14 +333,14 @@ export default class Options extends HandScene {
       ),
       optionsSliderSize,
       optionsSliderLabelOffset,
-      this.configData,
+      config,
       'skipLayersAutomaticallyAfterLoop',
       new Vector2(1, 16),
       (slider: Slider) => {
         slider.label!.setText(
           'Skip Layers After Loop: ' + slider.getStringValue(),
         );
-        this.configData[slider.key] = slider.getValue();
+        updateConfigValue(slider.key, slider.getValue());
       },
     ).setIsInteger(true);
     const skipLayers = new Checkbox(
@@ -368,10 +352,10 @@ export default class Options extends HandScene {
       25,
       undefined,
       undefinedText,
-      this.configData,
+      config,
       'skipLayersAutomatically',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
         if (checkbox.isChecked) {
           layerskipButtonAppearsAfterLoopSlider.draw();
         } else {
@@ -397,10 +381,10 @@ export default class Options extends HandScene {
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Disable Layer Progression',
-      this.configData,
+      config,
       'disableLayerProgression',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
       },
     );
     this.options.push(disableLayerProgress);
@@ -417,10 +401,10 @@ export default class Options extends HandScene {
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Index Finger Pinches Only',
-      this.configData,
+      config,
       'indexFingerOnly',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
       },
     );
     this.options.push(fingerPinchesOnly);
@@ -437,24 +421,21 @@ export default class Options extends HandScene {
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Disable Post-Processing',
-      this.configData,
+      config,
       'postProcessingDisabled',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
         if (checkbox.isChecked) {
-          if (this.glowTween != undefined) {
+          if (this.glowTween) {
             this.glowTween.restart();
             this.glowTween.pause();
           }
-          if (this.glow != undefined) {
+          if (this.glow) {
             this.targetExample.postFX.disable();
           }
         } else if (!checkbox.isChecked) {
-          if (this.glowTween != undefined && this.targetExample != undefined)
-            this.glowTween.resume();
-          if (this.glow != undefined) {
-            this.targetExample.postFX.enable();
-          }
+          if (this.glowTween && this.targetExample) this.glowTween.resume();
+          if (this.glow) this.targetExample.postFX.enable();
         }
       },
     );
@@ -471,15 +452,15 @@ export default class Options extends HandScene {
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
-      this.configData,
+      config,
       'onTimeDuration',
       this.onTimeDurationLimits,
       (slider: Slider) => {
         slider.label!.setText(
           'On Time Duration: ' + slider.getStringValue() + ' ms',
         );
-        this.configData[slider.key] = slider.getValue();
-        this.setGlowTimeScale(this.configData['onTimeDuration'] / 2);
+        updateConfigValue(slider.key, slider.getValue());
+        this.setGlowTimeScale(config['onTimeDuration'] / 2);
       },
     ).setIsInteger(true);
     this.options.push(onTimeDurationSlider);
@@ -495,14 +476,14 @@ export default class Options extends HandScene {
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
-      this.configData,
+      config,
       'lateTimeDuration',
       new Vector2(50, 1000),
       (slider: Slider) => {
         slider.label!.setText(
           'Late Time Duration: ' + slider.getStringValue() + ' ms',
         );
-        this.configData[slider.key] = slider.getValue();
+        updateConfigValue(slider.key, slider.getValue());
       },
     ).setIsInteger(true);
     this.options.push(lateDurationSlider);
@@ -518,12 +499,12 @@ export default class Options extends HandScene {
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
-      this.configData,
+      config,
       'pinchVolume',
       new Vector2(0, 1),
       (slider: Slider) => {
         slider.label!.setText('Pinch Volume: ' + slider.getStringValue());
-        this.configData[slider.key] = slider.getValue();
+        updateConfigValue(slider.key, slider.getValue());
       },
     );
     this.options.push(pinchVolumeSlider);
@@ -539,16 +520,36 @@ export default class Options extends HandScene {
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
-      this.configData,
+      config,
       'backgroundMusicVolume',
       new Vector2(0, 1),
       (slider: Slider) => {
         slider.label!.setText('Track Volume: ' + slider.getStringValue());
-        this.configData[slider.key] = slider.getValue();
+        updateConfigValue(slider.key, slider.getValue());
       },
     );
     this.options.push(backgroundVolumeSlider);
     this.add.existing(backgroundVolumeSlider);
+
+    // --------------------------------------------------------
+
+    const mousePinchesEnabled = new Checkbox(
+      this,
+      new Vector2(
+        this.width * 0.64,
+        this.height * 0.32 + this.height * 0.08 * 1.5,
+      ),
+      25,
+      new Vector2(-optionsCheckboxOffset.x, 0),
+      'Enable Mouse Pinches',
+      config,
+      'mousePinchesEnabled',
+      (checkbox: Checkbox) => {
+        updateConfigValue(checkbox.key, checkbox.isChecked);
+      },
+    );
+    this.options.push(mousePinchesEnabled);
+    this.add.existing(mousePinchesEnabled);
 
     // --------------------------------------------------------
 
@@ -561,10 +562,10 @@ export default class Options extends HandScene {
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Ignore Multifinger Pinches',
-      this.configData,
+      config,
       'ignoreMultifingerPinches',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
       },
     );
     this.options.push(requireSinglePinch);
@@ -581,10 +582,10 @@ export default class Options extends HandScene {
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Display Visual Metronome',
-      this.configData,
+      config,
       'displayVisualMetronome',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
       },
     );
     this.options.push(displayVisualMetronome);
@@ -601,10 +602,10 @@ export default class Options extends HandScene {
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Enable Sonification',
-      this.configData,
+      config,
       'sonificationEnabled',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
       },
     );
     this.options.push(sonificationEnabled);
@@ -619,10 +620,10 @@ export default class Options extends HandScene {
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
       'Enable Synchronization',
-      this.configData,
+      config,
       'synchronizationEnabled',
       (checkbox: Checkbox) => {
-        this.configData[checkbox.key] = checkbox.isChecked;
+        updateConfigValue(checkbox.key, checkbox.isChecked);
       },
     );
     this.options.push(synchronizationEnabled);
@@ -637,10 +638,10 @@ export default class Options extends HandScene {
     //   25,
     //   new Vector2(-optionsCheckboxOffset.x, 0),
     //   'Automatically Save CSV',
-    //   this.configData,
+    //   config,
     //   'autoSaveCSV',
     //   (checkbox: Checkbox) => {
-    //     this.configData[checkbox.key] = checkbox.isChecked
+    //     config[checkbox.key] = checkbox.isChecked
     //   }
     // )
     // this.options.push(autoSaveCSV)

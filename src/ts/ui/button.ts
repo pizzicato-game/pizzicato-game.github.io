@@ -18,7 +18,7 @@ import setInteraction from '../util/interaction';
 
 export class Button extends MatterSprite {
   public readonly scene: HandScene;
-  private sound: AudioTrack;
+  protected sound: AudioTrack;
   public text: PhaserText | undefined;
   protected resetTint: boolean = true;
 
@@ -65,6 +65,16 @@ export class Button extends MatterSprite {
 
     this.on('destroy', () => {
       this.scene.hand.removePinchCheck(buttonPinchFinger, this);
+      if (this.sound) {
+        if (this.sound.isPlaying) {
+          this.sound.on('complete', () => {
+            this.sound.destroy();
+          });
+        } else {
+          this.sound.destroy();
+        }
+      }
+      if (this.text) this.text.destroy();
     });
   }
 

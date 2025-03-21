@@ -53,6 +53,11 @@ export class Streak extends GameObject {
         true,
         true,
       );
+    this.on('destroy', () => {
+      if (this.onFireTween) this.onFireTween.destroy();
+      if (this.flame) this.flame.destroy();
+      if (this.streakText) this.streakText.destroy();
+    });
   }
 
   get current() {
@@ -87,11 +92,10 @@ export class Streak extends GameObject {
     // TODO: Potentially play sound.
     this.current_ = 0;
     this.onFire = false;
-    if (this.onFireTween != undefined)
-      this.scene.tweens.remove(this.onFireTween);
-    if (this.streakText != undefined) this.streakText.clearTint();
-    if (this.streakText != undefined) this.streakText.setVisible(false);
-    if (this.flame != undefined) {
+    if (this.onFireTween) this.scene.tweens.remove(this.onFireTween);
+    if (this.streakText) this.streakText.clearTint();
+    if (this.streakText) this.streakText.setVisible(false);
+    if (this.flame) {
       this.flame.destroy();
     }
   }
@@ -111,24 +115,23 @@ export class Streak extends GameObject {
         duration: streakOnFireDuration,
         yoyo: true,
         onUpdate: tween => {
-          if (this != undefined && this.hsv != undefined) {
+          if (this && this.hsv) {
             const value = Math.floor(tween.getValue());
             const top = this.hsv[value].color;
             const bottom = this.hsv[streakOnFireColorWheelExtent - value].color;
-            if (this.streakText != undefined)
+            if (this.streakText)
               this.streakText.setTint(top, top, bottom, bottom);
           }
         },
         onStop: () => {
-          if (this.onFireTween != undefined)
-            this.scene.tweens.remove(this.onFireTween);
+          if (this.onFireTween) this.scene.tweens.remove(this.onFireTween);
         },
       });
       if (!config.postProcessingDisabled) {
-        if (this.flame != undefined) {
+        if (this.flame) {
           this.flame.destroy();
         }
-        if (this.streakText != undefined) {
+        if (this.streakText) {
           // Create particles for flame
           this.flame = this.scene.add.particles(
             this.streakText.x,

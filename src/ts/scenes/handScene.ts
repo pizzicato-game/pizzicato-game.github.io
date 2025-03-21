@@ -29,15 +29,16 @@ export default class HandScene extends Scene {
 
   public preload() {}
 
-  public create(
-    cameraVisibility: boolean = config.enableCameraVisibility,
-    cameraOpacity: number = config.cameraOpacity,
-  ) {
+  public enableCamera(cameraVisibility: boolean, cameraOpacity: number) {
+    webcam.setVisibility(cameraVisibility);
+    this.setOpacity(cameraOpacity);
+  }
+
+  public create() {
     this.width = this.scale.width;
     this.height = this.scale.height;
     this.center = new Vector2(this.width / 2, this.height / 2);
-
-    webcam.setVisibility(cameraVisibility);
+    this.enableCamera(config.enableCameraVisibility, config.cameraOpacity);
 
     // These calls are required because calibration scene hides, tints, and re-textures the background.
     background.setVisible(false);
@@ -45,7 +46,6 @@ export default class HandScene extends Scene {
     this.bg.style.opacity = '1';
     this.setBackgroundTexture('background');
     background.clearTint();
-    this.setOpacity(cameraOpacity);
 
     this.sound.pauseOnBlur = false;
 

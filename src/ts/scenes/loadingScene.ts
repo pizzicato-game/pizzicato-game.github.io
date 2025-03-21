@@ -1,8 +1,6 @@
-import { loadData, updateDefaultConfig } from '../managers/storageManager';
-import { absPath, initVariables } from '../core/common';
+import { absPath, assert, initVariables } from '../core/common';
 import { PhaserText, Scene, Sprite } from '../core/phaserTypes';
 import {
-  configFilePath,
   defaultConfigFilePath,
   initialScene,
   levelListPath,
@@ -10,8 +8,18 @@ import {
 } from '../core/config';
 import webcam from '../objects/webcam';
 import handTracker from '../objects/handTracker';
-import { ConfigData } from '../core/interfaces';
 import Level from '../level/level';
+import {
+  currentUser,
+  getCurrentUserConfig,
+  getCurrentUserName,
+} from '../core/game';
+import { ConfigData } from '../core/interfaces';
+import {
+  defaultConfig,
+  updateConfig,
+  updateDefaultConfig,
+} from '../managers/storageManager';
 
 export let background: Sprite;
 export const levels: Level[] = [];
@@ -147,13 +155,6 @@ export class LoadingScene extends Scene {
 
     if (!webcam.found()) return;
 
-    this.updateText(loadingText, 'LOADING CONFIG DATA...');
-    await loadData(configFilePath).catch(err =>
-      this.updateText(loadingText, err),
-    );
-
-    updateDefaultConfig(this.cache.json.get('defaultConfig'));
-
     await handTracker
       .init(this.updateText.bind(this, loadingText))
       .catch(err => this.updateText(loadingText, err));
@@ -167,9 +168,37 @@ export class LoadingScene extends Scene {
 
     handTracker.precache(this.updateText.bind(this, loadingText));
 
+    this.updateText(loadingText, 'LOADING CONFIG DATA...');
+    assert(
+      this.cache.json.has('defaultConfig'),
+      'Failed to load default config data',
+    );
+    updateDefaultConfig(this.cache.json.get('defaultConfig'));
+
+    if (currentUser) {
+      await getCurrentUserConfig()
+        .then((pair: [ConfigData, string]) => {
+          const [data, configName] = pair;
+          console.info(
+            'INFO: Playing as "' +
+              getCurrentUserName() +
+              '" with config: "' +
+              configName +
+              '"',
+          );
+          updateConfig(data);
+        })
+        .catch(err => {
+          this.updateText(loadingText, err);
+        });
+    } else {
+      updateConfig(defaultConfig);
+    }
+
     this.updateText(loadingText, 'LOADING GAME DATA...');
 
     this.scene.get(initialScene).load.on('complete', () => {
+      this.updateText(loadingText, 'STARTING INITIAL SCENE...');
       loadingText.destroy();
     });
   }

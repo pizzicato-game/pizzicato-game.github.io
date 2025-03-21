@@ -1,4 +1,5 @@
 import {
+  buttonPinchFinger,
   difficultyButtonChosenTextTint,
   difficultyButtonChosenTint,
 } from '../core/config';
@@ -51,7 +52,18 @@ export class DifficultyButton extends ToggleButton {
     this.updateTint();
 
     this.on('destroy', () => {
-      this.bpmText.destroy();
+      this.scene.hand.removePinchCheck(buttonPinchFinger, this);
+      if (this.sound) {
+        if (this.sound.isPlaying) {
+          this.sound.on('complete', () => {
+            this.sound.destroy();
+          });
+        } else {
+          this.sound.destroy();
+        }
+      }
+      if (this.text) this.text.destroy();
+      if (this.bpmText) this.bpmText.destroy();
     });
   }
 

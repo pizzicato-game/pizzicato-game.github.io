@@ -32,7 +32,8 @@ export default class Calibration extends HandScene {
   }
 
   create() {
-    super.create(true, calibrationMenuWebcamOpacity);
+    super.create();
+    this.enableCamera(true, calibrationMenuWebcamOpacity);
 
     this.back = new Button(this, 'BACK', this.center.x, 972, () => {
       this.exit();
@@ -83,7 +84,7 @@ export default class Calibration extends HandScene {
       background.clearTint();
     }
 
-    if (this.distanceText != undefined && this.distanceText.active) {
+    if (this.distanceText && this.distanceText.active) {
       this.distanceText.setText(handDistanceText);
     }
   }

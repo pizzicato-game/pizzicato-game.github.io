@@ -6,6 +6,7 @@
   "skipLayersAutomatically": false,
   "skipLayersAutomaticallyAfterLoop": 1,
   "ignoreMultifingerPinches": true,
+  "mousePinchesEnabled": true,
   "sonificationEnabled": true,
   "synchronizationEnabled": false,
   "disableLayerProgression": false,

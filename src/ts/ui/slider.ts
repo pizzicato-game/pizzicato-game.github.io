@@ -46,7 +46,7 @@ export class Slider extends Graphics {
     this.updateHandle();
 
     // Add the labels
-    if (labelOffset != undefined) {
+    if (labelOffset) {
       this.label = this.scene.add.text(
         this.x + labelOffset.x,
         this.y + labelOffset.y,
@@ -71,14 +71,21 @@ export class Slider extends Graphics {
     );
     this.scene.input.on('pointermove', this.doDrag, this);
 
-    assert(typeof configData[this.key] == 'number');
+    assert(
+      typeof configData[this.key] == 'number',
+      'Type must be number, instead it was: ' + typeof configData[this.key],
+    );
     this.setValue(configData[this.key] as number);
 
     this.draw();
+
+    this.on('destroy', () => {
+      if (this.label) this.label.destroy();
+    });
   }
 
   public reset(configData: ConfigData) {
-    assert(typeof configData[this.key] == 'number');
+    assert(typeof configData[this.key] == 'number', 'Type must be number');
     this.setValue(configData[this.key] as number);
     this.draw();
   }
@@ -111,7 +118,7 @@ export class Slider extends Graphics {
 
   public draw() {
     this.clear();
-    if (this.input != undefined) {
+    if (this.input) {
       if (!this.input.enabled) {
         this.setInteractive(this.box, Rectangle.Contains);
       }
@@ -153,11 +160,11 @@ export class Slider extends Graphics {
 
   public hide(newLabelText?: string): Slider {
     this.clear();
-    if (this.input != undefined) {
+    if (this.input) {
       this.disableInteractive();
     }
-    if (this.label != undefined && this.label != null && this.label.active) {
-      if (newLabelText != undefined) {
+    if (this.label && this.label.active) {
+      if (newLabelText) {
         this.label.setText(newLabelText);
       } else {
         this.label.setText('');

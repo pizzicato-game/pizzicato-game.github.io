@@ -208,10 +208,11 @@ export class PlayableLayer extends Layer {
 
       this.level.streak.check();
 
-      if (config.sonificationEnabled)
+      if (config.sonificationEnabled) {
         target.sound.play({
           volume: config.pinchVolume,
         });
+      }
 
       this.targetManager.destroyTarget(target);
 
@@ -281,7 +282,7 @@ export class PlayableLayer extends Layer {
       layerTime;
 
     if (nextNodeLoopTime <= previewTime) {
-      if ((nextNode as TrackPinchNode).finger !== undefined) {
+      if ((nextNode as TrackPinchNode).finger != undefined) {
         this.createTarget(
           nextNode as TrackPinchNode,
           this.level.activeLayerIndex,

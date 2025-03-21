@@ -10,7 +10,7 @@ export class TargetManager {
   }
 
   public destroyTarget(target: Target) {
-    target.destroyTarget();
+    target.destroy();
     const index = this.targets.indexOf(target, 0);
     if (index > -1) {
       this.targets.splice(index, 1);

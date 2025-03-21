@@ -29,7 +29,7 @@ export class Checkbox extends Graphics {
     this.y = boxPosition.y;
     this.key = key;
 
-    if (labelOffset != undefined) {
+    if (labelOffset) {
       this.labelText = labelText;
       this.label = this.scene.add.text(
         boxPosition.x + labelOffset.x,
@@ -58,6 +58,10 @@ export class Checkbox extends Graphics {
 
     this.on('pointerdown', this.toggleCheck, this);
     this.draw();
+
+    this.on('destroy', () => {
+      if (this.label) this.label.destroy();
+    });
   }
 
   public reset(configData: ConfigData) {
@@ -68,13 +72,13 @@ export class Checkbox extends Graphics {
   }
 
   public resetLabel() {
-    if (this.label != undefined) {
+    if (this.label) {
       this.label.setText(this.labelText);
     }
   }
 
   public setLabel(text: string) {
-    if (this.label != undefined) {
+    if (this.label) {
       this.label.setText(text);
     }
     this.draw();
@@ -88,7 +92,7 @@ export class Checkbox extends Graphics {
 
   public draw() {
     this.clear();
-    if (this.input != undefined && !this.input.enabled) {
+    if (this.input && !this.input.enabled) {
       this.setInteractive(this.box, Rectangle.Contains);
     }
     this.lineStyle(2, 0xffffff);
@@ -109,9 +113,7 @@ export class Checkbox extends Graphics {
   public hide(): Checkbox {
     this.clear();
     this.disableInteractive();
-    if (this.label != undefined) {
-      this.label.setText('');
-    }
+    if (this.label) this.label.setText('');
     return this;
   }
 

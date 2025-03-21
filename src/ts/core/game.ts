@@ -22,9 +22,9 @@ To add a new scene:
 4. (Optional) To start in your scene, set initialScene = "MySceneClassName" in config.ts.
 */
 
-const loginScreenEnabled: boolean = false;
+const loginScreenEnabled: boolean = true;
 
-export let currentUser: User | null = null;
+export let currentUser: User | undefined = undefined;
 
 const config = {
   type: Phaser.WEBGL, // PHASER.CANVAS, PHASER.AUTO
@@ -92,7 +92,7 @@ export interface UserData {
 }
 
 const newUserData: UserData = {
-  config: 'sonification_config',
+  config: 'sonification',
   lastLogin: 'Has not logged in yet',
 };
 
@@ -218,7 +218,7 @@ export async function getConfig(
 ): Promise<ConfigData> {
   return new Promise((resolve, reject) => {
     if (!configName) {
-      reject('Undefined config name: resorting to default config');
+      reject('Undefined config name');
       return;
     } else {
       const db = ref(database);
@@ -227,9 +227,7 @@ export async function getConfig(
           if (snapshot.exists()) {
             resolve(snapshot.val() as ConfigData);
           } else {
-            reject(
-              'Config name snapshot does not exist: resorting to default config',
-            );
+            reject('Config "' + configName + '" not found in database');
           }
         })
         .catch(err => {
@@ -279,9 +277,7 @@ export async function getCurrentUserConfig(): Promise<[ConfigData, string]> {
               reject('Failed to retrieve config: ' + err);
             });
         } else {
-          reject(
-            'User id snapshot does not exist: resorting to default config',
-          );
+          reject('User id snapshot does not exist');
         }
       })
       .catch(err => {
@@ -320,7 +316,6 @@ if (loginScreenEnabled) {
         </div>
         <div class="button-group">
           <button id="login_button" class="login-button">Login</button>
-          <button id="guest_button" class="guest-button">Play as Guest</button>
         </div>
       </div>
     </div>
@@ -333,10 +328,6 @@ if (loginScreenEnabled) {
   (<HTMLButtonElement>document.getElementById('login_button')).addEventListener(
     'click',
     login,
-  );
-  (<HTMLButtonElement>document.getElementById('guest_button')).addEventListener(
-    'click',
-    startGame,
   );
 } else {
   document.body.innerHTML += `<div id="background_image"></div>`;

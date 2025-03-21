@@ -1,5 +1,5 @@
 import { Track } from '../level/track';
-import { absPath, assert, fileExistsRelative } from '../core/common';
+import { absPath, assert } from '../core/common';
 import HandScene from '../scenes/handScene';
 import { PlayableTrackLayerData, TrackLayerData } from '../level/trackTypes';
 import { PlayableLayer } from '../level/layer';
@@ -76,14 +76,6 @@ export default class Level {
     });
   }
 
-  public hasCustomBackground(): boolean {
-    return fileExistsRelative(levelDir + this.getBackgroundTextureKey());
-  }
-
-  public hasPreviewVideo(): boolean {
-    return fileExistsRelative(levelDir + this.getPreviewVideoKey());
-  }
-
   public getBackgroundTextureKey(): string {
     return this.trackKey + '/' + levelBackgroundFileName;
   }
@@ -92,23 +84,27 @@ export default class Level {
     return this.trackKey + '/' + levelPreviewFileName;
   }
 
+  public hasCustomBackground(): boolean {
+    return this.scene.textures.exists(this.getBackgroundTextureKey());
+  }
+
+  public hasPreviewVideo(): boolean {
+    return this.scene.cache.video.has(this.getPreviewVideoKey());
+  }
+
   private preloadPreview() {
     const previewFile = levelDir + this.getPreviewVideoKey();
     const backgroundFile = levelDir + this.getBackgroundTextureKey();
 
-    if (fileExistsRelative(previewFile)) {
-      this.scene.load.video(
-        this.getPreviewVideoKey(),
-        absPath(previewFile),
-        true,
-      );
-    }
-    if (fileExistsRelative(backgroundFile)) {
-      this.scene.load.image(
-        this.getBackgroundTextureKey(),
-        absPath(backgroundFile),
-      );
-    }
+    this.scene.load.video(
+      this.getPreviewVideoKey(),
+      absPath(previewFile),
+      true,
+    );
+    this.scene.load.image(
+      this.getBackgroundTextureKey(),
+      absPath(backgroundFile),
+    );
   }
 
   private preloadLayers() {

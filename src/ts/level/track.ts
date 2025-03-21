@@ -92,7 +92,7 @@ export class Track {
   // Preloads all the audio loop track in levelDir/<trackKey>/<layer_id>/<soundKey>.<soundFileExtension>
   private preloadLoops() {
     this.forEachLayer((layer: TrackLayerData) => {
-      assert(layer.soundLoopKeys !== undefined);
+      assert(layer.soundLoopKeys != undefined);
       assert(layer.soundLoopKeys.length > 0);
       layer.soundLoopKeys.forEach(loopKey => {
         const soundKey: string = this.getSoundKey(layer, loopKey);
@@ -114,7 +114,7 @@ export class Track {
   }
 
   public getSoundKey(layer: TrackLayerData, soundKey: string): string {
-    assert(soundKey !== undefined);
+    assert(soundKey != undefined);
     return this.trackKey + '/' + layer.id + '/' + soundKey;
   }
 
@@ -151,7 +151,7 @@ export class Track {
     const audioTracks: AudioTrack[] = [];
     this.forEachLayer((layer: TrackLayerData, index: number) => {
       if (predicate == undefined || predicate(layer, index)) {
-        assert(layer.soundLoopKeys !== undefined);
+        assert(layer.soundLoopKeys != undefined);
         assert(
           bpmIndex < layer.soundLoopKeys.length,
           'BPM index out of range of layer sound loop keys',
@@ -207,7 +207,7 @@ export class Track {
   public preload(scene: HandScene) {
     this.scene = scene;
     this.data = this.scene.cache.json.get(this.trackKey);
-    assert(this.data !== undefined, 'Failed to retrieve JSON for track');
+    assert(this.data != undefined, 'Failed to retrieve JSON for track');
     this.parseJson();
     this.preloadLoops();
     this.preloadNotes();

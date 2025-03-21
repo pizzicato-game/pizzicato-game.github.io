@@ -11,6 +11,7 @@ export interface ConfigData {
   skipButtonAppearsAfterLoop: number;
 
   ignoreMultifingerPinches: boolean;
+  mousePinchesEnabled: boolean;
   displayVisualMetronome: boolean;
   postProcessingDisabled: boolean;
 

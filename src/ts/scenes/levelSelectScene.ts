@@ -229,7 +229,7 @@ export default class LevelSelect extends HandScene {
   }
 
   private startVideo(level: Level) {
-    if (this.videoPreview != undefined) this.videoPreview.destroy();
+    if (this.videoPreview) this.videoPreview.destroy();
     if (level.hasPreviewVideo()) {
       this.videoPreview = this.add.video(
         this.center.x,
