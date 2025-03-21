@@ -301,6 +301,10 @@ export default class Level {
   }
 
   public getAudioLoopTime(): number {
+    assert(
+      this.activeAudioTracks.length >= 1,
+      'Cannot retrieve audio loop time when there are no active audio tracks',
+    );
     return this.activeAudioTracks.at(-1)!.duration;
   }
 }

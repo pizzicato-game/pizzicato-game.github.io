@@ -264,16 +264,18 @@ export default class LevelSelect extends HandScene {
     level.playBackgroundAudio();
     level.setBackgroundAudioMute(!this.mute.getToggleState());
 
-    const loopTime = level.getAudioLoopTime() * 1000;
-    this.videoRefreshEvent = this.time.addEvent({
-      delay: loopTime,
-      callback: () => {
-        this.startVideo(level);
-      },
-      callbackScope: this,
-      loop: true,
-      startAt: loopTime,
-    });
+    if (this.activeAudioTracks.length >= 1) {
+      const loopTime = level.getAudioLoopTime() * 1000;
+      this.videoRefreshEvent = this.time.addEvent({
+        delay: loopTime,
+        callback: () => {
+          this.startVideo(level);
+        },
+        callbackScope: this,
+        loop: true,
+        startAt: loopTime,
+      });
+    }
   }
 
   private stopAudio() {
