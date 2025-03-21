@@ -122,16 +122,12 @@ function getValidNameEmailPassword() {
 
   // Validate input fields
   if (!validateName(name)) {
-    alert('Name "' + name + '" is invalid!');
     return ['', '', ''];
   }
   if (!validatePassword(password)) {
-    alert('Password is invalid!');
     return ['', '', ''];
   }
   if (!validateEmail(email)) {
-    alert('Failed email creation "' + email + '" is invalid!');
-    alert('Failed to validate credentials!');
     return ['', '', ''];
   }
   return [name, email, password];
@@ -191,25 +187,32 @@ async function login(): Promise<void> {
       get(child(db, user))
         .then(snapshot => {
           if (snapshot.exists()) {
-            update(child(db, user), updates);
+            update(child(db, user), updates).then(() => {
+              startGame();
+            });
           } else {
-            update(child(db, user), newUserData);
+            update(child(db, user), newUserData).then(() => {
+              startGame();
+            });
           }
         })
         .catch(err => {
           console.info('LOGIN ERROR: ' + err);
         });
-
-      //alert('User logged in successfully!');
-
-      startGame();
-      // ...
     })
     .catch(error => {
-      // const errorCode = error.code;
-      const errorMessage = error.message;
-      alert(errorMessage);
-      // ..
+      if (error.code === 'auth/invalid-credential') {
+        alert('Invalid username or password. Please try again.');
+      } else if (error.code === 'auth/user-disabled') {
+        alert('This user account has been disabled.');
+      } else if (error.code === 'auth/user-not-found') {
+        alert('User not found. Please check your credentials.');
+      } else if (error.code === 'auth/wrong-password') {
+        alert('Incorrect password. Please try again.');
+      } else {
+        // Handle other Firebase authentication errors
+        console.error('Firebase sign-in error:', error);
+      }
     });
 }
 
@@ -303,6 +306,15 @@ function validatePassword(password: string): boolean {
   return password.length >= 6; // Minimum password length
 }
 
+function togglePasswordVisibility() {
+  const x = <HTMLInputElement>document.getElementById('password');
+  if (x.type === 'password') {
+    x.type = 'text';
+  } else {
+    x.type = 'password';
+  }
+}
+
 if (loginScreenEnabled) {
   const form = `
     <div id="login_screen">
@@ -313,6 +325,7 @@ if (loginScreenEnabled) {
         </div>
         <div class="input-group">
           <input type="password" id="password" name="password" placeholder="Password" required>
+          <div class="show-password-box"><input type="checkbox" id="password_checkbox">Show Password</div>
         </div>
         <div class="button-group">
           <button id="login_button" class="login-button">Login</button>
@@ -329,6 +342,9 @@ if (loginScreenEnabled) {
     'click',
     login,
   );
+  (<HTMLButtonElement>(
+    document.getElementById('password_checkbox')
+  )).addEventListener('click', togglePasswordVisibility);
 } else {
   document.body.innerHTML += `<div id="background_image"></div>`;
   startGame();

@@ -52,6 +52,11 @@ canvas {
   margin: auto;
 }
 
+.show-password-box {
+  padding-top: 1em;
+  text-align: center;
+}
+
 .login-container {
   background-color: rgba(0, 0, 0, 0.8);
   padding: 40px;
