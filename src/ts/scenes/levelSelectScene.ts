@@ -236,6 +236,7 @@ export default class LevelSelect extends HandScene {
         this.center.y - this.videoOffsetY,
         level.getPreviewVideoKey(),
       );
+      this.videoPreview;
 
       const speedMultiplier =
         level.track.data.bpm[level.bpmIndex] / level.track.data.bpm[0];
@@ -264,8 +265,16 @@ export default class LevelSelect extends HandScene {
     level.playBackgroundAudio();
     level.setBackgroundAudioMute(!this.mute.getToggleState());
 
-    if (this.activeAudioTracks.length >= 1) {
-      const loopTime = level.getAudioLoopTime() * 1000;
+    let loopTime: number = 0;
+    if (level.activeAudioTracks.length >= 1 && level.hasPreviewVideo()) {
+      loopTime = level.getAudioLoopTime() * 1000;
+    } else {
+      this.startVideo(level);
+      if (level.hasPreviewVideo()) {
+        loopTime = (this.videoPreview as Video).getDuration();
+      }
+    }
+    if (loopTime != 0 && level.hasPreviewVideo()) {
       this.videoRefreshEvent = this.time.addEvent({
         delay: loopTime,
         callback: () => {

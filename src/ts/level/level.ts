@@ -30,7 +30,7 @@ export default class Level {
 
   public activeLayerIndex: number = 0;
   public playableLayers: PlayableLayer[] = [];
-  private activeAudioTracks: AudioTrack[] = [];
+  public activeAudioTracks: AudioTrack[] = [];
   private bpmIndex_: number = invalidBpmIndex;
 
   constructor(scene: Scene, trackKey: string) {
