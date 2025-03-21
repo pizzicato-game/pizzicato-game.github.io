@@ -22,7 +22,7 @@ To add a new scene:
 4. (Optional) To start in your scene, set initialScene = "MySceneClassName" in config.ts.
 */
 
-const loginScreenEnabled: boolean = true;
+const loginScreenEnabled: boolean = false;
 
 export let currentUser: User | undefined = undefined;
 
