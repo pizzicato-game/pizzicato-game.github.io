@@ -3,7 +3,7 @@ import {
   calibrationMenuWebcamOpacity,
   handDistanceUnitText,
   handJustRightColor,
-  handJustRightText,
+  handOptimalText,
   handNotFoundText,
   handTooCloseColor,
   handTooCloseText,
@@ -77,7 +77,7 @@ export default class Calibration extends HandScene {
         handDistanceText = handTooCloseText;
         handDistanceColor = handTooCloseColor;
       } else {
-        handDistanceText = handJustRightText;
+        handDistanceText = handOptimalText;
       }
 
       background.setTint(handDistanceColor);

@@ -249,7 +249,7 @@ export const handTooCloseThreshold: number = 20; // centimeters.
 export const handNotFoundText: string = 'Hand Not Recognized';
 export const handTooFarText: string = 'Too Far - Estimated Distance: ';
 export const handTooCloseText: string = 'Too Close - Estimated Distance: ';
-export const handJustRightText: string = 'Just Right - Estimated Distance: ';
+export const handOptimalText: string = 'Optimal - Estimated Distance: ';
 export const appendHandDistanceToText: boolean = true;
 export const handDistanceUnitText: string = 'cm';
 
@@ -274,6 +274,7 @@ export const optionsSliderLabelOffset = new Vector2(32, -32);
 // Scene keys
 
 export const initialScene: string = 'mainMenu';
+export const levelCompletionScene: string = 'scoreboard';
 
 // Depths
 

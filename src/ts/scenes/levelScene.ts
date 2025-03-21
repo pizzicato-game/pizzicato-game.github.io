@@ -1,6 +1,6 @@
 import HandScene from '../scenes/handScene';
 import Level from '../level/level';
-import { escapeKey } from '../core/config';
+import { escapeKey, initialScene, levelCompletionScene } from '../core/config';
 
 export default class LevelScene extends HandScene {
   private level: Level;
@@ -30,11 +30,11 @@ export default class LevelScene extends HandScene {
     this.level.start(
       () => {
         // Finished level callback.
-        this.scene.start('scoreboard', this.level);
+        this.scene.start(levelCompletionScene, this.level);
       },
       () => {
         // Aborted level callback.
-        this.scene.start('mainMenu');
+        this.scene.start(initialScene);
       },
     );
   }
