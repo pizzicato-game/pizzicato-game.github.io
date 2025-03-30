@@ -12,6 +12,7 @@ export interface ConfigData {
 
   ignoreMultifingerPinches: boolean;
   mousePinchesEnabled: boolean;
+  uiPinchesEnabled: boolean;
   displayVisualMetronome: boolean;
   postProcessingDisabled: boolean;
 

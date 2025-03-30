@@ -53,6 +53,8 @@ export default class HandScene extends Scene {
     this.graphicsObject.setDepth(landmarkDepth);
 
     this.hand = new Hand(this);
+
+    this.input.topOnly = false;
   }
 
   public update(_time: number, _delta: number) {

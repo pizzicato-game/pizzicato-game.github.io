@@ -113,23 +113,43 @@ export class Button extends MatterSprite {
     };
 
     const newCallbacks: PinchCallbacks = {
-      startPinch: onTriggerStart,
-      pinched: pinchCallbacks.pinched,
-      endPinch: pinchCallbacks.endPinch,
-      startHover: pinchCallbacks.startHover,
-      endHover: pinchCallbacks.endHover,
+      startPinch: () => {
+        if (config.uiPinchesEnabled) {
+          onTriggerStart();
+        }
+      },
+      pinched: () => {
+        if (config.uiPinchesEnabled) {
+          pinchCallbacks.pinched?.();
+        }
+      },
+      endPinch: () => {
+        if (config.uiPinchesEnabled) {
+          pinchCallbacks.endPinch?.();
+        }
+      },
+      startHover: () => {
+        if (config.uiPinchesEnabled) {
+          pinchCallbacks.startHover?.();
+        }
+      },
+      endHover: () => {
+        if (config.uiPinchesEnabled) {
+          pinchCallbacks.endHover?.();
+        }
+      },
     };
 
     this.scene.hand.addPinchCheck(buttonPinchFinger, this, newCallbacks);
 
-    this.on('pointerdown', newCallbacks.startPinch!);
+    this.on('pointerdown', onTriggerStart);
 
-    if (newCallbacks.startHover) {
-      this.on('pointermove', newCallbacks.startHover);
+    if (pinchCallbacks.startHover) {
+      this.on('pointermove', pinchCallbacks.startHover);
     }
 
-    if (newCallbacks.endHover) {
-      this.on('pointerout', newCallbacks.endHover);
+    if (pinchCallbacks.endHover) {
+      this.on('pointerout', pinchCallbacks.endHover);
     }
   }
 }

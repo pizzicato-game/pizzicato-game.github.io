@@ -495,7 +495,7 @@ export default class Options extends HandScene {
       this,
       new Vector2(
         this.width * 0.64,
-        this.height * 0.32 + this.height * 0.08 * 0,
+        this.height * 0.3 + this.height * 0.07 * 0,
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
@@ -516,7 +516,7 @@ export default class Options extends HandScene {
       this,
       new Vector2(
         this.width * 0.64,
-        this.height * 0.32 + this.height * 0.08 * 1,
+        this.height * 0.3 + this.height * 0.07 * 1,
       ),
       optionsSliderSize,
       new Vector2(0, optionsSliderLabelOffset.y),
@@ -533,11 +533,31 @@ export default class Options extends HandScene {
 
     // --------------------------------------------------------
 
+    const uiPinchesEnabled = new Checkbox(
+      this,
+      new Vector2(
+        this.width * 0.64,
+        this.height * 0.33 + this.height * 0.08 * 1,
+      ),
+      25,
+      new Vector2(-optionsCheckboxOffset.x, 0),
+      'Enable UI Pinches',
+      config,
+      'uiPinchesEnabled',
+      (checkbox: Checkbox) => {
+        updateConfigValue(checkbox.key, checkbox.isChecked);
+      },
+    );
+    this.options.push(uiPinchesEnabled);
+    this.add.existing(uiPinchesEnabled);
+
+    // --------------------------------------------------------
+
     const mousePinchesEnabled = new Checkbox(
       this,
       new Vector2(
         this.width * 0.64,
-        this.height * 0.32 + this.height * 0.08 * 1.5,
+        this.height * 0.33 + this.height * 0.08 * 1.5,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
@@ -557,7 +577,7 @@ export default class Options extends HandScene {
       this,
       new Vector2(
         this.width * 0.64,
-        this.height * 0.32 + this.height * 0.08 * 2,
+        this.height * 0.33 + this.height * 0.08 * 2,
       ),
       25,
       new Vector2(-optionsCheckboxOffset.x, 0),
