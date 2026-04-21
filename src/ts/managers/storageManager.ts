@@ -38,12 +38,7 @@ export function saveToCSV(data: LevelStats) {
 
 export function autoSaveToCSV(data: LevelStats) {
   const isElectronRenderer = typeof window.electron !== 'undefined';
-  const isLocalBuild =
-    isElectronRenderer ||
-    window.location.protocol === 'app:' ||
-    window.location.protocol === 'file:' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
+  const isLocalBuild = isElectronRenderer;
   if (isLocalBuild) {
     saveCSV(data.id, levelStatsToCSV(data));
   }

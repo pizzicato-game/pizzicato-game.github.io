@@ -75,7 +75,10 @@ export default class Scoreboard extends HandScene {
       this.exit();
     });
 
-    if (!config.autoSaveCSV) {
+    const isElectronRenderer = typeof window.electron !== 'undefined';
+    const isLocalBuild = isElectronRenderer;
+
+    if (!config.autoSaveCSV || !isLocalBuild) {
       this.save = new Button(this, 'SAVE CSV', 200, this.height - 100, () => {
         saveToCSV(this.levelStats);
         // Optionally hide the save CSV button after file is saved.
