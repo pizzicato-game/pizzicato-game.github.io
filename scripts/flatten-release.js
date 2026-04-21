@@ -4,9 +4,11 @@ const path = require('path');
 
 // eslint-disable-next-line no-undef
 const repositoryRoot = path.resolve(__dirname, '..');
+const packageJson = require(path.join(repositoryRoot, 'package.json'));
 const releaseRoot = path.join(repositoryRoot, 'release');
 const unpackedRoot = path.join(releaseRoot, 'win-unpacked');
 const distRoot = path.join(repositoryRoot, 'dist');
+const versionedExecutableName = `${packageJson.name}-${packageJson.version}.exe`;
 
 function removeEntry(entryPath) {
   fs.rmSync(entryPath, { recursive: true, force: true });
@@ -27,6 +29,29 @@ function copyDirectoryContents(sourceDir, destinationDir) {
       dereference: true,
     });
   }
+}
+
+function renameExecutable(destinationDir) {
+  const executableNames = fs
+    .readdirSync(destinationDir)
+    .filter(name => name.toLowerCase().endsWith('.exe'));
+
+  if (executableNames.length === 0) {
+    throw new Error(`Expected an exe in ${destinationDir}`);
+  }
+
+  const currentExecutableName =
+    executableNames.find(name => name === `${packageJson.name}.exe`) ??
+    executableNames[0];
+
+  if (currentExecutableName === versionedExecutableName) {
+    return;
+  }
+
+  fs.renameSync(
+    path.join(destinationDir, currentExecutableName),
+    path.join(destinationDir, versionedExecutableName),
+  );
 }
 
 function flattenReleaseFolder() {
@@ -51,6 +76,8 @@ function flattenReleaseFolder() {
     path.join(distRoot, 'levels'),
     path.join(releaseRoot, 'levels'),
   );
+
+  renameExecutable(releaseRoot);
 
   removeEntry(unpackedRoot);
 }
