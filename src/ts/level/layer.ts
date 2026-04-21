@@ -78,7 +78,9 @@ export class PlayableLayer extends Layer {
   }
 
   public unload() {
-    this.infoHud.destroy();
+    if (this.infoHud) {
+      this.infoHud.destroy();
+    }
   }
 
   public start(delay: number) {
@@ -209,9 +211,11 @@ export class PlayableLayer extends Layer {
       this.level.streak.check();
 
       if (config.sonificationEnabled) {
-        target.sound.play({
-          volume: config.pinchVolume,
-        });
+        if (target.scene !== undefined) {
+          target.sound.play({
+            volume: config.pinchVolume,
+          });
+        }
       }
 
       this.targetManager.destroyTarget(target);
