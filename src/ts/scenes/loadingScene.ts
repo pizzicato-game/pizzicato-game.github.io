@@ -199,9 +199,7 @@ export class LoadingScene extends Scene {
 
     this.scene.get(initialScene).load.on('complete', () => {
       this.updateText(loadingText, 'STARTING INITIAL SCENE...');
-      if (loadingText) {
-        loadingText.destroy();
-      }
+      loadingText?.destroy();
     });
   }
 

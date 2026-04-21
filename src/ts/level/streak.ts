@@ -53,11 +53,6 @@ export class Streak extends GameObject {
         true,
         true,
       );
-    this.on('destroy', () => {
-      if (this.onFireTween) this.onFireTween.destroy();
-      if (this.flame) this.flame.destroy();
-      if (this.streakText) this.streakText.destroy();
-    });
   }
 
   get current() {
@@ -92,12 +87,10 @@ export class Streak extends GameObject {
     // TODO: Potentially play sound.
     this.current_ = 0;
     this.onFire = false;
-    if (this.onFireTween) this.scene.tweens.remove(this.onFireTween);
-    if (this.streakText) this.streakText.clearTint();
-    if (this.streakText) this.streakText.setVisible(false);
-    if (this.flame) {
-      this.flame.destroy();
-    }
+    this.onFireTween?.remove();
+    this.streakText?.clearTint();
+    this.streakText?.setVisible(false);
+    this.flame?.destroy();
   }
 
   private continue() {
@@ -124,13 +117,11 @@ export class Streak extends GameObject {
           }
         },
         onStop: () => {
-          if (this.onFireTween) this.scene.tweens.remove(this.onFireTween);
+          this.onFireTween?.remove();
         },
       });
       if (!config.postProcessingDisabled) {
-        if (this.flame) {
-          this.flame.destroy();
-        }
+        this.flame?.destroy();
         if (this.streakText) {
           // Create particles for flame
           this.flame = this.scene.add.particles(

@@ -35,15 +35,6 @@ export default class InfoHUD extends GameObject {
     super(scene, 'infoHUD');
     this.scene = scene;
     this.level = level;
-    this.on('destroy', () => {
-      if (this.trackText) this.trackText.destroy();
-      if (this.difficultyText) this.difficultyText.destroy();
-      if (this.bpmText) this.bpmText.destroy();
-      if (this.layerText) this.layerText.destroy();
-      if (this.loopText) this.loopText.destroy();
-      if (this.infoBackground) this.infoBackground.destroy();
-      if (this.skipButton) this.skipButton.destroy();
-    });
   }
 
   public setup() {

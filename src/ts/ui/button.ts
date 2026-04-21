@@ -22,6 +22,10 @@ export class Button extends MatterSprite {
   public text: PhaserText | undefined;
   protected resetTint: boolean = true;
 
+  private pointerDownHandler?: () => void;
+  private pointerMoveHandler?: () => void;
+  private pointerOutHandler?: () => void;
+
   constructor(
     scene: HandScene,
     textContent: string,
@@ -62,21 +66,6 @@ export class Button extends MatterSprite {
     this.setDepth(buttonDepth);
 
     this.setOnPinch(onPinch);
-
-    this.on('destroy', () => {
-      this.scene.hand.removePinchCheck(buttonPinchFinger, this);
-      if (this.sound) {
-        if (this.sound.isPlaying) {
-          this.sound.on('complete', () => {
-            if (this.sound) {
-              this.sound.destroy();
-            }
-          });
-        } else {
-          this.sound.destroy();
-        }
-      }
-    });
   }
 
   public removePinchCallbacks() {
@@ -106,6 +95,18 @@ export class Button extends MatterSprite {
   }
 
   public setPinchCallbacks(pinchCallbacks: PinchCallbacks) {
+    this.scene.hand.removePinchCheck(buttonPinchFinger, this);
+
+    if (this.pointerDownHandler) {
+      this.off('pointerdown', this.pointerDownHandler);
+    }
+    if (this.pointerMoveHandler) {
+      this.off('pointermove', this.pointerMoveHandler);
+    }
+    if (this.pointerOutHandler) {
+      this.off('pointerout', this.pointerOutHandler);
+    }
+
     const onTriggerStart = () => {
       pinchCallbacks.startPinch?.();
       this.sound.play({
@@ -143,14 +144,17 @@ export class Button extends MatterSprite {
 
     this.scene.hand.addPinchCheck(buttonPinchFinger, this, newCallbacks);
 
-    this.on('pointerdown', onTriggerStart);
+    this.pointerDownHandler = onTriggerStart;
+    this.on('pointerdown', this.pointerDownHandler);
 
-    if (pinchCallbacks.startHover) {
-      this.on('pointermove', pinchCallbacks.startHover);
+    this.pointerMoveHandler = pinchCallbacks.startHover;
+    if (this.pointerMoveHandler) {
+      this.on('pointermove', this.pointerMoveHandler);
     }
 
-    if (pinchCallbacks.endHover) {
-      this.on('pointerout', pinchCallbacks.endHover);
+    this.pointerOutHandler = pinchCallbacks.endHover;
+    if (this.pointerOutHandler) {
+      this.on('pointerout', this.pointerOutHandler);
     }
   }
 }
