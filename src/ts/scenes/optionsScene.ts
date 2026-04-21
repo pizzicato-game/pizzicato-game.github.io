@@ -41,10 +41,8 @@ export default class Options extends HandScene {
 
   private saveAndExit() {
     webcam.setVisibility(config.enableCameraVisibility);
-    //this.setOpacity(config.cameraOpacity);
-    if (this.rotateTween) this.rotateTween.destroy();
-    if (this.glowTween) this.glowTween.destroy();
-    if (this.glow) this.glow.destroy();
+    // this.setOpacity(config.cameraOpacity);
+
     this.scene.start('mainMenu');
   }
 
@@ -70,7 +68,7 @@ export default class Options extends HandScene {
   }
 
   private setGlowTimeScale(duration: number) {
-    this.glowTween.setTimeScale(this.normalizeDuration(duration));
+    this.glowTween?.setTimeScale(this.normalizeDuration(duration));
   }
 
   private createOptions() {
@@ -108,9 +106,7 @@ export default class Options extends HandScene {
       },
     );
 
-    this.input.keyboard!.on(escapeKey, () => {
-      this.saveAndExit();
-    });
+    this.input.keyboard?.on(escapeKey, this.saveAndExit, this);
 
     const _background1l: Sprite = this.add
       .sprite(this.width * 0.09, this.height * 0.05, 'optionsBackground')
@@ -687,21 +683,28 @@ export default class Options extends HandScene {
 
     // --------------------------------------------------------
 
-    // TODO: Re-enable this once there is a way to store it automatically on a server or elsewhere.
-    // const autoSaveCSV = new Checkbox(
-    //   this,
-    //   new Vector2(this.width * 0.64, this.height * 0.57 + this.height * 0.08 * 2),
-    //   25,
-    //   new Vector2(-optionsCheckboxOffset.x, 0),
-    //   'Automatically Save CSV',
-    //   config,
-    //   'autoSaveCSV',
-    //   (checkbox: Checkbox) => {
-    //     config[checkbox.key] = checkbox.isChecked
-    //   }
-    // )
-    // this.options.push(autoSaveCSV)
-    // this.add.existing(autoSaveCSV)
+    const isElectronRenderer = typeof window.electron !== 'undefined';
+    const isLocalBuild = isElectronRenderer;
+
+    if (isLocalBuild) {
+      const autoSaveCSV = new Checkbox(
+        this,
+        new Vector2(
+          this.width * 0.1,
+          this.height * 0.57 + this.height * 0.08 * 1.5,
+        ),
+        25,
+        new Vector2(-optionsCheckboxOffset.x, 0),
+        'Automatically Save CSV',
+        config,
+        'autoSaveCSV',
+        (checkbox: Checkbox) => {
+          updateConfigValue(checkbox.key, checkbox.isChecked);
+        },
+      );
+      this.options.push(autoSaveCSV);
+      this.add.existing(autoSaveCSV);
+    }
 
     // -------------------------------------------------------- MENU BUTTONS --------------------------------------------------------
   }

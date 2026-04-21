@@ -8,12 +8,13 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 // NOTE: Change these file paths if you change the file structure.
 const packageJsonPath = '../../package.json';
-const htmlEntryPath = '../../dist/index.html';
 const electronPreloadPath = 'preload.js';
+const appProtocolName = 'app';
 
 const localHostURL = 'http://localhost:3000';
 
 const packageJson = require(path.join(__dirname, packageJsonPath));
+const packagedDistRoot = path.join(__dirname, '../../dist');
 
 const capitalize = s => (s && s[0].toUpperCase() + s.slice(1)) || '';
 
@@ -34,11 +35,12 @@ const windowProperties = {
 // Leaving it in case commenting it broke something that will later need to be fixed.
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: windowProperties.title,
+    scheme: appProtocolName,
     privileges: {
       standard: true,
       secure: true,
       stream: true,
+      supportFetchAPI: true,
       bypassCSP: true,
     },
   },
@@ -49,11 +51,39 @@ if (
   process.env.ELECTRON_DEBUG === 'true' ||
   process.env.ELECTRON_DEBUG === 'vscode'
 ) {
-  const electronReload = require('electron-reload');
-  electronReload(__dirname, {});
+  try {
+    const electronReload = require('electron-reload');
+    electronReload(__dirname, {});
+  } catch (error) {
+    console.warn('electron-reload is unavailable, skipping hot reload.');
+  }
 }
 
 let mainWindow = undefined;
+
+function registerAppProtocol() {
+  protocol.registerFileProtocol(appProtocolName, (request, callback) => {
+    const requestUrl = new URL(request.url);
+    const requestedPath = decodeURIComponent(requestUrl.pathname).replace(
+      /^\/+/,
+      '',
+    );
+    const resolvedPath = requestedPath === '' ? 'index.html' : requestedPath;
+    const executableRoot = path.dirname(app.getPath('exe'));
+    const editableRoot = app.isPackaged ? executableRoot : packagedDistRoot;
+    const shouldUseEditableRoot =
+      resolvedPath.startsWith('data/') ||
+      resolvedPath.startsWith('levels/') ||
+      resolvedPath.startsWith('csv/');
+
+    callback({
+      path: path.join(
+        shouldUseEditableRoot ? editableRoot : packagedDistRoot,
+        resolvedPath,
+      ),
+    });
+  });
+}
 
 function createWindow() {
   // Create the browser window.
@@ -67,7 +97,7 @@ function createWindow() {
     autoHideMenuBar: true,
     useContentSize: true,
     frame: true,
-    icon: path.join(__dirname, '../../icon.ico'),
+    icon: path.join(__dirname, '../../dist/icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, electronPreloadPath),
       contextIsolation: true,
@@ -84,7 +114,7 @@ function createWindow() {
   if (process.env.ELECTRON_HOT === 'true') {
     mainWindow.loadURL(localHostURL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, htmlEntryPath));
+    mainWindow.loadURL(`${appProtocolName}://-/index.html`);
   }
 
   if (process.env.ELECTRON_DEBUG === 'true' && windowProperties.openDevTools) {
@@ -99,7 +129,10 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  registerAppProtocol();
+  createWindow();
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -117,5 +150,5 @@ app.on('activate', () => {
 });
 
 ipcMain.handle('get-app-path', () => {
-  return app.getAppPath();
+  return app.isPackaged ? path.dirname(app.getPath('exe')) : app.getAppPath();
 });

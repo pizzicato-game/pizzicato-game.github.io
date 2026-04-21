@@ -1,14 +1,14 @@
 /* eslint-disable no-undef */
 /* eslint @typescript-eslint/no-var-requires: "off" */
 const { contextBridge, ipcRenderer } = require('electron');
-// const fs = require('fs');
-// const path = require('path');
+const fs = require('fs');
+const path = require('path');
 
 window.addEventListener('DOMContentLoaded', async () => {
   // ...
 });
 
-let appPath = '';
+let appPath = process.cwd();
 
 contextBridge.exposeInMainWorld('electron', {
   initVariables: () => {
@@ -28,27 +28,28 @@ contextBridge.exposeInMainWorld('electron', {
   isDebugMode: () => {
     return process.env.ELECTRON_DEBUG === 'true';
   },
-  // storeData: (path, data) => storeData(path, data),
-  // listSubDirectories: parentDir => listSubDirectories(parentDir),
-  // fileExists: absoluteFilePath => fileExists(absoluteFilePath),
+  storeData: (path, data) => storeData(path, data),
+  listSubDirectories: parentDir => listSubDirectories(parentDir),
+  fileExists: absoluteFilePath => fileExists(absoluteFilePath),
+  loadData: filePath => loadData(filePath),
 });
 
-// function fileExists(absoluteFilePath) {
-//   return fs.existsSync(absoluteFilePath);
-// }
+function fileExists(absoluteFilePath) {
+  return fs.existsSync(absoluteFilePath);
+}
 
-// function listSubDirectories(parentDir) {
-//   return fs
-//     .readdirSync(parentDir, { withFileTypes: true })
-//     .filter(dirent => dirent.isDirectory())
-//     .map(dirent => dirent.name);
-// }
+function listSubDirectories(parentDir) {
+  return fs
+    .readdirSync(parentDir, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
+}
 
-// function storeData(filePath, data) {
-//   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-//   fs.writeFileSync(filePath, data);
-// }
+function storeData(filePath, data) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, data);
+}
 
-// function loadData(filePath) {
-//   return fs.readFileSync(filePath, 'utf8');
-// }
+function loadData(filePath) {
+  return fs.readFileSync(filePath, 'utf8');
+}
