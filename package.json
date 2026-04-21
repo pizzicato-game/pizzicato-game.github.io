@@ -13,11 +13,13 @@
   ],
   "version": "1.2.0",
   "description": "A serious game about sonification of hand and finger movements",
-  "main": "index.js",
+  "main": "src/electron/main.js",
   "scripts": {
     "prepare": "husky install",
     "start": "webpack serve --config webpack/webpack.dev.js",
     "build": "rimraf dist && webpack --config webpack/webpack.prod.js",
+    "build:exe": "npm run build && electron-builder --win --dir && node scripts/flatten-release.js",
+    "electron": "npm run build && npx electron .",
     "bundle": "npm run build",
     "serve": "serve dist",
     "deploy": "npm run build && touch dist/.nojekyll && gh-pages -t -d dist -m \"Build for $(git log -n1 --pretty=format:\"%h %s\") [skip ci]\"",
@@ -41,6 +43,29 @@
     "path": false,
     "os": false
   },
+  "build": {
+    "appId": "io.github.pizzicato.game",
+    "productName": "Pizzicato",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "!dist/data/**",
+      "!dist/levels/**",
+      "src/electron/**",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
   "devDependencies": {
     "@types/node": "^20.11.19",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
@@ -48,6 +73,9 @@
     "concurrently": "^8.0.1",
     "copy-webpack-plugin": "^10.1.0",
     "cross-env": "^7.0.3",
+    "electron": "^41.2.1",
+    "electron-builder": "^26.8.1",
+    "electron-reload": "^2.0.0-alpha.1",
     "eslint": "^8.55.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.0.1",

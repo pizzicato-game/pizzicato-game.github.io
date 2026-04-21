@@ -17,8 +17,10 @@ This is a serious game developed for the Master's course "Building Serious Games
 | Primary Commands | Description                                  |
 | ---------------- | -------------------------------------------- |
 | `npm install`    | Install project dependencies                 |
-| `npm run start`  | Run in Browser (open locally, hot reloading) |
+| `npm run start`  | Run with Browser (open locally, hot reloading) |
+| `npm run electron` | Run with Electron (locally) |
 | `npm run build`  | Build a local version (in dist directory)    |
+| `npm run build:exe` | Build a Windows executable folder directly in release |
 | `npm run deploy` | Update website with changes                  |
 
 ## Project Structure
@@ -33,7 +35,7 @@ This is a serious game developed for the Master's course "Building Serious Games
 
 ## Dependencies
 
-- [Node.Js](https://nodejs.org/en/download/) : Node JS
+- [Node.Js](https://nodejs.org/en/download/) : Node JS (tested on v25.9.0)
 - [Phaser](https://phaser.io/) : HTML5 Game Framework
 - [TypeScript](https://www.typescriptlang.org/) : Better than JavaScript
 
@@ -46,7 +48,6 @@ From [natonato](https://github.com/natonato)'s [template repository](https://git
   - `useContentSize` option was expected to solve this problem because it takes the size of the browser window and uses it, but the problem is that the phaser has set the 'height:100%' option throughout the document.
 - Running Electron with Devtool, keyboard input ignored.
   - Devtool snatched keyboard input.
-- There was a bug in Electron `24.x.x`, so version 23 was used instead.
 
 ## Thanks to
 
