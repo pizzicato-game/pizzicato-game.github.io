@@ -5,6 +5,7 @@
 # build
 build
 dist
+release
 
 # module
 node_modules
