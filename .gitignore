@@ -6,6 +6,7 @@
 build
 dist
 release
+release.zip
 
 # module
 node_modules
