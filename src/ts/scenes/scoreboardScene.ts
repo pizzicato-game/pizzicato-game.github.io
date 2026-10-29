@@ -23,6 +23,10 @@ export default class Scoreboard extends HandScene {
   }
   private exit() {
     this.level.removeBackgroundAudio();
+    if (this.level.trackKey.startsWith('temp_level_')) {
+      this.level.unload();
+      this.cache.json.remove(this.level.trackKey);
+    }
     this.scene.start('mainMenu');
   }
 
@@ -145,6 +149,28 @@ export default class Scoreboard extends HandScene {
     );
 
     //------------------------------------------
+    const playableLayerCount = this.level.playableLayers.length;
+    if (playableLayerCount > 3) {
+      // Compact rows for imported projects with 4+ tracks. The original
+      // three-column layout below is preserved for all legacy levels.
+      this.level.track.forEachLayer(undefined, (layer: PlayableTrackLayerData, i: number) => {
+        const columns = 3;
+        const rows = Math.ceil(playableLayerCount / columns);
+        const column = i % columns;
+        const row = Math.floor(i / columns);
+        const x = this.width * (column + 0.5) / columns;
+        const rowHeight = (this.height * 0.46) / rows;
+        const y = this.height * 0.51 + row * rowHeight;
+        const stats = this.levelStats.layersStats[i];
+        this.add.text(x, y, capitalize(layer.id), {
+          color: '#01c303', font: '32px Courier New', align: 'center',
+        }).setOrigin(0.5, 0);
+        this.add.text(x, y + 45, `Correct: ${stats ? stats.correct : 0}/${stats ? stats.total : 0}\nLoops: ${stats ? stats.loop : 0}`, {
+          color: '#ffffff', font: '25px Courier New', align: 'center',
+        }).setOrigin(0.5, 0);
+      });
+      return;
+    }
     const layerBackgroundOffsets = [0.2 + 0.05, 0.5, 0.8 - 0.05];
     const layerTextOffsets = layerBackgroundOffsets;
     this.level.track.forEachLayer(

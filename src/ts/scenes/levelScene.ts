@@ -11,6 +11,14 @@ export default class LevelScene extends HandScene {
 
   preload() {
     this.level = this.scene.settings.data as Level;
+    if (!this.level || typeof this.level.preload !== 'function') {
+      this.scene.start('mainMenu');
+      return;
+    }
+    if (this.level.trackKey.startsWith('temp_level_')) {
+      this.level.preload(this);
+      if (this.level.bpmIndex < 0) this.level.setBPM(0);
+    }
   }
 
   create() {
@@ -34,6 +42,10 @@ export default class LevelScene extends HandScene {
       },
       () => {
         // Aborted level callback.
+        if (this.level.trackKey.startsWith('temp_level_')) {
+          this.level.unload();
+          this.cache.json.remove(this.level.trackKey);
+        }
         this.scene.start(initialScene);
       },
     );

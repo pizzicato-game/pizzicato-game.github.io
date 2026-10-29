@@ -3,6 +3,8 @@ import { LoadingScene, ElectronScene } from '../scenes/loadingScene';
 import LevelScene from '../scenes/levelScene';
 import MainMenu from '../scenes/mainMenuScene';
 import LevelSelect from '../scenes/levelSelectScene';
+import LevelUploadScene from '../scenes/levelUploadScene';
+import BpmAdjustmentScene from '../scenes/bpmAdjustmentScene';
 import Options from '../scenes/optionsScene';
 import Scoreboard from '../scenes/scoreboardScene';
 import Calibration from '../scenes/calibrationScene';
@@ -50,6 +52,8 @@ const config = {
     MainMenu,
     Options,
     LevelSelect,
+    LevelUploadScene,
+    BpmAdjustmentScene,
     LevelScene,
     Scoreboard,
     Calibration,
