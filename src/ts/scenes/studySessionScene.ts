@@ -5,10 +5,11 @@ import { levels } from './loadingScene';
 import { LevelConverter } from '../util/levelConverter';
 import { UploadedLevelManager } from '../managers/uploadedLevelManager';
 import { defaultConfig, updateConfig } from '../managers/storageManager';
-import { getStudyPlan, getStudySession, setPendingAssignment, publishedLevels } from '../study/runtime';
+import { getStudyPlan, getStudySession, setPendingAssignment, publishedLevels, advanceScreenStep } from '../study/runtime';
 import { studyApi } from '../study/firebaseClient';
 import { downloadResults } from '../study/offline';
 import { TrackData } from '../level/trackTypes';
+import { isLevelStep } from '../study/types';
 
 export default class StudySessionScene extends HandScene {
   private status: Phaser.GameObjects.Text;
@@ -19,23 +20,44 @@ export default class StudySessionScene extends HandScene {
     const session = getStudySession();
     if (!session) { this.scene.start('mainMenu'); return; }
     const plan = getStudyPlan();
-    const title = this.add.text(this.center.x, 220, session.settings.title, { font: '65px Courier New', color: '#ffffff', align: 'center' }).setOrigin(.5);
+    this.add.text(this.center.x, 180, session.settings.title, { font: '65px Courier New', color: '#ffffff', align: 'center' }).setOrigin(.5);
+    const step = plan && plan.index >= 0 ? plan.assignments[plan.index] : null;
+    const startDate = session.account.startDate || session.settings.startDate;
+    const nextMonday = plan && plan.week > 0 ? new Date(Date.parse(`${startDate}T00:00:00Z`) + plan.week * 7 * 86400000) : null;
+    const daysUntil = nextMonday ? Math.max(0, Math.ceil((nextMonday.getTime() - Date.now()) / 86400000)) : 0;
+    const cappedText = plan?.week && plan.week > 0 && daysUntil > 0
+      ? `You have finished this week's sessions. Come back in ${daysUntil} day${daysUntil === 1 ? '' : 's'}.`
+      : 'You have completed the maximum sessions for this week.';
     const message = plan?.beforeStart && plan.week !== 0 ? 'Your training programme has not started yet.' :
-      plan?.capped ? 'You have completed the maximum sessions for this week.' :
-      !plan?.assignments.length ? 'There are no levels scheduled for this week.' :
-      `${session.settings.introText}\nWEEK ${plan.week} · SESSION ${plan.sessionId.split('-')[1]}\n${plan.index >= 0 ? `Level ${plan.index + 1} of ${plan.assignments.length}` : 'Session complete!'}`;
-    this.add.text(this.center.x, 420, message, { font: '31px Courier New', color: '#ffffff', align: 'center', wordWrap: { width: 1500 } }).setOrigin(.5);
-    this.status = this.add.text(this.center.x, 580, '', { font: '25px Courier New', color: '#ffd676', align: 'center', wordWrap: { width: 1500 } }).setOrigin(.5);
-    if (plan && !plan.capped && plan.index >= 0) {
-      new Button(this, 'START\nLEVEL', this.center.x + 300, 810, () => { void this.playLevel(); });
-      new Button(this, 'SETUP\nCAMERA', this.center.x - 300, 810, () => this.scene.start('calibration'));
+      plan?.capped ? cappedText :
+      !plan?.assignments.length ? 'There are no activities scheduled for this week.' :
+      step ? `${!isLevelStep(step) ? step.text : `${session.settings.introText}\nReady to play: ${step.levelId}`}\nWEEK ${plan.week} · SESSION ${plan.sessionId.split('-')[1]} · SLIDE ${plan.index + 1}/${plan.assignments.length}` :
+      'Session complete! Thank you for playing.';
+    this.add.text(this.center.x, 430, message, { font: '31px Courier New', color: '#ffffff', align: 'center', wordWrap: { width: 1500 } }).setOrigin(.5);
+    this.status = this.add.text(this.center.x, 620, '', { font: '25px Courier New', color: '#ffd676', align: 'center', wordWrap: { width: 1500 } }).setOrigin(.5);
+    if (plan && !plan.capped && step) {
+      if (isLevelStep(step)) {
+        new Button(this, 'PLAY\nLEVEL', this.center.x + 300, 810, () => { void this.playLevel(); });
+        new Button(this, 'SETUP\nCAMERA', this.center.x - 300, 810, () => this.scene.start('calibration'));
+      } else {
+        const buttonText = step.type === 'end' ? 'FINISH\nSESSION' : step.type === 'break' ? 'RESUME\nPLAYING' : 'CONTINUE';
+        let busy = false;
+        new Button(this, buttonText, this.center.x, 810, () => {
+          if (busy) return; busy = true; this.status.setText('Saving your progress...');
+          void advanceScreenStep(step).then(() => this.scene.restart()).catch(reason => {
+            busy = false; this.status.setText(reason instanceof Error ? reason.message : String(reason));
+          });
+        });
+      }
     }
     if (session.mode === 'offline') new Button(this, 'EXPORT\nRESULTS', 200, 940, () => { void downloadResults(session.account.studyId!, session.account.participantId!); });
   }
   private async playLevel() {
     const session = getStudySession(); const plan = getStudyPlan();
     if (!session || !plan || plan.capped || plan.index < 0) return;
-    const assignment = plan.assignments[plan.index];
+    const step = plan.assignments[plan.index];
+    if (!isLevelStep(step)) return;
+    const assignment = step;
     this.status.setText('Preparing assigned level...');
     try {
       let level: Level;

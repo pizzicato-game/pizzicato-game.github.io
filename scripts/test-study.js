@@ -18,6 +18,7 @@ const types = requireTS('../src/ts/study/types.ts');
 const { defaultStudySettings, validateSettings, calculateStudyWeek, emptyProgress, getNextAssignment, markAssignmentComplete } = types;
 const study = defaultStudySettings('Study A');
 study.startDate = '2026-10-26'; study.maxSessionsPerWeek = 2;
+study.weeks['1'] = [{ levelId: 'legacy:Cheerful Bliss', bpmIndex: 0, loops: 3 }];
 study.weeks['0'] = [{ levelId: 'legacy:Cheerful Bliss', bpmIndex: 0, loops: 2 }];
 study.weeks['2'] = [{ levelId: 'library:newOne', bpmIndex: 1, loops: 3 }];
 study.weeks['-1'] = [{ levelId: 'legacy:Cheerful Bliss', bpmIndex: 0, loops: 2 }];
@@ -36,6 +37,20 @@ step = getNextAssignment(study, p, study.startDate, new Date('2026-10-28T12:00Z'
 assert.equal(step.sessionId, '1-2');
 p = markAssignmentComplete(p, step.week, step.sessionId, step.index, step.assignments.length);
 assert.equal(getNextAssignment(study, p, study.startDate, new Date('2026-10-28T12:00Z')).capped, true);
+const screens = defaultStudySettings('Visual study');
+assert.deepEqual(validateSettings(screens), []);
+assert.equal(screens.weeks['1'][0].type, 'start');
+let screenProgress = emptyProgress();
+for (let i = 0; i < screens.weeks['1'].length - 1; i++) {
+  const currentStep = getNextAssignment(screens, screenProgress, screens.startDate, new Date(`${screens.startDate}T10:00:00Z`));
+  assert.equal(currentStep.index, i);
+  screenProgress = markAssignmentComplete(screenProgress, 1, '1-1', i, screens.weeks['1'].length);
+}
+assert.equal(screenProgress.sessions['1'], undefined);
+screenProgress = markAssignmentComplete(screenProgress, 1, '1-1', screens.weeks['1'].length - 1, screens.weeks['1'].length);
+assert.equal(screenProgress.sessions['1'], 1);
+const malformedScreen = { ...screens, weeks: { '1': [{ type: 'break', text: 'Only a break' }] } };
+assert(validateSettings(malformedScreen).length > 0);
 const multi = { ...study, weeks: { '1': [{ levelId: 'legacy:One', bpmIndex: 0, loops: 2 }, { levelId: 'library:Second', bpmIndex: 1, loops: 2 }] } };
 let m = emptyProgress(); m = markAssignmentComplete(m, 1, '1-1', 0, 2);
 assert.equal(m.sessions['1'], undefined); assert.equal(m.activeSession['1'], '1-1');

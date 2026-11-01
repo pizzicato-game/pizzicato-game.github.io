@@ -76,3 +76,10 @@ This branch preserves the original Pizzicato game and unified Level Designer JSO
 Run `npm run setup:web` to choose a Firebase project **without changing any source code**. The local project configuration is ignored by Git; GitHub Pages uses a separate per-repository Actions secret with only PUBLIC Firebase web config. `npm test` checks level, study and web configuration source-level regressions before a release.
 
 **Not yet verified:** an end-to-end Firebase deployment, browser runtime and actual camera/gameplay on a deployed GitHub Pages site. These must be checked before research with real participants.
+
+
+## Research dashboard: visual timeline and moderator accounts
+
+Use **[docs/ADMIN_SETUP_SIMPLE.md](docs/ADMIN_SETUP_SIMPLE.md)** for one-time Firebase/admin credentials setup. Use **[docs/STUDY_BUILDER_GUIDE.md](docs/STUDY_BUILDER_GUIDE.md)** to make draggable weekly slide timelines (Start → Play level → Break → End), upload reusable custom levels, manage moderator/participant logins, and download results. Old JSON-only study schedules still work.
+
+An encrypted administrator vault can optionally be generated *offline*, then activated later in Firebase Auth; do not bundle login secrets or decryption passphrases with a public GitHub Pages site. Browser login authorization and study edits are checked by server-side Cloud Functions. To create an encrypted backup: `npm run admin:prepare -- user@example.edu /safe/vault.json`, then `npm run admin:activate -- /safe/vault.json /safe/service-account.json` after configuring Firebase.

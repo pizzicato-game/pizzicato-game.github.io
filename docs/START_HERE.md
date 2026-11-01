@@ -22,6 +22,8 @@ This guest mode has **no Firebase login or remote result saving**.
 
 ## B. Set up a new central administrator database (one-time setup)
 
+**Simpler, up-to-date walkthrough:** [ADMIN_SETUP_SIMPLE.md](ADMIN_SETUP_SIMPLE.md). It also explains how to generate an encrypted administrator credential backup before Firebase is ready.
+
 The **central administrator database** holds study settings, participant/moderator profiles, study membership, level-library JSON and progress. **Firebase Authentication** holds login identities and password hashes. **Passwords are not written into the Realtime Database**. You do not need a separate database for every study.
 
 1. Go to https://console.firebase.google.com and choose **Add project**. Give it a name, such as `pizzicato-research-test`.
@@ -60,11 +62,7 @@ To switch to another Firebase project later, run `npm run setup:web` again with 
 
 ## D. Make a study and invite people
 
-1. Sign in as administrator. Click **Create new study**, enter a study ID (letters/numbers/dashes), a title and a start date. In **Weekly levels (easy editor)** enter a week and level ID, then click **Add level to week**; remove unwanted default assignments using **Remove**. Click **Save study**. Enable the study when ready.
-2. Under **Participants / results**, enter a new username and password of **at least 12 characters** and click **Add participant** or **Add moderator**. Give their username and password privately; these are stored as Firebase Auth accounts, *not as readable passwords in the database*.
-3. To add a custom level, click **Shared level library**, choose a **Level Designer JSON** file, enter a unique ID, and click **Publish JSON level**. Assign it in a study using `library:LEVEL_ID` (e.g. `library:piano_practice_1`).
-4. The same dashboard lets you download JSON/CSV results. Moderators can view their assigned study and export data, but cannot create users or change studies.
-5. Keep identifying details separate from participant pseudonyms, and check your institution's consent, retention and access-control requirements before collecting real data.
+Follow **[STUDY_BUILDER_GUIDE.md](STUDY_BUILDER_GUIDE.md)** for illustrated-by-description, step-by-step instructions for the new drag-and-drop week-by-week study builder, custom level uploads, participant records, and moderator logins. You do not have to edit any JSON or code to create a standard study.
 
 ## If something does not work
 

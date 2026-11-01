@@ -31,6 +31,7 @@ export async function callBackend<T>(name: string, data: object): Promise<T> {
   return reply.data;
 }
 export const studyApi = {
+  listModerators: () => callBackend<{ moderators: Account[] }>('listModerators', {}),
   listStudies: () => callBackend<{ studies: StudySummary[] }>('listStudies', {}),
   saveStudy: (id: string, settings: StudySettings, databaseURL?: string) => callBackend<{ id: string }>('saveStudy', { id, settings, databaseURL }),
   listParticipants: (studyId: string) => callBackend<{ accounts: Account[] }>('listParticipants', { studyId }),
@@ -38,6 +39,9 @@ export const studyApi = {
     callBackend<{ uid: string }>('provisionAccount', { studyId, username, password, role, group, startDate }),
   setAccountActive: (uid: string, active: boolean) => callBackend<{ ok: boolean }>('setAccountActive', { uid, active }),
   setParticipant: (uid: string, changes: object) => callBackend<{ ok: boolean }>('setParticipant', { uid, changes }),
+  advanceStep: (week: number, sessionId: string, index: number, stepType: string) => callBackend<{ ok: boolean }>('advanceStudyStep', { week, sessionId, index, stepType }),
+  removeAccount: (uid: string) => callBackend<{ ok: boolean }>('removeAccount', { uid }),
+  resetModeratorPassword: (uid: string, password: string) => callBackend<{ ok: boolean }>('resetModeratorPassword', { uid, password }),
   listLevels: () => callBackend<{ levels: PublishedLevel[] }>('listLevels', {}),
   saveLevel: (id: string, name: string, data: unknown) => callBackend<{ id: string }>('saveLevel', { id, name, data }),
   getLevel: (id: string) => callBackend<{ level: PublishedLevel }>('getLevel', { id }),

@@ -34,3 +34,6 @@ web-config.local.json
 private/
 credentials/
 *-firebase-adminsdk-*.json
+
+# Local encrypted admin vault backups are private by default. Never commit their passphrases.
+*admin-vault*.json

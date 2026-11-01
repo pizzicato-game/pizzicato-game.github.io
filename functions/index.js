@@ -11,9 +11,17 @@ const options = { region: 'europe-west1', maxInstances: 20 };
 const fail = (message, code = 'invalid-argument') => { throw new HttpsError(code, message); };
 const idValid = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,64}$/.test(value);
 const usernameValid = value => typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_-]{3,39}$/.test(value);
+const isLevel = step => step && (!step.type || step.type === 'level');
 const emailFor = name => name.includes('@') ? name.toLowerCase() : `${name.toLowerCase()}@pizzicato.example`;
 async function profile(req) {
   if (!req.auth) fail('Login required', 'unauthenticated');
+  // Check disabled users and revoked sessions on every privileged call, not just at sign-in.
+  // Firebase ID tokens can otherwise remain usable for up to an hour after a password reset.
+  const authUser = await auth.getUser(req.auth.uid);
+  if (authUser.disabled) fail('Account disabled', 'permission-denied');
+  const validAfter = Date.parse(authUser.tokensValidAfterTime || '1970-01-01') / 1000;
+  if (Number.isFinite(validAfter) && validAfter > (req.auth.token.auth_time || 0))
+    fail('Session expired or revoked; sign in again', 'unauthenticated');
   const snap = await db.ref(`accounts/${req.auth.uid}`).get();
   const account = snap.val();
   if (req.auth.token.superadmin === true) return { ...account, uid: req.auth.uid, username: account?.username || req.auth.token.email || 'administrator', role: 'admin', active: true };
@@ -32,10 +40,16 @@ function validateSettings(s) {
       !s.weeks || typeof s.weeks !== 'object' || Array.isArray(s.weeks)) fail('Invalid study settings');
   for (const [week, assignments] of Object.entries(s.weeks)) {
     if (!/^-?\d+$/.test(week) || !Array.isArray(assignments) || assignments.length > 40) fail('Invalid weekly schedule');
+    if (assignments.length && !assignments.some(a => a && (!a.type || a.type === 'level'))) fail('Each populated week needs a playable level');
     for (const a of assignments) {
-      if (!a || typeof a.levelId !== 'string' || !/^(legacy|library|uploaded):[\w .-]{1,100}$/.test(a.levelId) ||
-          !Number.isInteger(a.bpmIndex) || a.bpmIndex < 0 || a.bpmIndex > 8 ||
-          !Number.isInteger(a.loops) || a.loops < 1 || a.loops > 100) fail('Invalid level assignment');
+      if (!a || typeof a !== 'object') fail('Invalid study block');
+      if (['start', 'break', 'end'].includes(a.type)) {
+        if (typeof a.text !== 'string' || a.text.length > 2000) fail('Screen text must be under 2,000 characters');
+      } else if ((!a.type || a.type === 'level') && typeof a.levelId === 'string' && /^(legacy|library|uploaded):[\w .-]{1,100}$/.test(a.levelId) &&
+          Number.isInteger(a.bpmIndex) && a.bpmIndex >= 0 && a.bpmIndex <= 8 &&
+          Number.isInteger(a.loops) && a.loops >= 1 && a.loops <= 100) {
+        // Existing formats without an explicit type remain valid.
+      } else fail('Invalid level assignment');
     }
   }
   if (s.groupConfigs && (typeof s.groupConfigs !== 'object' || Array.isArray(s.groupConfigs) ||
@@ -91,6 +105,13 @@ exports.saveStudy = onCall(options, async req => {
     [`studyIndex/${id}`]: { title: settings.title, enabled: !!settings.enabled, databaseURL: url || '' } });
   return { id };
 });
+exports.listModerators = onCall(options, async req => {
+  const operator = await profile(req); requireAdmin(operator);
+  const accounts = (await db.ref('accounts').get()).val() || {};
+  const moderators = Object.values(accounts).filter(a => a.role === 'moderator');
+  if (moderators.length > 2000) fail('Too many moderators; contact an administrator', 'resource-exhausted');
+  return { moderators };
+});
 exports.listParticipants = onCall(options, async req => {
   const account = await profile(req); const { studyId } = req.data || {};
   if (!idValid(studyId)) fail('Invalid study'); requireResearcher(account, studyId);
@@ -120,6 +141,28 @@ exports.setAccountActive = onCall(options, async req => {
   if (!target || target.role === 'admin') fail('Not a managed account');
   await auth.updateUser(uid, { disabled: !active });
   await db.ref(`accounts/${uid}/active`).set(active);
+  return { ok: true };
+});
+/** Only an administrator can remove an account. Results remain retained for the study export. */
+exports.removeAccount = onCall(options, async req => {
+  const operator = await profile(req); requireAdmin(operator);
+  const { uid } = req.data || {};
+  if (!idValid(uid)) fail('Invalid account');
+  const account = (await db.ref(`accounts/${uid}`).get()).val();
+  if (!account || !['moderator', 'participant'].includes(account.role) || !idValid(account.studyId)) fail('Not a managed account');
+  // Deleting the Firebase Auth user invalidates future sign-ins. Remove access profile and membership.
+  await auth.deleteUser(uid);
+  await db.ref().update({ [`accounts/${uid}`]: null, [`studyMembers/${account.studyId}/${uid}`]: null });
+  return { ok: true };
+});
+exports.resetModeratorPassword = onCall(options, async req => {
+  const operator = await profile(req); requireAdmin(operator);
+  const { uid, password } = req.data || {};
+  if (!idValid(uid) || typeof password !== 'string' || password.length < 12 || password.length > 128) fail('Use a password of 12–128 characters');
+  const account = (await db.ref(`accounts/${uid}`).get()).val();
+  if (!account || account.role !== 'moderator') fail('Only moderator passwords can be reset here');
+  await auth.updateUser(uid, { password });
+  await auth.revokeRefreshTokens(uid);
   return { ok: true };
 });
 exports.setParticipant = onCall(options, async req => {
@@ -167,7 +210,7 @@ exports.getLevel = onCall(options, async req => {
   if (operator.role === 'participant') {
     const settings = (await db.ref(`studies/${operator.studyId}/settings`).get()).val();
     const weeks = operator.weeksOverride || settings?.weeks || {};
-    if (!settings || !Object.values(weeks).some(arr => Array.isArray(arr) && arr.some(a => a.levelId === `library:${id}`)))
+    if (!settings || !Object.values(weeks).some(arr => Array.isArray(arr) && arr.some(a => isLevel(a) && a.levelId === `library:${id}`)))
       fail('Level is not assigned to participant study', 'permission-denied');
   }
   const level = (await db.ref(`levelLibrary/${id}`).get()).val();
@@ -182,6 +225,46 @@ exports.getParticipantBundle = onCall(options, async req => {
   const saved = (await db.ref(`progress/${account.studyId}/${account.uid}`).get()).val() || {};
   const progress = { completed: saved.completed || {}, sessions: saved.sessions || {}, activeSession: saved.activeSession || {} };
   return { account, settings: account.weeksOverride ? { ...settings, weeks: account.weeksOverride } : settings, progress };
+});
+/** Advance a non-gameplay slide, with the same server-enforced weekly limits as a level result. */
+exports.advanceStudyStep = onCall(options, async req => {
+  const account = await profile(req);
+  if (account.role !== 'participant') fail('Participant permission required', 'permission-denied');
+  const { week, sessionId, index, stepType } = req.data || {};
+  if (!Number.isInteger(week) || !Number.isInteger(index) || typeof sessionId !== 'string' ||
+      !['start', 'break', 'end'].includes(stepType)) fail('Invalid study step');
+  const settings = (await db.ref(`studies/${account.studyId}/settings`).get()).val();
+  if (!settings || !settings.enabled) fail('Study disabled', 'failed-precondition');
+  const weeks = account.weeksOverride || settings.weeks;
+  const baseWeek = weekOf(account.startDate || settings.startDate);
+  const now = new Date(); const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const beforeStart = today < Date.parse(`${account.startDate || settings.startDate}T00:00:00Z`);
+  const lastWeek = Math.max(1, ...Object.keys(weeks).map(Number).filter(n => n > 0));
+  const ref = db.ref(`progress/${account.studyId}/${account.uid}`);
+  const transaction = await ref.transaction(value => {
+    const progress = { completed: value?.completed || {}, sessions: value?.sessions || {}, activeSession: value?.activeSession || {} };
+    const currentWeek = weeks['0'] && !(progress.sessions['0'] || 0) ? 0 :
+      baseWeek > lastWeek && weeks['-1'] ? -1 : baseWeek;
+    if (week !== currentWeek || (beforeStart && week !== 0)) return;
+    const assignments = weeks[String(week)] || [];
+    const count = progress.sessions[String(week)] || 0;
+    if (count >= (week <= 0 ? 1 : settings.maxSessionsPerWeek)) return;
+    const sid = progress.activeSession[String(week)] || `${week}-${count + 1}`;
+    const done = progress.completed[String(week)] || [];
+    const ix = assignments.findIndex((_, i) => !done.includes(`${sid}:${i}`));
+    const step = assignments[ix];
+    if (sessionId !== sid || index !== ix || !step || step.type !== stepType) return;
+    const copy = { completed: { ...progress.completed }, sessions: { ...progress.sessions }, activeSession: { ...progress.activeSession } };
+    const entries = [...done, `${sid}:${ix}`];
+    copy.completed[String(week)] = entries;
+    if (assignments.every((_, i) => entries.includes(`${sid}:${i}`))) {
+      copy.sessions[String(week)] = count + 1;
+      delete copy.activeSession[String(week)];
+    } else copy.activeSession[String(week)] = sid;
+    return copy;
+  });
+  if (!transaction.committed) fail('This step is no longer available; refresh your session', 'failed-precondition');
+  return { ok: true };
 });
 exports.submitResult = onCall(options, async req => {
   const account = await profile(req);
@@ -207,7 +290,7 @@ exports.submitResult = onCall(options, async req => {
   const expectedSessionId = current.activeSession[String(week)] || `${week}-${count + 1}`;
   const expectedIndex = assignments.findIndex((a, i) => !(current.completed[String(week)] || []).includes(`${expectedSessionId}:${i}`));
   if ((beforeStart && week !== 0) || count >= maxSessions || expectedIndex < 0 || data.week !== week || data.sessionId !== expectedSessionId ||
-      data.assignmentIndex !== expectedIndex || data.levelId !== assignments[expectedIndex].levelId)
+      data.assignmentIndex !== expectedIndex || !isLevel(assignments[expectedIndex]) || data.levelId !== assignments[expectedIndex].levelId)
     fail('Result is outside the assigned study schedule', 'failed-precondition');
   const key = `${expectedSessionId}:${expectedIndex}`;
   const progress = JSON.parse(JSON.stringify(current));

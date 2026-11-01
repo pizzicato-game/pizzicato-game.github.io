@@ -4,3 +4,21 @@
 .study-field{display:grid;gap:.2rem;margin:.25rem 0}.study-shell input:not([type=checkbox]),.study-shell textarea{padding:.6rem;color:#fff;background:#102039;border:1px solid #61728d;border-radius:5px;min-width:10rem;width:100%}
 .study-shell textarea{height:160px;font:14px monospace}.study-shell button{background:#397db4;border:0;color:white;border-radius:5px;padding:.65rem 1rem;cursor:pointer;margin:.3rem}.study-shell button:disabled{opacity:.5}
 .study-row{display:flex;align-items:center;flex-wrap:wrap;gap:1rem;padding:.6rem;border-top:1px solid #52627a}.study-row span,.study-row strong{flex:1;min-width:170px}
+/* PowerPoint-like weekly experiment builder. No third-party drag/drop dependency. */
+.study-shell main{max-width:1380px}
+.study-flow-board{overflow-x:auto;display:grid;gap:1rem;padding:1rem;background:#111d30;border-radius:10px}
+.study-flow-toolbar,.study-week-heading,.study-flow-add{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.study-week-row{padding:1rem;background:#24334c;border-radius:10px;min-width:470px}
+.study-week-heading strong{font-size:1.1rem;flex:1}
+.study-slides{min-height:138px;display:flex;flex-flow:row nowrap;gap:.6rem;overflow-x:auto;padding:.5rem 0 1rem}
+.study-slide{min-width:177px;max-width:230px;min-height:115px;display:flex;flex-direction:column;gap:.6rem;padding:.65rem;border:2px solid #647d9d;border-radius:9px;background:#364968;cursor:grab;overflow-wrap:anywhere}
+.study-slide strong{font-size:.85rem}.study-slide small{font-size:.75rem;color:#e9f1ff}
+.study-slide-level{border-color:#7cc6fe}.study-slide-start{border-color:#8bdac0}.study-slide-break{border-color:#f6ce7c}.study-slide-end{border-color:#eab0c5}
+.study-slide-selected,.study-slide:focus-visible{outline:3px solid white;outline-offset:2px}
+.study-slide-controls{margin-top:auto;display:flex;justify-content:space-between}.study-shell .study-slide-controls button{margin:0;padding:.12rem .6rem}
+.study-slide-editor{background:#273d59;padding:1rem;border-radius:8px;display:grid;gap:.5rem}
+.study-flow-add button{background:#305c82}
+
+.study-shell select{padding:.6rem;color:#fff;background:#102039;border:1px solid #61728d;border-radius:5px;max-width:100%;min-height:2.4rem}
+.study-shell button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.study-slide[draggable="true"]{user-select:none}

@@ -1,5 +1,5 @@
-import { StudySession, Progress, Assignment, ResultEnvelope, emptyProgress, getNextAssignment, markAssignmentComplete } from './types';
-import { loadLocalProgress, saveLocalResult } from './offline';
+import { StudySession, Progress, Assignment, ResultEnvelope, emptyProgress, getNextAssignment, markAssignmentComplete, ScreenStep } from './types';
+import { loadLocalProgress, saveLocalResult, saveLocalProgress } from './offline';
 import { studyApi } from './firebaseClient';
 
 let session: StudySession | null = null;
@@ -37,4 +37,16 @@ export async function recordLevelCompletion(result: unknown) {
   else await studyApi.saveResult(data, nextProgress);
   progress = nextProgress;
   pending = null;
+}
+
+/** Start/break/end blocks are acknowledged without generating fabricated gameplay results. */
+export async function advanceScreenStep(step: ScreenStep) {
+  const plan = getStudyPlan();
+  if (!session || !plan || plan.index < 0 || plan.capped) throw new Error('No screen is currently available');
+  const current = plan.assignments[plan.index];
+  if (!current || current.type !== step.type || current.type === 'level') throw new Error('Study step changed. Reload your session.');
+  const updated = markAssignmentComplete(progress, plan.week, plan.sessionId, plan.index, plan.assignments.length);
+  if (session.mode === 'offline') saveLocalProgress(session.account.studyId!, session.account.participantId!, updated);
+  else await studyApi.advanceStep(plan.week, plan.sessionId, plan.index, step.type);
+  progress = updated;
 }

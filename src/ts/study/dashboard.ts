@@ -1,5 +1,6 @@
 import { studyApi } from './firebaseClient';
-import { Account, StudySettings, StudySummary, defaultStudySettings, validateSettings } from './types';
+import { Account, StudySettings, StudySummary, defaultStudySettings, validateSettings, isLevelStep } from './types';
+import { createFlowBoard } from './flowBoard';
 import { LevelConverter } from '../util/levelConverter';
 import { createOfflinePack, downloadFile } from './offline';
 import { resultsCSV } from './results';
@@ -32,6 +33,7 @@ export async function showDashboard(root: HTMLElement, user: Account, onExit: ()
     const top = section(output, 'Studies');
     if (user.role === 'admin') {
       action(top, 'Create new study', () => editStudy('', defaultStudySettings()));
+      action(top, 'Manage moderator accounts', () => showModerators());
       const templateInput = node('input', top); templateInput.type = 'file'; templateInput.accept = '.json,application/json';
       action(top, 'Create study from template file', async () => {
         if (!templateInput.files?.[0]) throw new Error('Choose a study template JSON file first');
@@ -73,60 +75,60 @@ export async function showDashboard(root: HTMLElement, user: Account, onExit: ()
     const db = field(part, 'Optional linked Firebase Realtime Database URL (server-side access required)', databaseURL);
     const checkboxLabel = node('label', part, 'Study enabled ');
     const enabled = node('input', checkboxLabel); enabled.type = 'checkbox'; enabled.checked = data.enabled;
-    node('h3', part, 'Weekly levels (easy editor)');
-    node('p', part, 'Week 1 is the first week, 0 is a pretest, and -1 is a posttest. Add levels in the order participants should play them.');
-    const weekInput = field(part, 'Week (1, 2, 3, 0 or -1)', '1');
-    const levelInput = field(part, 'Level ID (e.g. legacy:Cheerful Bliss or library:my_level)', 'legacy:Cheerful Bliss');
-    const bpmInput = field(part, 'BPM option (0 = first speed)', '0');
-    const loopsInput = field(part, 'Number of loops', '3');
-    const scheduleList = node('div', part);
+    node('h3', part, 'Study timeline · drag slides to arrange the participant experience');
+    const timeline = node('div', part);
+    const board = createFlowBoard(timeline, data.weeks, () => {});
+    void studyApi.listLevels().then(({ levels }) => board.setAvailableLevels(levels.map(level => ({ id: `library:${level.id}`, name: `Uploaded: ${level.name}` })))).catch(() => { /* Existing level IDs remain editable. */ });
     const advanced = node('details', part);
-    node('summary', advanced, 'Advanced: edit weekly schedule JSON');
-    const schedule = field(advanced, 'Week assignments JSON', JSON.stringify(data.weeks, null, 2), 'textarea');
-    function renderAssignments() {
-      scheduleList.replaceChildren();
-      const weeks = JSON.parse(schedule.value) as StudySettings['weeks'];
-      for (const [week, assignments] of Object.entries(weeks)) {
-        if (!Array.isArray(assignments)) throw new Error('Invalid schedule; fix advanced JSON');
-        assignments.forEach((assignment, index) => {
-          const row = node('div', scheduleList); row.className = 'study-row';
-          node('span', row, `Week ${week}: ${assignment.levelId}, BPM option ${assignment.bpmIndex}, ${assignment.loops} loops`);
-          action(row, 'Remove', () => {
-            const current = JSON.parse(schedule.value) as StudySettings['weeks'];
-            current[week].splice(index, 1);
-            if (current[week].length === 0) delete current[week];
-            schedule.value = JSON.stringify(current, null, 2);
-            renderAssignments();
-          });
-        });
-      }
-    }
-    action(part, 'Add level to week', () => {
-      const week = weekInput.value.trim();
-      const bpmIndex = Number(bpmInput.value);
-      const loops = Number(loopsInput.value);
-      const levelId = levelInput.value.trim();
-      if (!/^(?:-1|0|[1-9]\d*)$/.test(week) || !/^(legacy|library|uploaded):[\w .-]{1,100}$/.test(levelId) ||
-          !Number.isInteger(bpmIndex) || bpmIndex < 0 || bpmIndex > 8 ||
-          !Number.isInteger(loops) || loops < 1 || loops > 100)
-        throw new Error('Check the week, level ID, BPM option (0–8), and loops (1–100).');
-      const current = JSON.parse(schedule.value) as StudySettings['weeks'];
-      if (!current[week]) current[week] = [];
-      current[week].push({ levelId, bpmIndex, loops });
-      schedule.value = JSON.stringify(current, null, 2);
-      renderAssignments();
-    });
-    renderAssignments();
+    node('summary', advanced, 'Advanced: import/paste a schedule JSON (optional)');
+    const schedule = field(advanced, 'Weekly schedule JSON', JSON.stringify(data.weeks, null, 2), 'textarea');
+    action(advanced, 'Replace timeline from JSON', () => { board.setWeeks(JSON.parse(schedule.value)); });
+    const refreshJSON = () => { schedule.value = JSON.stringify(board.getWeeks(), null, 2); };
+    action(advanced, 'Copy current timeline into JSON box', refreshJSON);
+    node('p', part, 'To use a custom level, first publish it in Shared level library, then enter library:LEVEL_ID in the level slide.');
     const overrides = field(part, 'Advanced: default gameplay config overrides (JSON object)', JSON.stringify(data.defaultConfig || {}, null, 2), 'textarea');
     const conditions = field(part, 'Per-group gameplay configs (JSON object, keyed by group name)', JSON.stringify(data.groupConfigs || {}, null, 2), 'textarea');
     action(part, 'Save study', async () => {
       const settings: StudySettings = { title: title.value.trim(), description: desc.value, introText: welcome.value, startDate: date.value.trim(),
-        maxSessionsPerWeek: Number(limit.value), enabled: enabled.checked, weeks: JSON.parse(schedule.value), defaultConfig: JSON.parse(overrides.value), groupConfigs: JSON.parse(conditions.value) };
+        maxSessionsPerWeek: Number(limit.value), enabled: enabled.checked, weeks: board.getWeeks(), defaultConfig: JSON.parse(overrides.value), groupConfigs: JSON.parse(conditions.value) };
       const errors = validateSettings(settings); if (errors.length) throw new Error(errors.join('\n'));
       await studyApi.saveStudy(code.value.trim(), settings, db.value.trim() || undefined);
       await render();
     });
     action(part, 'Back', render);
+  }
+  async function showModerators() {
+    output.replaceChildren(); const box = section(output, 'Moderator accounts · all studies');
+    node('p', box, 'Each moderator belongs to one study. Only administrators can add, change, or remove these accounts.');
+    const studies = (await studyApi.listStudies()).studies;
+    const studyPicker = node('select', box);
+    for (const study of studies) { const option = node('option', studyPicker, study.title); option.value = study.id; }
+    const name = field(box, 'New moderator username (at least 4 characters)');
+    const password = field(box, 'New moderator password (at least 12 characters)'); password.type = 'password';
+    action(box, 'Create moderator login', async () => {
+      if (!studyPicker.value) throw new Error('Create a study first');
+      await studyApi.provisionAccount(studyPicker.value, name.value, password.value, 'moderator');
+      alert(`Moderator ${name.value} created. Give the login securely to the moderator.`);
+      await showModerators();
+    });
+    const moderators = (await studyApi.listModerators()).moderators;
+    for (const mod of moderators) {
+      const row = node('div', box); row.className = 'study-row';
+      node('strong', row, `${mod.username} · ${mod.studyId} · ${mod.active ? 'active' : 'disabled'}`);
+      action(row, mod.active ? 'Disable login' : 'Enable login', async () => {
+        await studyApi.setAccountActive(mod.uid, !mod.active); await showModerators();
+      });
+      action(row, 'Set new password', async () => {
+        const secret = prompt('New password (12+ characters)'); if (!secret) return;
+        await studyApi.resetModeratorPassword(mod.uid, secret);
+        alert('Password updated. Share it securely; no password is saved in the dashboard.');
+      });
+      action(row, 'Remove moderator', async () => {
+        if (!confirm(`Permanently remove moderator ${mod.username}?`)) return;
+        await studyApi.removeAccount(mod.uid); await showModerators();
+      });
+    }
+    action(box, 'Back to studies', render);
   }
   async function showRoster(study: StudySummary) {
     output.replaceChildren(); const box = section(output, `Participants · ${study.title}`);
@@ -151,7 +153,7 @@ export async function showDashboard(root: HTMLElement, user: Account, onExit: ()
       });
       if (canProvision) {
         action(row, account.active ? 'Deactivate' : 'Reactivate', async () => { await studyApi.setAccountActive(account.uid, !account.active); await showRoster(study); });
-        action(row, 'Edit assignment', async () => {
+        if (account.role === 'participant') action(row, 'Edit assignment', async () => {
           const groupName = prompt('New group/condition', account.group || ''); if (groupName === null) return;
           const startDate = prompt('New participant-specific start date (YYYY-MM-DD or blank)', account.startDate || ''); if (startDate === null) return;
           const schedule = prompt('Participant-specific schedule JSON (empty to use study schedule)', account.weeksOverride ? JSON.stringify(account.weeksOverride, null, 2) : '');
@@ -159,13 +161,21 @@ export async function showDashboard(root: HTMLElement, user: Account, onExit: ()
           const weeksOverride = schedule.trim() ? JSON.parse(schedule) : null;
           await studyApi.setParticipant(account.uid, { group: groupName, startDate, weeksOverride }); await showRoster(study);
         });
+        if (account.role === 'moderator') action(row, 'Reset password', async () => {
+          const secret = prompt('Enter a new moderator password (12+ characters); share it securely with the moderator.');
+          if (!secret) return; await studyApi.resetModeratorPassword(account.uid, secret); alert('Password reset. The moderator must sign in again with the new password.');
+        });
+        action(row, 'Remove login permanently', async () => {
+          if (!confirm(`Remove login ${account.username}? This cannot be undone. Existing study results will be retained.`)) return;
+          await studyApi.removeAccount(account.uid); await showRoster(study);
+        });
         if (account.role === 'participant') action(row, 'Create offline pack', async () => {
           const secret = prompt('Create a local-only password (12+ characters). Share it separately from the pack.');
           if (!secret) return;
           const detail = await studyApiCallSettings(study.id);
           if (account.weeksOverride) detail.settings.weeks = account.weeksOverride;
           const levels: Record<string, unknown> = {};
-          const assigned = new Set(Object.values(detail.settings.weeks).flat().filter(a => a.levelId.startsWith('library:')).map(a => a.levelId.slice('library:'.length)));
+          const assigned = new Set(Object.values(detail.settings.weeks).flat().filter(a => isLevelStep(a) && a.levelId.startsWith('library:')).map(a => isLevelStep(a) ? a.levelId.slice('library:'.length) : ''));
           for (const id of assigned) levels[id] = (await studyApi.getLevel(id)).level.data;
           const pack = await createOfflinePack(account, detail.settings, secret, levels);
           downloadJSON(`offline-${study.id}-${account.username}.pizzicato-study.json`, pack);

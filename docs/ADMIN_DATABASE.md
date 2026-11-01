@@ -1,5 +1,7 @@
 # Create an administrator database and your first administrator login
 
+**Start with the simpler [ADMIN_SETUP_SIMPLE.md](ADMIN_SETUP_SIMPLE.md)** if you are a researcher setting up Pizzicato for the first time. It also describes the optional encrypted credential backup.
+
 This is for the **lead researcher or IT assistant**, once per research Firebase project. After setup, routine study management happens in the website dashboard; researchers do not need to use a coding editor.
 
 ## Step 1 — Create the Firebase project

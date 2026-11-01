@@ -63,3 +63,7 @@ export async function downloadResults(studyId: string, participantId: string) {
   downloadFile(`pizzicato-${studyId}-${participantId}-results.json`, JSON.stringify(data, null, 2));
   downloadFile(`pizzicato-${studyId}-${participantId}-results.csv`, resultsCSV(data), 'text/csv');
 }
+
+export function saveLocalProgress(studyId: string, participantId: string, progress: Progress): void {
+  localStorage.setItem(`${PROGRESS}.${recordKey(studyId, participantId)}`, JSON.stringify(progress));
+}
