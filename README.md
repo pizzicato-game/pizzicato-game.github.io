@@ -62,24 +62,17 @@ From [natonato](https://github.com/natonato)'s [template repository](https://git
 
 This version supports both bundled legacy MP4/MP3 levels and locally imported Level Designer JSON projects. From the main menu use **SELECT LEVEL** for legacy levels or **OPEN A LEVEL** to import and manage Designer JSON levels. Imported JSON levels use programmatically generated audio, can have their BPM/progression count adjusted, and persist locally in the browser profile. Run `npm run test:levels` for the format/asset regression checks. See [UNIFICATION_CHANGES.md](UNIFICATION_CHANGES.md) for the exact file changes, supported formats and testing limitations.
 
-## Unified studies (phases 4–9 development branch)
+## Research setup, local website, and visual study builder
 
-This branch preserves the original Pizzicato game and unified Level Designer JSON loader, adds the four Leiden experiment levels, and introduces an optional Firebase-backed study manager with administrator/moderator/participant roles, per-week and participant-specific schedules, a central published JSON level library, local participant packs, and Electron study-data exports. The **default build still launches directly as a guest**.
+**[Start with the single step-by-step guide: docs/README.md](docs/README.md).**
 
-**Non-coders: start with [docs/START_HERE.md](docs/START_HERE.md).** Detailed step-by-step guides:
+That one guide covers:
 
-- [Run the same online website locally with Firebase login](docs/LOCAL_WEB_SERVER.md)
-- [Deploy `main` or `dev` to GitHub Pages](docs/GITHUB_PAGES.md)
-- [Create a central admin database and administrator credentials](docs/ADMIN_DATABASE.md)
-- [Advanced research/offline setup and limitations](docs/RESEARCH_SETUP.md)
+1. **First-time setup:** clone/download the repository, install tools, create the central Firebase project, deploy secure Functions and rules, create administrator credentials, and connect the local browser game.
+2. **Create a test study:** link a separate Firebase Realtime Database for study results, arrange weekly slide timelines, add a test participant, play through the study, and verify exported results.
+3. **Everyday use:** run the local website, publish shared custom JSON levels, create/edit studies, manage moderators and participants, and export results.
+4. **Optional deployment:** publish `main` or `dev` to GitHub Pages, use guest mode, and review offline/desktop options.
 
-Run `npm run setup:web` to choose a Firebase project **without changing any source code**. The local project configuration is ignored by Git; GitHub Pages uses a separate per-repository Actions secret with only PUBLIC Firebase web config. `npm test` checks level, study and web configuration source-level regressions before a release.
+The research system uses Firebase Authentication for passwords, the central Realtime Database for study settings and shared level data, and optional linked Realtime Database instances for per-study results. Administrator account creation is performed locally on a trusted computer; no passwords or administrator keys are built into the public browser application.
 
-**Not yet verified:** an end-to-end Firebase deployment, browser runtime and actual camera/gameplay on a deployed GitHub Pages site. These must be checked before research with real participants.
-
-
-## Research dashboard: visual timeline and moderator accounts
-
-Use **[docs/ADMIN_SETUP_SIMPLE.md](docs/ADMIN_SETUP_SIMPLE.md)** for one-time Firebase/admin credentials setup. Use **[docs/STUDY_BUILDER_GUIDE.md](docs/STUDY_BUILDER_GUIDE.md)** to make draggable weekly slide timelines (Start → Play level → Break → End), upload reusable custom levels, manage moderator/participant logins, and download results. Old JSON-only study schedules still work.
-
-An encrypted administrator vault can optionally be generated *offline*, then activated later in Firebase Auth; do not bundle login secrets or decryption passphrases with a public GitHub Pages site. Browser login authorization and study edits are checked by server-side Cloud Functions. To create an encrypted backup: `npm run admin:prepare -- user@example.edu /safe/vault.json`, then `npm run admin:activate -- /safe/vault.json /safe/service-account.json` after configuring Firebase.
+**This remains development/research software:** a live Firebase integration, browser gameplay, access controls, camera permissions and study-data export must be tested end-to-end with fictional participants before real research use.

@@ -1,3 +1,5 @@
+> **Documentation update (November 2026):** The separate setup and use guides named below were merged into the single current guide, **[`docs/README.md`](docs/README.md)**. Older filenames are mentioned only to document historical changes.
+
 # Pizzicato Universal 1.3.0 — visual study designer and administrator provisioning
 
 ## What was already supported (from previous ZIP)

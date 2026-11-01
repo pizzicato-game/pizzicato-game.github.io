@@ -1,3 +1,5 @@
+> **Documentation update (November 2026):** The separate setup and use guides named below were merged into the single current guide, **[`docs/README.md`](docs/README.md)**. Older filenames are mentioned only to document historical changes.
+
 # Change log — GitHub Pages, local Firebase website and researcher setup
 
 Base: `pizzicato-universal-phases-1-9.zip`. This update preserves existing gameplay, level/media assets, Cloud Functions, studies, authentication rules, and offline packaging. No actual Firebase accounts, databases, service-account keys, or deploy credentials are bundled.

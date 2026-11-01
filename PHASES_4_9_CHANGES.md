@@ -1,3 +1,5 @@
+> **Documentation update (November 2026):** The separate setup and use guides named below were merged into the single current guide, **[`docs/README.md`](docs/README.md)**. Older filenames are mentioned only to document historical changes.
+
 # Pizzicato universal — phases 4–9 changes
 
 **Base:** `pizzicato-unified-levels-phases-1-3.zip` (Pizzicato-Game foundation with both level formats).

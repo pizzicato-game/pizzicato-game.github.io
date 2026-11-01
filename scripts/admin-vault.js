@@ -88,7 +88,7 @@ async function main() {
       await app.auth().setCustomUserClaims(user.uid, { superadmin: true });
       console.log(`Administrator activated in project ${key.project_id}: ${account.email}. Sign in with the password from preparation.`);
     } finally { await app.delete(); }
-  } else throw new Error('Use admin:prepare or admin:activate. See docs/ADMIN_SETUP_SIMPLE.md');
+  } else throw new Error('Use admin:prepare or admin:activate. See docs/README.md (Step 5)');
 }
 if (require.main === module) main().catch(error => { console.error(`Setup error: ${error.message}`); process.exitCode = 1; });
 module.exports = { encryptCredentials, decryptCredentials };
