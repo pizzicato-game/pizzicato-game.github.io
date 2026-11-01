@@ -52,3 +52,13 @@ From [natonato](https://github.com/natonato)'s [template repository](https://git
 ## Thanks to
 
 [natonato](https://github.com/natonato) for his [great phaser electron template](https://github.com/natonato/phaser3-typescript-vite-electron-template).
+
+## Unified Level Designer projects (Phases 1–3)
+
+This version supports both bundled legacy MP4/MP3 levels and locally imported Level Designer JSON projects. From the main menu use **SELECT LEVEL** for legacy levels or **OPEN A LEVEL** to import and manage Designer JSON levels. Imported JSON levels use programmatically generated audio, can have their BPM/progression count adjusted, and persist locally in the browser profile. Run `npm run test:levels` for the format/asset regression checks. See [UNIFICATION_CHANGES.md](UNIFICATION_CHANGES.md) for the exact file changes, supported formats and testing limitations.
+
+## Unified studies (phases 4–9 development branch)
+
+This branch preserves the original Pizzicato game and unified Level Designer JSON loader, adds the four Leiden experiment levels, and introduces an optional Firebase-backed study manager with administrator/moderator/participant roles, per-week and participant-specific schedules, a central published JSON level library, local participant packs, and Electron study-data exports. The **default build still launches directly as a guest**.
+
+**Start with [docs/RESEARCH_SETUP.md](docs/RESEARCH_SETUP.md)** for deployment, permissions, offline packaging, testing requirements, and explicit limitations. Change `src/ts/study/deployment.ts` to opt into research login or offline participant mode. Run `npm test` before merging.

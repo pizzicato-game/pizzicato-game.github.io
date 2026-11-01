@@ -8,6 +8,7 @@ import { escapeKey, scoreboardBackgroundAudioFeintness } from '../core/config';
 
 import { ToggleButton } from '../ui/toggleButton';
 import { PlayableTrackLayerData } from '../level/trackTypes';
+import { getStudySession, recordLevelCompletion } from '../study/runtime';
 
 const capitalize = s => (s && s[0].toUpperCase() + s.slice(1)) || '';
 
@@ -17,17 +18,23 @@ export default class Scoreboard extends HandScene {
   private mute: ToggleButton;
   private level: Level;
   private levelStats: LevelStats;
+  private studySaved: boolean = false;
+  private studySaving: boolean = false;
 
   constructor() {
     super('scoreboard');
   }
   private exit() {
+    if (getStudySession() && !this.studySaved) {
+      alert('Study results have not been saved yet. Check your connection and retry.');
+      return;
+    }
     this.level.removeBackgroundAudio();
     if (this.level.trackKey.startsWith('temp_level_')) {
       this.level.unload();
       this.cache.json.remove(this.level.trackKey);
     }
-    this.scene.start('mainMenu');
+    this.scene.start(getStudySession() ? 'studySession' : 'mainMenu');
   }
 
   preload() {
@@ -40,6 +47,20 @@ export default class Scoreboard extends HandScene {
 
   create() {
     super.create();
+    this.studySaved = !getStudySession();
+    if (getStudySession()) {
+      this.studySaving = true;
+      const status = this.add.text(this.scale.width / 2, 895, 'Saving study result...', {
+        font: '24px Courier New', color: '#ffffff', align: 'center'
+      }).setOrigin(0.5);
+      const save = async () => {
+        try { await recordLevelCompletion(JSON.parse(JSON.stringify(this.levelStats))); this.studySaved = true; status.setText('Study result saved.'); }
+        catch (reason) { this.studySaved = false; status.setText('Could not save study result. Click here to retry.'); console.error(reason); }
+        finally { this.studySaving = false; }
+      };
+      status.setInteractive().on('pointerdown', () => { if (!this.studySaved && !this.studySaving) { this.studySaving = true; void save(); } });
+      void save();
+    }
 
     this.back = new Button(
       this,

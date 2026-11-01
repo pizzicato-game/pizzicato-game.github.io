@@ -1,3 +1,4 @@
+import { getStudySession } from '../study/runtime';
 import HandScene from '../scenes/handScene';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
@@ -43,7 +44,7 @@ export default class Options extends HandScene {
     webcam.setVisibility(config.enableCameraVisibility);
     // this.setOpacity(config.cameraOpacity);
 
-    this.scene.start('mainMenu');
+    this.scene.start(getStudySession() ? 'studySession' : 'mainMenu');
   }
 
   public create() {

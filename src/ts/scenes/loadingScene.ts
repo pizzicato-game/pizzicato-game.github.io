@@ -9,12 +9,7 @@ import {
 import webcam from '../objects/webcam';
 import handTracker from '../objects/handTracker';
 import Level from '../level/level';
-import {
-  currentUser,
-  getCurrentUserConfig,
-  getCurrentUserName,
-} from '../core/game';
-import { ConfigData } from '../core/interfaces';
+import { getStudySession } from '../study/runtime';
 import {
   defaultConfig,
   updateConfig,
@@ -163,41 +158,19 @@ export class LoadingScene extends Scene {
 
     webcam.setVisibility(webcamDisplayOptions.visible);
 
-    // Launching instead of starting ensures background sprite is not destroyed.
-    this.scene.launch(initialScene);
-
-    handTracker.precache(this.updateText.bind(this, loadingText));
-
     this.updateText(loadingText, 'LOADING CONFIG DATA...');
-    assert(
-      this.cache.json.has('defaultConfig'),
-      'Failed to load default config data',
-    );
+    assert(this.cache.json.has('defaultConfig'), 'Failed to load default config data');
     updateDefaultConfig(this.cache.json.get('defaultConfig'));
+    updateConfig({ ...defaultConfig, ...(getStudySession()?.settings.defaultConfig || {}) });
 
-    if (currentUser) {
-      await getCurrentUserConfig()
-        .then((pair: [ConfigData, string]) => {
-          const [data, configName] = pair;
-          console.info(
-            'INFO: Playing as "' +
-              getCurrentUserName() +
-              '" with config: "' +
-              configName +
-              '"',
-          );
-          updateConfig(data);
-        })
-        .catch(err => {
-          this.updateText(loadingText, err);
-        });
-    } else {
-      updateConfig(defaultConfig);
-    }
+    // Launch after config is available; studySession.preload relies on it.
+    const startScene = getStudySession() ? 'studySession' : initialScene;
+    this.scene.launch(startScene);
+    handTracker.precache(this.updateText.bind(this, loadingText));
 
     this.updateText(loadingText, 'LOADING GAME DATA...');
 
-    this.scene.get(initialScene).load.on('complete', () => {
+    this.scene.get(startScene).load.on('complete', () => {
       this.updateText(loadingText, 'STARTING INITIAL SCENE...');
       loadingText?.destroy();
     });
