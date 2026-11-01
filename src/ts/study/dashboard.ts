@@ -73,9 +73,51 @@ export async function showDashboard(root: HTMLElement, user: Account, onExit: ()
     const db = field(part, 'Optional linked Firebase Realtime Database URL (server-side access required)', databaseURL);
     const checkboxLabel = node('label', part, 'Study enabled ');
     const enabled = node('input', checkboxLabel); enabled.type = 'checkbox'; enabled.checked = data.enabled;
-    node('p', part, 'Edit the schedule as JSON. Levels: legacy:Name, library:ID, uploaded:ID. Week keys 0 / 1 / 2 / -1.');
-    const schedule = field(part, 'Week assignments', JSON.stringify(data.weeks, null, 2), 'textarea');
-    const overrides = field(part, 'Default gameplay config overrides (JSON object)', JSON.stringify(data.defaultConfig || {}, null, 2), 'textarea');
+    node('h3', part, 'Weekly levels (easy editor)');
+    node('p', part, 'Week 1 is the first week, 0 is a pretest, and -1 is a posttest. Add levels in the order participants should play them.');
+    const weekInput = field(part, 'Week (1, 2, 3, 0 or -1)', '1');
+    const levelInput = field(part, 'Level ID (e.g. legacy:Cheerful Bliss or library:my_level)', 'legacy:Cheerful Bliss');
+    const bpmInput = field(part, 'BPM option (0 = first speed)', '0');
+    const loopsInput = field(part, 'Number of loops', '3');
+    const scheduleList = node('div', part);
+    const advanced = node('details', part);
+    node('summary', advanced, 'Advanced: edit weekly schedule JSON');
+    const schedule = field(advanced, 'Week assignments JSON', JSON.stringify(data.weeks, null, 2), 'textarea');
+    function renderAssignments() {
+      scheduleList.replaceChildren();
+      const weeks = JSON.parse(schedule.value) as StudySettings['weeks'];
+      for (const [week, assignments] of Object.entries(weeks)) {
+        if (!Array.isArray(assignments)) throw new Error('Invalid schedule; fix advanced JSON');
+        assignments.forEach((assignment, index) => {
+          const row = node('div', scheduleList); row.className = 'study-row';
+          node('span', row, `Week ${week}: ${assignment.levelId}, BPM option ${assignment.bpmIndex}, ${assignment.loops} loops`);
+          action(row, 'Remove', () => {
+            const current = JSON.parse(schedule.value) as StudySettings['weeks'];
+            current[week].splice(index, 1);
+            if (current[week].length === 0) delete current[week];
+            schedule.value = JSON.stringify(current, null, 2);
+            renderAssignments();
+          });
+        });
+      }
+    }
+    action(part, 'Add level to week', () => {
+      const week = weekInput.value.trim();
+      const bpmIndex = Number(bpmInput.value);
+      const loops = Number(loopsInput.value);
+      const levelId = levelInput.value.trim();
+      if (!/^(?:-1|0|[1-9]\d*)$/.test(week) || !/^(legacy|library|uploaded):[\w .-]{1,100}$/.test(levelId) ||
+          !Number.isInteger(bpmIndex) || bpmIndex < 0 || bpmIndex > 8 ||
+          !Number.isInteger(loops) || loops < 1 || loops > 100)
+        throw new Error('Check the week, level ID, BPM option (0–8), and loops (1–100).');
+      const current = JSON.parse(schedule.value) as StudySettings['weeks'];
+      if (!current[week]) current[week] = [];
+      current[week].push({ levelId, bpmIndex, loops });
+      schedule.value = JSON.stringify(current, null, 2);
+      renderAssignments();
+    });
+    renderAssignments();
+    const overrides = field(part, 'Advanced: default gameplay config overrides (JSON object)', JSON.stringify(data.defaultConfig || {}, null, 2), 'textarea');
     const conditions = field(part, 'Per-group gameplay configs (JSON object, keyed by group name)', JSON.stringify(data.groupConfigs || {}, null, 2), 'textarea');
     action(part, 'Save study', async () => {
       const settings: StudySettings = { title: title.value.trim(), description: desc.value, introText: welcome.value, startDate: date.value.trim(),
@@ -90,11 +132,11 @@ export async function showDashboard(root: HTMLElement, user: Account, onExit: ()
     output.replaceChildren(); const box = section(output, `Participants · ${study.title}`);
     const accounts = (await studyApi.listParticipants(study.id)).accounts;
     const canProvision = user.role === 'admin';
-    const username = field(box, 'New username', '');
-    const password = field(box, 'Password (12+ characters)', ''); password.type = 'password';
-    const group = field(box, 'Group / condition', '');
-    const start = field(box, 'Participant-specific start (YYYY-MM-DD, optional)', '');
     if (canProvision) {
+      const username = field(box, 'New username', '');
+      const password = field(box, 'Password (12+ characters)', ''); password.type = 'password';
+      const group = field(box, 'Group / condition', '');
+      const start = field(box, 'Participant-specific start (YYYY-MM-DD, optional)', '');
       action(box, 'Add participant', async () => { await studyApi.provisionAccount(study.id, username.value, password.value, 'participant', group.value, start.value); await showRoster(study); });
       action(box, 'Add moderator', async () => { await studyApi.provisionAccount(study.id, username.value, password.value, 'moderator'); await showRoster(study); });
     }

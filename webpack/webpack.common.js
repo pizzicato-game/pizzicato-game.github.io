@@ -1,6 +1,8 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
+const { loadWebConfig } = require('../scripts/web-config');
 
 module.exports = {
   entry: ['./src/ts/core/game.ts'],
@@ -8,6 +10,8 @@ module.exports = {
     path: path.resolve(__dirname, '../dist'),
     filename: '[name].bundle.js',
     chunkFilename: '[name].chunk.js',
+    // Asset paths must remain relative for GitHub Pages /<repository>/ hosting.
+    publicPath: 'auto',
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
@@ -34,6 +38,7 @@ module.exports = {
     },
   },
   plugins: [
+    new webpack.DefinePlugin({ __PIZZICATO_WEB_CONFIG__: JSON.stringify(loadWebConfig()) }),
     new HtmlWebpackPlugin({
       gameName: 'My Phaser Game',
       template: 'src/index.html',

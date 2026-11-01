@@ -28,3 +28,9 @@ csv/*.csv
 .env.*
 .firebase/
 *-debug.log
+
+# Personal browser setup; do not push research deployment details to branches
+web-config.local.json
+private/
+credentials/
+*-firebase-adminsdk-*.json

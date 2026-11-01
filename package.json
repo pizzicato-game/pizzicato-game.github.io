@@ -22,7 +22,7 @@
     "electron": "npm run build && npx electron .",
     "bundle": "npm run build",
     "serve": "serve dist",
-    "deploy": "npm run build && touch dist/.nojekyll && gh-pages -t -d dist -m \"Build for $(git log -n1 --pretty=format:\"%h %s\") [skip ci]\"",
+    "deploy": "node scripts/print-deploy-help.js",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.ts",
     "format": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|json)\"",
     "fix:lint": "eslint . --ignore-path .gitignore --ext .js,.ts --fix",
@@ -30,10 +30,16 @@
     "fix:all": "npm run fix:format && npm run fix:lint",
     "test:levels": "node scripts/test-level-formats.js",
     "test:study": "node scripts/test-study.js",
-    "test": "npm run test:levels && npm run test:study",
+    "test": "npm run test:levels && npm run test:study && npm run test:web",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac dmg zip",
-    "build:linux": "npm run build && electron-builder --linux AppImage"
+    "build:linux": "npm run build && electron-builder --linux AppImage",
+    "setup:web": "node scripts/setup-web.js",
+    "check:web": "node scripts/check-web-config.js",
+    "admin:create": "node scripts/create-admin.js",
+    "test:web": "node scripts/test-web-deployment.js",
+    "start:guest": "cross-env PIZZICATO_FORCE_GUEST=1 webpack serve --config webpack/webpack.dev.js",
+    "serve:build": "npm run build && serve -l 8080 dist"
   },
   "license": "MIT",
   "dependencies": {

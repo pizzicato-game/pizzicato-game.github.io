@@ -17,11 +17,16 @@ This is a serious game developed for the Master's course "Building Serious Games
 | Primary Commands | Description                                  |
 | ---------------- | -------------------------------------------- |
 | `npm install`    | Install project dependencies                 |
-| `npm run start`  | Run with Browser (open locally, hot reloading) |
+| `npm start` | Run local browser website (guest unless web setup was completed) |
 | `npm run electron` | Run with Electron (locally) |
 | `npm run build`  | Build a local version (in dist directory)    |
 | `npm run build:exe` | Build a Windows executable folder directly in release |
-| `npm run deploy` | Update website with changes                  |
+| `npm run setup:web` | Easy setup for local Firebase browser login |
+| `npm run check:web` | Check which Firebase project will be used |
+| `npm run start:guest` | Run a guest-only browser demo |
+| `npm run serve:build` | Test a production website build locally |
+| `npm run admin:create -- EMAIL PATH` | Create a Firebase administrator (trusted machine only) |
+| `npm run deploy` | Show GitHub Pages deployment instructions |
 
 ## Project Structure
 
@@ -35,7 +40,7 @@ This is a serious game developed for the Master's course "Building Serious Games
 
 ## Dependencies
 
-- [Node.Js](https://nodejs.org/en/download/) : Node JS (tested on v25.9.0)
+- [Node.Js](https://nodejs.org/en/download/) : Node.js LTS (GitHub Actions uses Node 22)
 - [Phaser](https://phaser.io/) : HTML5 Game Framework
 - [TypeScript](https://www.typescriptlang.org/) : Better than JavaScript
 
@@ -61,4 +66,13 @@ This version supports both bundled legacy MP4/MP3 levels and locally imported Le
 
 This branch preserves the original Pizzicato game and unified Level Designer JSON loader, adds the four Leiden experiment levels, and introduces an optional Firebase-backed study manager with administrator/moderator/participant roles, per-week and participant-specific schedules, a central published JSON level library, local participant packs, and Electron study-data exports. The **default build still launches directly as a guest**.
 
-**Start with [docs/RESEARCH_SETUP.md](docs/RESEARCH_SETUP.md)** for deployment, permissions, offline packaging, testing requirements, and explicit limitations. Change `src/ts/study/deployment.ts` to opt into research login or offline participant mode. Run `npm test` before merging.
+**Non-coders: start with [docs/START_HERE.md](docs/START_HERE.md).** Detailed step-by-step guides:
+
+- [Run the same online website locally with Firebase login](docs/LOCAL_WEB_SERVER.md)
+- [Deploy `main` or `dev` to GitHub Pages](docs/GITHUB_PAGES.md)
+- [Create a central admin database and administrator credentials](docs/ADMIN_DATABASE.md)
+- [Advanced research/offline setup and limitations](docs/RESEARCH_SETUP.md)
+
+Run `npm run setup:web` to choose a Firebase project **without changing any source code**. The local project configuration is ignored by Git; GitHub Pages uses a separate per-repository Actions secret with only PUBLIC Firebase web config. `npm test` checks level, study and web configuration source-level regressions before a release.
+
+**Not yet verified:** an end-to-end Firebase deployment, browser runtime and actual camera/gameplay on a deployed GitHub Pages site. These must be checked before research with real participants.
